@@ -1,0 +1,1 @@
+This folder should contain documentation related to the open source projects and software

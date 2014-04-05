@@ -1,0 +1,1 @@
+This folder should only contain documents/datasheets provided by thirdparty sources.
