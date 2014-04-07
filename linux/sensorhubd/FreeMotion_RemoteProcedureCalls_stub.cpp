@@ -40,7 +40,7 @@ FM_STATUS_t FMRPC_GetVersion(char* versionString, int bufSize) {
     return result;
 }
 
-FM_STATUS_t FMRPC_SubscribeResult(ResultType_t resultType, FMRPC_ResultDataCallback_t dataReadyCallback ) {
+FM_STATUS_t FMRPC_SubscribeResult(SensorType_t sensorType, FMRPC_ResultDataCallback_t dataReadyCallback ) {
     FM_STATUS_t result = FM_STATUS_OK;
 
     LOGT("%s\r\n", __FUNCTION__);
@@ -48,7 +48,7 @@ FM_STATUS_t FMRPC_SubscribeResult(ResultType_t resultType, FMRPC_ResultDataCallb
     return result;
 }
 
-FM_STATUS_t FMRPC_UnsubscribeResult(ResultType_t resultType) {
+FM_STATUS_t FMRPC_UnsubscribeResult(SensorType_t sensorType) {
     FM_STATUS_t result = FM_STATUS_OK;
 
     LOGT("%s\r\n", __FUNCTION__);
