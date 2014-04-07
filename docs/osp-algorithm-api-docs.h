@@ -19,8 +19,12 @@
 /*!
   \mainpage
 
- This documentation describes the Open-Sensor-Platform Sensor Fusion API  
- for resource constrained Sensor Hub and Smart Sensor devices. 
+ This documentation describes the Open-Sensor-Platform project
+ for a resource constrained Sensor Hub or Smart Sensor devices. 
+
+  \image html osp_framework.png
+  \image latex osp_android_framework.png
+  \image latex osp_hub_framework.png
 
 With respect to terminology, remember that everything coming in is considered a 
 <b>Sensor</b>, everything going out is a <b>Result</b>.
