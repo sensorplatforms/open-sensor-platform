@@ -1,20 +1,20 @@
-/****************************************************************************************************
- *                                                                                                  *
- *                                    Sensor Platforms Inc.                                         *
- *                                    2860 Zanker Road, Suite 210                                   *
- *                                    San Jose, CA 95134                                            *
- *                                                                                                  *
- ****************************************************************************************************
- *                                                                                                  *
- *                                Copyright (c) 2012 Sensor Platforms Inc.                          *
- *                                        All Rights Reserved                                       *
- *                                                                                                  *
- ***************************************************************************************************/
-/**
- * @file Mag_LSM303DLHC_I2C.c
- * Implements driver for the magnetometer inside the LSM303DLHS part from ST connected over I2C bus.
+/* Open Sensor Platform Project
+ * https://github.com/sensorplatforms/open-sensor-platform
  *
- ***************************************************************************************************/
+ * Copyright (C) 2013 Sensor Platforms Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
@@ -217,32 +217,32 @@ void Mag_HardwareSetup( Bool enable )
     if (enable == true)
     {
         /* Initialize the I2C Driver interface */
-        ASF_assert( true == I2C_HardwareSetup( MAG_A_BUS ) ); //TBD - can be made bus agnostic!
+        ASF_assert( true == I2C_HardwareSetup( MAG_BUS ) ); //TBD - can be made bus agnostic!
 
         /* Enable GPIO clocks */
-        RCC_APB2PeriphClockCmd( RCC_Periph_MAG_A_RDY_GPIO, ENABLE );
+        RCC_APB2PeriphClockCmd( RCC_Periph_MAG_RDY_GPIO, ENABLE );
 
         /* Configure DRDY/INT interrupt Pin */
-        GPIO_InitStructure.GPIO_Pin = MAG_A_RDY_INT_PIN;
+        GPIO_InitStructure.GPIO_Pin = MAG_RDY_INT_PIN;
         GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-        GPIO_Init (MAG_A_RDY_INT_GRP, &GPIO_InitStructure);
+        GPIO_Init (MAG_RDY_INT_GRP, &GPIO_InitStructure);
 
-        GPIO_EXTILineConfig(GPIO_PORT_SRC_MAG_A_RDY_INT, GPIO_PIN_SRC_MAG_A_RDY_INT);
+        GPIO_EXTILineConfig(GPIO_PORT_SRC_MAG_RDY_INT, GPIO_PIN_SRC_MAG_RDY_INT);
 
-        EXTI_ClearFlag(MAG_A_RDY_INT_EXTI_LINE);
+        EXTI_ClearFlag(MAG_RDY_INT_EXTI_LINE);
 
-        EXTI_InitStructure.EXTI_Line = MAG_A_RDY_INT_EXTI_LINE;
+        EXTI_InitStructure.EXTI_Line = MAG_RDY_INT_EXTI_LINE;
         EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
         EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
         EXTI_InitStructure.EXTI_LineCmd = ENABLE;
         EXTI_Init(&EXTI_InitStructure);
 
         /* NVIC config for INT input */
-        NVIC_ClearPendingIRQ(MAG_A_RDY_IRQCHANNEL);
-        NVIC_InitStructure.NVIC_IRQChannel = MAG_A_RDY_IRQCHANNEL;
-        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = MAG_A_DRDY_INT_PREEMPT_PRIORITY;
-        NVIC_InitStructure.NVIC_IRQChannelSubPriority = MAG_A_DRDY_INT_SUB_PRIORITY;
+        NVIC_ClearPendingIRQ(MAG_RDY_IRQCHANNEL);
+        NVIC_InitStructure.NVIC_IRQChannel = MAG_RDY_IRQCHANNEL;
+        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = MAG_DRDY_INT_PREEMPT_PRIORITY;
+        NVIC_InitStructure.NVIC_IRQChannelSubPriority = MAG_DRDY_INT_SUB_PRIORITY;
         NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
         NVIC_Init(&NVIC_InitStructure);
         /* Int enabled via Mag_ConfigDataInt() */
@@ -316,12 +316,12 @@ void Mag_ConfigDataInt( Bool enInt )
     if (enInt)
     {
         /* Enable DRDY */
-        NVIC_CH_ENABLE( MAG_A_RDY_IRQCHANNEL );
+        NVIC_CH_ENABLE( MAG_RDY_IRQCHANNEL );
     }
     else
     {
         /* Disable DRDY */
-        NVIC_CH_DISABLE( MAG_A_RDY_IRQCHANNEL );
+        NVIC_CH_DISABLE( MAG_RDY_IRQCHANNEL );
     }
 }
 

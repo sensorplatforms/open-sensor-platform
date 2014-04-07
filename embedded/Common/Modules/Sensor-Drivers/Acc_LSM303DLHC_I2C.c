@@ -1,20 +1,20 @@
-/****************************************************************************************************
- *                                                                                                  *
- *                                    Sensor Platforms Inc.                                         *
- *                                    2860 Zanker Road, Suite 210                                   *
- *                                    San Jose, CA 95134                                            *
- *                                                                                                  *
- ****************************************************************************************************
- *                                                                                                  *
- *                                Copyright (c) 2012 Sensor Platforms Inc.                          *
- *                                        All Rights Reserved                                       *
- *                                                                                                  *
- ***************************************************************************************************/
-/**
- * @file Acc_LSM303DLHC_I2C.c
- * Implements driver for the accelerometer inside the LSM303DLHS part from ST connected over I2C bus.
+/* Open Sensor Platform Project
+ * https://github.com/sensorplatforms/open-sensor-platform
  *
- ***************************************************************************************************/
+ * Copyright (C) 2013 Sensor Platforms Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
@@ -232,30 +232,30 @@ void Accel_HardwareSetup( Bool enable )
     if (enable == true)
     {
         /* Initialize the I2C Driver interface */
-        ASF_assert( true == I2C_HardwareSetup( XL_A_BUS ) ); //TBD - can be made bus agnostic!
+        ASF_assert( true == I2C_HardwareSetup( ACCEL_BUS ) ); //TBD - can be made bus agnostic!
 
         /* Enable GPIO clocks */
-        RCC_APB2PeriphClockCmd( RCC_Periph_XL_A_INT_GPIO, ENABLE );
+        RCC_APB2PeriphClockCmd( RCC_Periph_ACCEL_INT_GPIO, ENABLE );
 
         /* Configure INT interrupt Pin */
-        GPIO_InitStructure.GPIO_Pin = XL_A_INT;
+        GPIO_InitStructure.GPIO_Pin = ACCEL_INT;
         GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-        GPIO_Init (XL_A_INT_GPIO_GRP, &GPIO_InitStructure);
+        GPIO_Init (ACCEL_INT_GPIO_GRP, &GPIO_InitStructure);
 
-        GPIO_EXTILineConfig(GPIO_PORT_SRC_XL_A_INT, GPIO_PIN_SRC_XL_A_INT);
+        GPIO_EXTILineConfig(GPIO_PORT_SRC_ACCEL_INT, GPIO_PIN_SRC_ACCEL_INT);
 
-        EXTI_ClearFlag(EXTI_LINE_XL_A_INT);
+        EXTI_ClearFlag(EXTI_LINE_ACCEL_INT);
 
-        EXTI_InitStructure.EXTI_Line = EXTI_LINE_XL_A_INT;
+        EXTI_InitStructure.EXTI_Line = EXTI_LINE_ACCEL_INT;
         EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
         EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
         EXTI_InitStructure.EXTI_LineCmd = ENABLE;
         EXTI_Init(&EXTI_InitStructure);
 
         /* NVIC config for INT input */
-        NVIC_ClearPendingIRQ(ACCEL_A_INT_IRQChannel);
-        NVIC_InitStructure.NVIC_IRQChannel = ACCEL_A_INT_IRQChannel;
+        NVIC_ClearPendingIRQ(ACCEL_INT_IRQChannel);
+        NVIC_InitStructure.NVIC_IRQChannel = ACCEL_INT_IRQChannel;
         NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = ACCEL_A_INT_PREEMPT_PRIO;
         NVIC_InitStructure.NVIC_IRQChannelSubPriority = ACCEL_A_INT_SUB_PRIORITY;
         NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;

@@ -1,22 +1,20 @@
-/****************************************************************************************************
- *                                                                                                  *
- *                                    Sensor Platforms Inc.                                         *
- *                                    2860 Zanker Road, Suite 210                                   *
- *                                    San Jose, CA 95134                                            *
- *                                                                                                  *
- ****************************************************************************************************
- *                                                                                                  *
- *                                Copyright (c) 2012 Sensor Platforms Inc.                          *
- *                                        All Rights Reserved                                       *
- *                                                                                                  *
- ***************************************************************************************************/
-/**
- * @file GYRO_L3GD20_I2C.c
- * This file implements functions specific to setting up and communicating with ST's 3-axis
- * L3GD20 Gyroscope connected over I2C bus.
+/* Open Sensor Platform Project
+ * https://github.com/sensorplatforms/open-sensor-platform
  *
- ***************************************************************************************************/
-
+ * Copyright (C) 2013 Sensor Platforms Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
@@ -217,32 +215,32 @@ void Gyro_HardwareSetup( Bool enable )
     if (enable == true)
     {
         /* Initialize the I2C Driver interface */
-        ASF_assert( true == I2C_HardwareSetup( GYRO_A_BUS ) ); //TBD - can be made bus agnostic!
+        ASF_assert( true == I2C_HardwareSetup( GYRO_BUS ) ); //TBD - can be made bus agnostic!
 
         /* Enable GPIO clocks */
-        RCC_APB2PeriphClockCmd( RCC_Periph_GYRO_A_RDY_GPIO, ENABLE );
+        RCC_APB2PeriphClockCmd( RCC_Periph_GYRO_RDY_GPIO, ENABLE );
 
         /* Configure INT/DRDY interrupt Pin */
-        GPIO_InitStructure.GPIO_Pin = GYRO_A_RDY_INT_PIN;
+        GPIO_InitStructure.GPIO_Pin = GYRO_RDY_INT_PIN;
         GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
         GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-        GPIO_Init (GYRO_A_RDY_INT_GRP, &GPIO_InitStructure);
+        GPIO_Init (GYRO_RDY_INT_GRP, &GPIO_InitStructure);
 
-        GPIO_EXTILineConfig(GPIO_PORT_SRC_GYRO_A_RDY_INT, GPIO_PIN_SRC_GYRO_A_RDY_INT);
+        GPIO_EXTILineConfig(GPIO_PORT_SRC_GYRO_RDY_INT, GPIO_PIN_SRC_GYRO_RDY_INT);
 
-        EXTI_ClearFlag(GYRO_A_RDY_INT_EXTI_LINE);
+        EXTI_ClearFlag(GYRO_RDY_INT_EXTI_LINE);
 
-        EXTI_InitStructure.EXTI_Line = GYRO_A_RDY_INT_EXTI_LINE;
+        EXTI_InitStructure.EXTI_Line = GYRO_RDY_INT_EXTI_LINE;
         EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
         EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
         EXTI_InitStructure.EXTI_LineCmd = ENABLE;
         EXTI_Init(&EXTI_InitStructure);
 
         /* NVIC config for INT input */
-        NVIC_ClearPendingIRQ(GYRO_A_RDY_IRQCHANNEL);
-        NVIC_InitStructure.NVIC_IRQChannel = GYRO_A_RDY_IRQCHANNEL;
-        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = GYRO_A_DRDY_INT_PREEMPT_PRIORITY;
-        NVIC_InitStructure.NVIC_IRQChannelSubPriority = GYRO_A_DRDY_INT_SUB_PRIORITY;
+        NVIC_ClearPendingIRQ(GYRO_RDY_IRQCHANNEL);
+        NVIC_InitStructure.NVIC_IRQChannel = GYRO_RDY_IRQCHANNEL;
+        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = GYRO_DRDY_INT_PREEMPT_PRIORITY;
+        NVIC_InitStructure.NVIC_IRQChannelSubPriority = GYRO_DRDY_INT_SUB_PRIORITY;
         NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
         NVIC_Init(&NVIC_InitStructure);
         /* Int enabled via Gyro_ConfigDataInt() */
@@ -322,14 +320,14 @@ void Gyro_ConfigDataInt( Bool enInt )
     {
         /* Enable data ready interrupt */
         WriteGyroReg( L3GD20_CTRL_REG3, DRDY_ON_INT2_ENABLE );
-        NVIC_CH_ENABLE( GYRO_A_RDY_IRQCHANNEL );
+        NVIC_CH_ENABLE( GYRO_RDY_IRQCHANNEL );
     }
     else
     {
         uint8_t temp = ReadGyroReg( L3GD20_CTRL_REG3 );
         temp &= ~DRDY_ON_INT2_ENABLE;
         WriteGyroReg( L3GD20_CTRL_REG3, temp );
-        NVIC_CH_DISABLE( GYRO_A_RDY_IRQCHANNEL );
+        NVIC_CH_DISABLE( GYRO_RDY_IRQCHANNEL );
     }
 }
 
