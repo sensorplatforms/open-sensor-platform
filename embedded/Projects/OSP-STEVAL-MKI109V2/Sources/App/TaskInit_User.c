@@ -34,6 +34,7 @@ const uint8_t NormalModeTaskList[] = {
     INSTR_MANAGER_TASK_ID,
     CMD_HNDLR_TASK_ID,
     SENSOR_ACQ_TASK_ID,
+    I2CSLAVE_COMM_TASK_ID
 };
 const uint8_t NormalModeTaskListSize = sizeof(NormalModeTaskList);
 

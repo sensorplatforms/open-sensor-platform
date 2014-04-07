@@ -31,6 +31,10 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
+#ifdef ANDROID_DEMO
+# define ANDROID_COMM_TASK              I2CSLAVE_COMM_TASK_ID
+#endif
+
 #ifdef DEBUG_BUILD
 # ifndef DEBUG_OUTPUT
 # define DEBUG_OUTPUT
@@ -46,7 +50,7 @@
 #endif
 
 
-#define MAX_SYSTEM_MESSAGES                     15     ///< Max number of queued messages in the system
+#define MAX_SYSTEM_MESSAGES                     30     ///< Max number of queued messages in the system
 
 /* All timer references (arbitrary unique identifiers for each timer)*/
 #define TIMER_REF_RTC_UPDATE                    0x55A5

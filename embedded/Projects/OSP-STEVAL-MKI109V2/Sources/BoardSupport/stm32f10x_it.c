@@ -27,6 +27,9 @@ void RxBytesToBuff( PortInfo *pPort, uint8_t byte );
   void I2C_Driver_ISR_Handler(void);
   void I2C_Driver_ERR_ISR_Handler(void);
 #endif
+#ifdef ANDROID_COMM_TASK
+  void I2C_Slave_Handler(I2C_TypeDef *pI2C, uint8_t irqCh);
+#endif
 
 void SendDataReadyIndication( uint8_t sensorId, uint32_t timeStamp );
 
@@ -228,10 +231,10 @@ void EXTI2_IRQHandler(void)
 *******************************************************************************/
 void EXTI3_IRQHandler(void)
 {
-    if (EXTI_GetFlagStatus(EXTI_LINE_XL_A_INT) != RESET)
+    if (EXTI_GetFlagStatus(EXTI_LINE_ACCEL_INT) != RESET)
     {
         /* Clear the EXTI line pending bit */
-        EXTI_ClearFlag(EXTI_LINE_XL_A_INT);
+        EXTI_ClearFlag(EXTI_LINE_ACCEL_INT);
         /* Send indication to Sensor task */
         SendDataReadyIndication(SENSOR_TYPE_ACCELEROMETER, RTC_GetCounter());
         /* NOTE: No I2C transactions (rd/wr) allowed from ISR */
@@ -537,8 +540,8 @@ void I2C1_ER_IRQHandler(void)
 *******************************************************************************/
 void I2C2_EV_IRQHandler(void)
 {
-#if defined I2C_DRIVER && (I2C_SENSOR_BUS_EVENT_IRQ_CH == I2C2_EV_IRQn)
-    I2C_Driver_ISR_Handler();
+#if defined ANDROID_COMM_TASK && (I2C_SLAVE_BUS_EVENT_IRQ_CH == I2C2_EV_IRQn)
+    I2C_Slave_Handler( I2C2, I2C_SLAVE_BUS_EVENT_IRQ_CH );
 #endif
 }
 
@@ -551,8 +554,8 @@ void I2C2_EV_IRQHandler(void)
 *******************************************************************************/
 void I2C2_ER_IRQHandler(void)
 {
-#if defined I2C_DRIVER && (I2C_SENSOR_BUS_ERROR_IRQ_CH == I2C2_ER_IRQn)
-    I2C_Driver_ERR_ISR_Handler();
+#if defined ANDROID_COMM_TASK && (I2C_SLAVE_BUS_ERROR_IRQ_CH == I2C2_ER_IRQn)
+    I2C_Slave_Handler( I2C2, I2C_SLAVE_BUS_ERROR_IRQ_CH );
 #endif
 }
 
@@ -647,18 +650,18 @@ void USART3_IRQHandler(void)
 *******************************************************************************/
 void EXTI15_10_IRQHandler(void)
 {
-    if (EXTI_GetFlagStatus(MAG_A_RDY_INT_EXTI_LINE) != RESET)
+    if (EXTI_GetFlagStatus(MAG_RDY_INT_EXTI_LINE) != RESET)
     {
         /* Clear the EXTI line pending bit */
-        EXTI_ClearFlag(MAG_A_RDY_INT_EXTI_LINE);
+        EXTI_ClearFlag(MAG_RDY_INT_EXTI_LINE);
         SendDataReadyIndication(SENSOR_TYPE_MAGNETIC_FIELD, RTC_GetCounter());
         /* NOTE: No I2C transactions (rd/wr) allowed from ISR */
     }
 
-    if (EXTI_GetFlagStatus(GYRO_A_RDY_INT_EXTI_LINE) != RESET)
+    if (EXTI_GetFlagStatus(GYRO_RDY_INT_EXTI_LINE) != RESET)
     {
         /* Clear the EXTI line pending bit */
-        EXTI_ClearFlag(GYRO_A_RDY_INT_EXTI_LINE);
+        EXTI_ClearFlag(GYRO_RDY_INT_EXTI_LINE);
         /* Send indication to Sensor task */
         SendDataReadyIndication(SENSOR_TYPE_GYROSCOPE, RTC_GetCounter());
         /* NOTE: No I2C transactions (rd/wr) allowed from ISR */

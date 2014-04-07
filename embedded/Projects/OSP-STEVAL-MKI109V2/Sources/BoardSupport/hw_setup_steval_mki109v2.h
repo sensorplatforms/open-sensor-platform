@@ -68,9 +68,9 @@
 
 /* Diagnostic LEDs on this board */
 enum _Leds {
-    LED_A,
-    LED_B,
-    LED_C,
+    LED_GREEN,
+    LED_RED,
+    LED_YELLOW,
     NUM_LEDS
 };
 
@@ -82,21 +82,19 @@ typedef struct _Leds_info {
 
 extern LedsInfo_t DiagLEDs[NUM_LEDS];
 
-/* User Friendly LED designation - unused ones should be assigned 0xFF */
-#define FRONT_LED                               LED_A
-#define BACK_LED_YEL                            LED_C
-#define BACK_LED_RED                            0xFF    //-> Not present
-#define HARD_FAULT_LED                          LED_B
+/* Hardware independent LED designation - unused ones should be assigned 0xFF */
+#define FRONT_LED                               LED_GREEN
+#define HARD_FAULT_LED                          LED_RED
 #define BLUE_LED                                0xFF    //Don't use this LED when USB interface is enabled
 
 #define LED_On(led)                                     \
     if (led < NUM_LEDS) {                               \
-         DiagLEDs[led].grp->BRR = DiagLEDs[led].pin;  \
+         DiagLEDs[led].grp->BRR = DiagLEDs[led].pin;    \
     }
 
 #define LED_Off(led)                                    \
     if (led < NUM_LEDS) {                               \
-         DiagLEDs[led].grp->BSRR = DiagLEDs[led].pin;  \
+         DiagLEDs[led].grp->BSRR = DiagLEDs[led].pin;   \
     }
 
 # define LED_Toggle(led)                                \
@@ -120,50 +118,50 @@ extern LedsInfo_t DiagLEDs[NUM_LEDS];
 /* ########################################################################## */
 /* #    A C C E L E R O M E T E R  I N T E R F A C E                        # */
 /* ########################################################################## */
-/* Interrupt input from XL (INT1) */
-#define RCC_Periph_XL_A_INT_GPIO                RCC_APB2Periph_GPIOC
-#define XL_A_INT_GPIO_GRP                       GPIOC
-#define XL_A_INT                                GPIO_Pin_3
-#define GPIO_PORT_SRC_XL_A_INT                  GPIO_PortSourceGPIOC
-#define GPIO_PIN_SRC_XL_A_INT                   GPIO_PinSource3
-#define EXTI_LINE_XL_A_INT                      EXTI_Line3 ///< Also dependent on interrupt assignments
+/* Interrupt input from Accel (INT1) */
+#define RCC_Periph_ACCEL_INT_GPIO               RCC_APB2Periph_GPIOC
+#define ACCEL_INT_GPIO_GRP                      GPIOC
+#define ACCEL_INT                               GPIO_Pin_3
+#define GPIO_PORT_SRC_ACCEL_INT                 GPIO_PortSourceGPIOC
+#define GPIO_PIN_SRC_ACCEL_INT                  GPIO_PinSource3
+#define EXTI_LINE_ACCEL_INT                     EXTI_Line3 ///< Also dependent on interrupt assignments
 
 /* Interrupt channel assignments */
-#define ACCEL_A_INT_IRQChannel                  EXTI3_IRQn  ///< Linked to GPIO assignment
+#define ACCEL_INT_IRQChannel                    EXTI3_IRQn  ///< Linked to GPIO assignment
 
 /* XL-A Bus Config */
-#define XL_A_BUS                                I2C_SENSOR_BUS
+#define ACCEL_BUS                               I2C_SENSOR_BUS
 
 
 /* ########################################################################## */
 /* #    M A G N E T O M E T E R  I N T E R F A C E  (D I G I T A L)         # */
 /* ########################################################################## */
 /* DRDY Interrupt input config  (INT2) */
-/* MAG-A (Honeywell die on LSM303) */
-#define MAG_A_RDY_INT_PIN                       GPIO_Pin_12  //-->EXTI15_10_IRQn
-#define MAG_A_RDY_INT_GRP                       GPIOC
-#define RCC_Periph_MAG_A_RDY_GPIO               RCC_APB2Periph_GPIOC
-#define GPIO_PORT_SRC_MAG_A_RDY_INT             GPIO_PortSourceGPIOC
-#define GPIO_PIN_SRC_MAG_A_RDY_INT              GPIO_PinSource12
-#define MAG_A_RDY_INT_EXTI_LINE                 EXTI_Line12  //-->EXTI15_10_IRQn
-#define MAG_A_RDY_IRQCHANNEL                    EXTI15_10_IRQn
+/* Magnetometer (Honeywell die on LSM303) */
+#define MAG_RDY_INT_PIN                         GPIO_Pin_12  //-->EXTI15_10_IRQn
+#define MAG_RDY_INT_GRP                         GPIOC
+#define RCC_Periph_MAG_RDY_GPIO                 RCC_APB2Periph_GPIOC
+#define GPIO_PORT_SRC_MAG_RDY_INT               GPIO_PortSourceGPIOC
+#define GPIO_PIN_SRC_MAG_RDY_INT                GPIO_PinSource12
+#define MAG_RDY_INT_EXTI_LINE                   EXTI_Line12  //-->EXTI15_10_IRQn
+#define MAG_RDY_IRQCHANNEL                      EXTI15_10_IRQn
 
-#define MAG_A_BUS                               I2C_SENSOR_BUS
+#define MAG_BUS                                 I2C_SENSOR_BUS
 
 
 /* ########################################################################## */
 /* #    G Y R O S C O P E  I N T E R F A C E                                # */
 /* ########################################################################## */
-/* Gyro-A (L3GD20) */
-#define GYRO_A_RDY_INT_PIN                      GPIO_Pin_14  //-->EXTI15_10_IRQn
-#define GYRO_A_RDY_INT_GRP                      GPIOB
-#define RCC_Periph_GYRO_A_RDY_GPIO              RCC_APB2Periph_GPIOB
-#define GPIO_PORT_SRC_GYRO_A_RDY_INT            GPIO_PortSourceGPIOB
-#define GPIO_PIN_SRC_GYRO_A_RDY_INT             GPIO_PinSource14
-#define GYRO_A_RDY_INT_EXTI_LINE                EXTI_Line14  //-->EXTI15_10_IRQn
-#define GYRO_A_RDY_IRQCHANNEL                   EXTI15_10_IRQn
+/* Gyroscope */
+#define GYRO_RDY_INT_PIN                        GPIO_Pin_14  //-->EXTI15_10_IRQn
+#define GYRO_RDY_INT_GRP                        GPIOB
+#define RCC_Periph_GYRO_RDY_GPIO                RCC_APB2Periph_GPIOB
+#define GPIO_PORT_SRC_GYRO_RDY_INT              GPIO_PortSourceGPIOB
+#define GPIO_PIN_SRC_GYRO_RDY_INT               GPIO_PinSource14
+#define GYRO_RDY_INT_EXTI_LINE                  EXTI_Line14  //-->EXTI15_10_IRQn
+#define GYRO_RDY_IRQCHANNEL                     EXTI15_10_IRQn
 
-#define GYRO_A_BUS                              I2C_SENSOR_BUS
+#define GYRO_BUS                                I2C_SENSOR_BUS
 
 
 /* ########################################################################## */
@@ -175,8 +173,16 @@ extern LedsInfo_t DiagLEDs[NUM_LEDS];
 /* ########################################################################## */
 /* #    M I S C  I N T E R F A C E                                          # */
 /* ########################################################################## */
+/* Sensor Hub Interrupt (Active Low) to host (CE_RF/PC7) */
+#define SH_INT_RCC                              RCC_APB2Periph_GPIOC
+#define SH_INT_GPIO_GRP                         GPIOC
+#define SH_INT_GPIO_PIN                         GPIO_Pin_7
 
-/* **** NOT PRESENT **** */
+#define SensorHubIntHigh()                      \
+    SH_INT_GPIO_GRP->BRR = SH_INT_GPIO_PIN;
+
+#define SensorHubIntLow()                       \
+    SH_INT_GPIO_GRP->BSRR = SH_INT_GPIO_PIN;
 
 /* ########################################################################## */
 /* #    S P I   I N T E R F A C E                                           # */
@@ -187,6 +193,7 @@ extern LedsInfo_t DiagLEDs[NUM_LEDS];
 /* ########################################################################## */
 /* #    I 2 C   I N T E R F A C E                                           # */
 /* ########################################################################## */
+/* I2C Master interface for Sensors */
 #define I2C_SENSOR_BUS                          (I2C1)
 #define I2C_SENSOR_BUS_BASE                     ((U32)I2C1_BASE)
 #define I2C_SENSOR_BUS_DR_ADDR                  ((U32)(I2C_SENSOR_BUS_BASE + I2C_Register_DR))
@@ -198,8 +205,25 @@ extern LedsInfo_t DiagLEDs[NUM_LEDS];
 #define I2C_SENSOR_BUS_SDA_PIN                  GPIO_Pin_7
 
 /* DMA & interrupt Channel assignments */
-#define I2C_SENSOR_BUS_EVENT_IRQ_CH              I2C1_EV_IRQn
-#define I2C_SENSOR_BUS_ERROR_IRQ_CH              I2C1_ER_IRQn
+#define I2C_SENSOR_BUS_EVENT_IRQ_CH             I2C1_EV_IRQn
+#define I2C_SENSOR_BUS_ERROR_IRQ_CH             I2C1_ER_IRQn
+
+/* I2C Slave interface for host communication (e.g. interface with Android host) */
+#define I2C_SLAVE_ADDRESS                       0x18
+#define I2C_SLAVE_BUS                           (I2C2)
+#define I2C_SLAVE_BUS_BASE                      ((U32)I2C2_BASE)
+#define I2C_SLAVE_BUS_DR_ADDR                   ((U32)(I2C_SLAVE_BUS_BASE + I2C_Register_DR))
+#define I2C_SLAVE_BUS_CLOCK                     400000  //Don't care
+#define I2C_SLAVE_BUS_GPIO_GRP                  GPIOB
+#define RCC_Periph_I2C_SLAVE_BUS_GPIO           RCC_APB2Periph_GPIOB
+#define RCC_Periph_I2C_SLAVE_BUS                RCC_APB1Periph_I2C2
+#define I2C_SLAVE_BUS_CLK_PIN                   GPIO_Pin_10
+#define I2C_SLAVE_BUS_SDA_PIN                   GPIO_Pin_11
+
+/* DMA & interrupt Channel assignments */
+#define I2C_SLAVE_BUS_EVENT_IRQ_CH              I2C2_EV_IRQn
+#define I2C_SLAVE_BUS_ERROR_IRQ_CH              I2C2_ER_IRQn
+
 
 /* ########################################################################## */
 /* #    U A R T  I N T E R F A C E                                          # */
@@ -259,17 +283,21 @@ extern LedsInfo_t DiagLEDs[NUM_LEDS];
 #define ACCEL_A_INT_SUB_PRIORITY                0   ///< Accelerometer A subpriority within group
 
 /* Priorities for I2C Bus interrupts */
-#define I2C_SENSOR_BUS_INT_PREEMPT_PRIORITY     0   ///<  I2C IRQ, I2C TX DMA and I2C RX DMA priority
+#define I2C_SENSOR_BUS_INT_PREEMPT_PRIORITY     0   ///< I2C IRQ, I2C TX DMA and I2C RX DMA priority
 #define I2C_SENSOR_BUS_EVENT_INT_SUB_PRIORITY   0   ///< I2C EV IRQ subpriority !!!! IMPORTANT - THIS NEEDS TO BE HIGHEST PRIORITY !!!!
 #define I2C_SENSOR_BUS_ERROR_INT_SUB_PRIORITY   1   ///< I2C ER IRQ subpriority
 
-/* Priorities for Mag DRDY interrupt */
-#define MAG_A_DRDY_INT_PREEMPT_PRIORITY         1   ///< Mag DRDY IRQ preemption priority
-#define MAG_A_DRDY_INT_SUB_PRIORITY             1   ///< Mag DRDY IRQ subpriority
+#define I2C_SLAVE_BUS_INT_PREEMPT_PRIORITY      2   ///< I2C IRQ, I2C TX DMA and I2C RX DMA priority
+#define I2C_SLAVE_BUS_EVENT_INT_SUB_PRIORITY    0   ///< I2C EV IRQ subpriority
+#define I2C_SLAVE_BUS_ERROR_INT_SUB_PRIORITY    1   ///< I2C ER IRQ subpriority
 
 /* Priorities for Mag DRDY interrupt */
-#define GYRO_A_DRDY_INT_PREEMPT_PRIORITY        1   ///< Gyro DRDY IRQ preemption priority
-#define GYRO_A_DRDY_INT_SUB_PRIORITY            2   ///< Gyro DRDY IRQ subpriority
+#define MAG_DRDY_INT_PREEMPT_PRIORITY         1   ///< Mag DRDY IRQ preemption priority
+#define MAG_DRDY_INT_SUB_PRIORITY             1   ///< Mag DRDY IRQ subpriority
+
+/* Priorities for Mag DRDY interrupt */
+#define GYRO_DRDY_INT_PREEMPT_PRIORITY        1   ///< Gyro DRDY IRQ preemption priority
+#define GYRO_DRDY_INT_SUB_PRIORITY            2   ///< Gyro DRDY IRQ subpriority
 
 #define NVIC_CH_ENABLE(IRQCh)                   NVIC_EnableIRQ(IRQCh)
 #define NVIC_CH_DISABLE(IRQCh)                  NVIC_DisableIRQ(IRQCh)
@@ -296,6 +324,12 @@ extern LedsInfo_t DiagLEDs[NUM_LEDS];
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+typedef enum MsgContextTag
+{
+    CTX_THREAD,     ///< Message sent from within a thread context
+    CTX_ISR         ///< Message sent from ISR
+} MsgContext;
+
 typedef union DeviceUidTag
 {
     uint32_t uidWords[3];
@@ -316,6 +350,28 @@ extern DeviceUid_t *gDevUniqueId;
 \*-------------------------------------------------------------------------------------------------*/
 void LED_Init(void);
 void SystemClkConfig( void );
+
+/****************************************************************************************************
+ * @fn      GetContext
+ *          Identifies if we are currently in ISR or Thread context and returns the corresponding
+ *          enum value for it. The logic is based on the fact that ISR uses system stack and Thread
+ *          use their allocated stack. We only need to read the current value of SP to figure out
+ *          whether we are in a Thread or ISR. (Maybe there is a better way... but this is good
+ *          enough for now)
+ *
+ * @param   none
+ *
+ * @return  CTX_THREAD or CTX_ISR
+ *
+ ***************************************************************************************************/
+static __inline MsgContext GetContext( void )
+{
+    extern uint32_t gStackMem;
+
+    return (__current_sp() < (uint32_t)&gStackMem)? CTX_THREAD : CTX_ISR;
+}
+
+
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
