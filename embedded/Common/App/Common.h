@@ -112,8 +112,8 @@
     _ASFKillTimer( ptim, __MODULE__, __LINE__ )
 #define ASFTimerExpiry( info )       \
     _ASFTimerExpiry( info, __MODULE__, __LINE__ )
-#define TimerStart( owner, ref, tick, pTimer )  \
-    _TimerStart( owner, ref, tick, pTimer, __MODULE__, __LINE__ )
+#define ASFTimerStart( owner, ref, tick, pTimer )  \
+    _ASFTimerStart( owner, ref, tick, pTimer, __MODULE__, __LINE__ )
 
 /* Defines for MTCK Commands & handlers */
 #define CR                          0x0D
@@ -220,7 +220,7 @@ int _dprintf( uint8_t dbgLvl, const char *fmt, ...);
 #define D2_printf( format, ... )        _dprintf( 2, format, ## __VA_ARGS__ )
 
 
-void _TimerStart( TaskId owner, uint16_t ref, uint16_t tick, AsfTimer *pTimer, char *_file, int _line  );
+void _ASFTimerStart( TaskId owner, uint16_t ref, uint16_t tick, AsfTimer *pTimer, char *_file, int _line  );
 Bool ASFTimerStarted ( AsfTimer *pTimer );
 void _ASFKillTimer( AsfTimer *pTimer, char *_file, int _line );
 void _ASFTimerExpiry ( uint16_t info, char *_file, int _line );

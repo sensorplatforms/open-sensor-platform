@@ -19,7 +19,6 @@
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
 #include "Common.h"
-#include "ASF_TQEnum.h"
 #include "ASF_TaskStruct.h"
 #include <stdlib.h>
 

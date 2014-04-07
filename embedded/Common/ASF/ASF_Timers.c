@@ -63,10 +63,10 @@ static void SendTimerExpiry ( AsfTimer *pTimer )
 {
     MessageBuffer *pSendMsg = NULLP;
 
-    ASFCreateMessage( MSG_TIMER_EXPIRY, sizeof(MsgTimerExpiry), &pSendMsg );
+    ASF_assert( ASFCreateMessage( MSG_TIMER_EXPIRY, sizeof(MsgTimerExpiry), &pSendMsg ) == ASF_OK );
     pSendMsg->msg.msgTimerExpiry.userValue = pTimer->userValue;
     pSendMsg->msg.msgTimerExpiry.timerId   = pTimer->timerId;
-    ASFSendMessage( pTimer->owner, pSendMsg, CTX_ISR );
+    ASF_assert( ASFSendMessage( pTimer->owner, pSendMsg ) == ASF_OK );
 }
 
 
@@ -82,7 +82,7 @@ static void SendTimerExpiry ( AsfTimer *pTimer )
  *
  * @see     ASFDeleteTimer()
  ***************************************************************************************************/
-void _ASFTimerStart ( AsfTimer *pTimer, char *_file, int _line )
+static void _TimerStart ( AsfTimer *pTimer, char *_file, int _line )
 {
     uint16_t info = (uint16_t)((uint32_t)pTimer); //We only need to store the LSB16 of the pointer as the system RAM is < 64K
     ASF_assert( pTimer != NULLP );
@@ -115,7 +115,7 @@ Bool ASFTimerStarted ( AsfTimer *pTimer )
 
 
 /****************************************************************************************************
- * @fn      TimerStart
+ * @fn      ASFTimerStart
  *          Creates a timer with given reference and tick value assigned to the owner.
  *
  * @param   owner  Task ID of the task that will receive the expiry message
@@ -125,14 +125,14 @@ Bool ASFTimerStarted ( AsfTimer *pTimer )
  *
  * @return  none
  *
- * @see     ASFTimerStart()
+ * @see     ASFTimerKill()
 ***************************************************************************************************/
-void _TimerStart( TaskId owner, uint16_t ref, uint16_t tick, AsfTimer *pTimer, char *_file, int _line  )
+void _ASFTimerStart( TaskId owner, uint16_t ref, uint16_t tick, AsfTimer *pTimer, char *_file, int _line  )
 {
     pTimer->owner = owner;
     pTimer->ticks = tick;
     pTimer->userValue = ref;
-    _ASFTimerStart( pTimer, _file, _line );
+    _TimerStart( pTimer, _file, _line );
 }
 
 
