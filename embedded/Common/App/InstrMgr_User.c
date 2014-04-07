@@ -112,7 +112,7 @@ void InstrManagerUserInit( void )
 {
     sInitialTime = os_time;
 
-    TimerStart( INSTR_MANAGER_TASK_ID, TIMER_REF_RTC_UPDATE, TICS_PER_SEC, &sRtcUpdateTimer );
+    ASFTimerStart( INSTR_MANAGER_TASK_ID, TIMER_REF_RTC_UPDATE, TICS_PER_SEC, &sRtcUpdateTimer );
 }
 
 
@@ -139,7 +139,7 @@ Bool InstrManagerUserHandler( MessageBuffer *pMsg )
             UpdateRTC();
 
             /* Restart timer for periodic output */
-            TimerStart( INSTR_MANAGER_TASK_ID, TIMER_REF_RTC_UPDATE, TICS_PER_SEC, &sRtcUpdateTimer );
+            ASFTimerStart( INSTR_MANAGER_TASK_ID, TIMER_REF_RTC_UPDATE, TICS_PER_SEC, &sRtcUpdateTimer );
             break;
 
         default:
