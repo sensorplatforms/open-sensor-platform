@@ -31,7 +31,7 @@
 ; </h>
 
                 EXPORT  gStackSize
-gStackSize      EQU     0x000000200
+gStackSize      EQU     0x000000400
 
                 EXPORT  gStackMem
                 AREA    STACK, NOINIT, READWRITE, ALIGN=3
