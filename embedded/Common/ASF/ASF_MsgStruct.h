@@ -57,8 +57,8 @@ typedef struct MsgNoDataTag
 
 typedef struct MsgTimerExpiryTag
 {
-    uint16_t         userValue;
-    TimerId     timerId;
+    uint16_t userValue;
+    TimerId  timerId;
 } MsgTimerExpiry;
 
 
@@ -113,8 +113,8 @@ union Message
 #define ASFCreateMessage(id, sz, bufp)      \
     _ASFCreateMessage(id, sz, bufp, __MODULE__, __LINE__)
 
-#define ASFSendMessage( id, pm, ctx )   \
-    _ASFSendMessage( id, pm, ctx, __MODULE__, __LINE__ )
+#define ASFSendMessage( id, pm )   \
+    _ASFSendMessage( id, pm, __MODULE__, __LINE__ )
 
 #define ASFReceiveMessage( id, pm )    \
     _ASFReceiveMessage( id, pm, __MODULE__, __LINE__ )
@@ -129,6 +129,15 @@ union Message
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+typedef enum AsfResultCodesTag
+{
+    ASF_OK                  = 0,
+    ASF_ERR_Q_FULL          = 1,
+    ASF_ERR_MSG_BUFF        = 2,
+    ASF_ERR_TIMER_IN_USE    = 3,
+    ASF_ERR_TIMEOUT         = 4,
+} AsfResult_t;
+
 /* Message Buffer Definitions */
 typedef enum MessageIdTag
 {
@@ -162,19 +171,13 @@ typedef struct MessageBlockTag
 
 } MessageBlock;
 
-typedef enum MsgContextTag
-{
-    CTX_THREAD,     ///< Message sent from within a thread context
-    CTX_ISR         ///< Message sent from ISR
-} MsgContext;
-
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 void ASFMessagingInit( void );
-void _ASFCreateMessage( MessageId msgId, uint16_t msgSize, MessageBuffer **pMbuf, char *_file, int _line );
-void _ASFSendMessage ( TaskId destTask, MessageBuffer *pMbuf, MsgContext cntxt, char *_file, int _line );
+AsfResult_t _ASFCreateMessage( MessageId msgId, uint16_t msgSize, MessageBuffer **pMbuf, char *_file, int _line );
+AsfResult_t _ASFSendMessage ( TaskId destTask, MessageBuffer *pMbuf, char *_file, int _line );
 void _ASFReceiveMessage ( TaskId rcvTask, MessageBuffer **pMbuf, char *_file, int _line );
 void _ASFDeleteMessage ( MessageBuffer **pMbuf, char *_file, int _line );
 Bool _ASFReceiveMessagePoll ( TaskId rcvTask, MessageBuffer **pMbuf, char *_file, int _line );

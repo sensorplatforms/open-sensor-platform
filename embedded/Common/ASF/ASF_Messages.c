@@ -19,10 +19,6 @@
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
 #include "Common.h"
-#include "ASF_MsgStruct.h"
-#include <stdlib.h>
-#include <stddef.h>
-#include <string.h>
 #include "ASF_TaskStruct.h"
 
 /*-------------------------------------------------------------------------------------------------*\
@@ -61,11 +57,40 @@ _declare_box( mpool, ///< this memory pool will be used to allocate the messages
 /*-------------------------------------------------------------------------------------------------*\
  |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-static void _ASFDeleteMessage ( MessageBuffer **pMbuf, char *_file, int _line );
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E     F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+
+/****************************************************************************************************
+ * @fn      ASFDeleteMessage
+ *          This function releases the buffer memory associated with the message contents. The caller
+ *          must call this function after a message's contents have been read to free the memory
+ *          associated with the message.
+ *
+ * @param   pMbuf Message buffer pointer containing the message to be deleted.
+ *
+ * @return  none
+ *
+ * @see     ASFCreateMessage(), ASFSendMessage(), ASFReceiveMessage()
+ ***************************************************************************************************/
+static void _ASFDeleteMessage ( MessageBuffer **pMbuf, char *_file, int _line )
+{
+    MessageBlock *pBlock;
+
+    /** This is where we release the memory allocated when the message was created */
+    if (*pMbuf != NULLP)
+    {
+        /* Get the block pointer */
+        M_GetMsgBlockFromBuffer (pBlock, *pMbuf);
+
+        ASF_assert( _free_box( mpool, pBlock ) == 0 );
+    }
+
+    *pMbuf = NULLP;
+}
+
+
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C     F U N C T I O N S
@@ -96,7 +121,7 @@ void ASFMessagingInit( void )
  *
  * @see     ASFSendMessage(), ASFReceiveMessage()
  ***************************************************************************************************/
-void _ASFCreateMessage( MessageId msgId, uint16_t msgSize, MessageBuffer **pMbuf, char *_file, int _line )
+AsfResult_t _ASFCreateMessage( MessageId msgId, uint16_t msgSize, MessageBuffer **pMbuf, char *_file, int _line )
 {
     MessageBlock   *pBlock;
 
@@ -105,14 +130,14 @@ void _ASFCreateMessage( MessageId msgId, uint16_t msgSize, MessageBuffer **pMbuf
     ASF_assert_var( *pMbuf == NULLP, msgId, 0, 0 );
 
     pBlock = _alloc_box(mpool);
-    ASF_assert(pBlock != NULLP);
+    if (pBlock == NULLP) return ASF_ERR_MSG_BUFF;
 
     pBlock->header.length = msgSize;
     pBlock->rec.msgId     = msgId;
 
     /* Set the user message buffer now */
     *pMbuf = (MessageBuffer *)&pBlock->rec;
-
+    return ASF_OK;
 }
 
 
@@ -129,7 +154,7 @@ void _ASFCreateMessage( MessageId msgId, uint16_t msgSize, MessageBuffer **pMbuf
  *
  * @see     ASFCreateMessage(), ASFReceiveMessage()
  ***************************************************************************************************/
-void _ASFSendMessage ( TaskId destTask, MessageBuffer *pMbuf, MsgContext cntxt, char *_file, int _line )
+AsfResult_t _ASFSendMessage ( TaskId destTask, MessageBuffer *pMbuf, char *_file, int _line )
 {
     MessageBlock *pBlock;
     OS_RESULT err;
@@ -143,13 +168,13 @@ void _ASFSendMessage ( TaskId destTask, MessageBuffer *pMbuf, MsgContext cntxt, 
     pBlock->header.destTask = destTask;
 
     /* Send the message without pending */
-    if ( cntxt != CTX_ISR )
+    if ( GetContext() != CTX_ISR )
     {
         err = os_mbx_send( C_gAsfTaskInitTable[destTask].queue, pMbuf, 0 );
         if (err != OS_R_OK) //Mailbox is not valid or full
         {
             ASF_assert( _free_box( mpool, pBlock ) == 0 );
-            ASF_assert_var(err == OS_R_OK, err, pMbuf->msgId, destTask);
+            return ASF_ERR_Q_FULL;
         }
     }
     else
@@ -158,6 +183,7 @@ void _ASFSendMessage ( TaskId destTask, MessageBuffer *pMbuf, MsgContext cntxt, 
         ASF_assert_var(err != 0, err, pMbuf->msgId, destTask);
         isr_mbx_send( C_gAsfTaskInitTable[destTask].queue, pMbuf );
     }
+    return ASF_OK;
 }
 
 
@@ -180,7 +206,7 @@ void _ASFReceiveMessage ( TaskId rcvTask, MessageBuffer **pMbuf, char *_file, in
 {
     OS_RESULT   err;
 
-    /* Delete old message to release its buffer */
+    /* Delete old/previous message to release its buffer */
     _ASFDeleteMessage( pMbuf, _file, _line );
 
     /* Wait for receive */
@@ -219,36 +245,6 @@ Bool _ASFReceiveMessagePoll ( TaskId rcvTask, MessageBuffer **pMbuf, char *_file
     }
     ASF_assert_var(((err == OS_R_OK) || (err == OS_R_MBX)), err, 0, 0);
     return true;
-}
-
-
-/****************************************************************************************************
- * @fn      ASFDeleteMessage
- *          This function releases the buffer memory associated with the message contents. The caller
- *          must call this function after a message's contents have been read to free the memory
- *          associated with the message.
- *
- * @param   pMbuf Message buffer pointer containing the message to be deleted.
- *
- * @return  none
- *
- * @see     ASFCreateMessage(), ASFSendMessage(), ASFReceiveMessage()
- ***************************************************************************************************/
-static void _ASFDeleteMessage ( MessageBuffer **pMbuf, char *_file, int _line )
-{
-    MessageBlock *pBlock;
-
-    /** This is where we release the memory allocated when the message was created */
-    /* Some checks first */
-    if (*pMbuf != NULLP)
-    {
-        /* Get the block pointer */
-        M_GetMsgBlockFromBuffer (pBlock, *pMbuf);
-
-        ASF_assert( _free_box( mpool, pBlock ) == 0 );
-    }
-
-    *pMbuf = NULLP;
 }
 
 

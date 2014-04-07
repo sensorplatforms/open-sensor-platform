@@ -76,7 +76,7 @@ static void HandleTimers( MsgTimerExpiry *pTimerExp )
     {
         case TIMER_REF_SENSOR_READ:
             /* Schedule the next sampling */
-            TimerStart( SENSOR_ACQ_TASK_ID, TIMER_REF_SENSOR_READ, SENSOR_SAMPLE_PERIOD, &sSensorTimer );
+            ASFTimerStart( SENSOR_ACQ_TASK_ID, TIMER_REF_SENSOR_READ, SENSOR_SAMPLE_PERIOD, &sSensorTimer );
 
             /* Call data handler for each sensors */
             timeStamp = RTC_GetCounter();
@@ -135,16 +135,16 @@ static void SensorDataHandler( SensorType_t sensorId, uint32_t timeStamp )
             /* Replace time stamp with that captured by interrupt handler */
             magData.timeStamp = timeStamp;
 #ifdef ALGORITHM_TASK
-            ASFCreateMessage( MSG_MAG_DATA, sizeof(MsgMagData), &pMagSample );
+            ASF_assert( ASFCreateMessage( MSG_MAG_DATA, sizeof(MsgMagData), &pMagSample ) == ASF_OK );
             pMagSample->msg.msgMagData = magData;
-            ASFSendMessage( ALGORITHM_TASK_ID, pMagSample, CTX_THREAD );
+            ASF_assert( ASFSendMessage( ALGORITHM_TASK_ID, pMagSample ) == ASF_OK );
 #endif
 #ifdef ANDROID_COMM_TASK
             pMagSample = NULLP;
             /* Send sample to Host interface also */
-            ASFCreateMessage( MSG_MAG_DATA, sizeof(MsgMagData), &pMagSample );
+            ASF_assert( ASFCreateMessage( MSG_MAG_DATA, sizeof(MsgMagData), &pMagSample ) == ASF_OK );
             pMagSample->msg.msgMagData = magData;
-            ASFSendMessage( ANDROID_COMM_TASK, pMagSample, CTX_THREAD );
+            ASFSendMessage( ANDROID_COMM_TASK, pMagSample ); // No error check. We are OK to drop messages
 #endif
             PublishUncalibratedSensorData( &_MagSensDesc, &magData );
         }
@@ -162,16 +162,16 @@ static void SensorDataHandler( SensorType_t sensorId, uint32_t timeStamp )
             /* Replace time stamp with that captured by interrupt handler */
             gyroData.timeStamp = timeStamp;
 #ifdef ALGORITHM_TASK
-            ASFCreateMessage( MSG_GYRO_DATA, sizeof(MsgGyroData), &pGyroSample );
+            ASF_assert( ASFCreateMessage( MSG_GYRO_DATA, sizeof(MsgGyroData), &pGyroSample ) == ASF_OK );
             pGyroSample->msg.msgGyroData = gyroData;
-            ASFSendMessage( ALGORITHM_TASK_ID, pGyroSample, CTX_THREAD );
+            ASF_assert( ASFSendMessage( ALGORITHM_TASK_ID, pGyroSample ) == ASF_OK );
 #endif
 #ifdef ANDROID_COMM_TASK
             pGyroSample = NULLP;
             /* Send sample to Host interface also */
-            ASFCreateMessage( MSG_GYRO_DATA, sizeof(MsgGyroData), &pGyroSample );
+            ASF_assert( ASFCreateMessage( MSG_GYRO_DATA, sizeof(MsgGyroData), &pGyroSample ) == ASF_OK );
             pGyroSample->msg.msgGyroData = gyroData;
-            ASFSendMessage( ANDROID_COMM_TASK, pGyroSample, CTX_THREAD );
+            ASFSendMessage( ANDROID_COMM_TASK, pGyroSample ); // No error check. We are OK to drop messages
 #endif
             PublishUncalibratedSensorData( &_GyroSensDesc, &gyroData );
         }
@@ -195,16 +195,16 @@ static void SensorDataHandler( SensorType_t sensorId, uint32_t timeStamp )
             /* Replace time stamp with that captured by interrupt handler */
             accelData.timeStamp = timeStamp;
 #ifdef ALGORITHM_TASK
-            ASFCreateMessage( MSG_ACC_DATA, sizeof(MsgAccelData), &pAccSample );
+            ASF_assert( ASFCreateMessage( MSG_ACC_DATA, sizeof(MsgAccelData), &pAccSample ) == ASF_OK );
             pAccSample->msg.msgAccelData = accelData;
-            ASFSendMessage( ALGORITHM_TASK_ID, pAccSample, CTX_THREAD );
+            ASF_assert( ASFSendMessage( ALGORITHM_TASK_ID, pAccSample ) == ASF_OK );
 #endif
 #ifdef ANDROID_COMM_TASK
             pAccSample = NULLP;
             /* Send sample to Host interface also */
-            ASFCreateMessage( MSG_ACC_DATA, sizeof(MsgAccelData), &pAccSample );
+            ASF_assert( ASFCreateMessage( MSG_ACC_DATA, sizeof(MsgAccelData), &pAccSample ) == ASF_OK );
             pAccSample->msg.msgAccelData = accelData;
-            ASFSendMessage( ANDROID_COMM_TASK, pAccSample, CTX_THREAD );
+            ASFSendMessage( ANDROID_COMM_TASK, pAccSample ); // No error check. We are OK to drop messages
 #endif
 
             PublishUncalibratedSensorData( &_AccSensDesc, &accelData );
@@ -236,10 +236,10 @@ void SendDataReadyIndication( uint8_t sensorId, uint32_t timeStamp )
 {
     MessageBuffer *pSendMsg = NULLP;
 
-    ASFCreateMessage( MSG_SENSOR_DATA_RDY, sizeof(MsgSensorDataRdy), &pSendMsg );
+    ASF_assert( ASFCreateMessage( MSG_SENSOR_DATA_RDY, sizeof(MsgSensorDataRdy), &pSendMsg ) == ASF_OK );
     pSendMsg->msg.msgSensorDataRdy.sensorId = sensorId;
     pSendMsg->msg.msgSensorDataRdy.timeStamp = timeStamp;
-    ASFSendMessage( SENSOR_ACQ_TASK_ID, pSendMsg, (MsgContext)GetContext() );
+    ASF_assert( ASFSendMessage( SENSOR_ACQ_TASK_ID, pSendMsg ) == ASF_OK );
 
 }
 
@@ -277,7 +277,7 @@ ASF_TASK void SensorAcqTask( ASF_TASK_ARG )
 
 #ifndef INTERRUPT_BASED_SAMPLING
     /* Start sample period timer */
-    TimerStart( SENSOR_ACQ_TASK_ID, TIMER_REF_SENSOR_READ, SENSOR_SAMPLE_PERIOD, &sSensorTimer );
+    ASFTimerStart( SENSOR_ACQ_TASK_ID, TIMER_REF_SENSOR_READ, SENSOR_SAMPLE_PERIOD, &sSensorTimer );
 #else
     /* Enable Sensor interrupts */
     Mag_ConfigDataInt( true );

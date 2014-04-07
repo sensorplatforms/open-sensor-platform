@@ -31,25 +31,30 @@ extern RCC_ClocksTypeDef gRccClockInfo;
 \*-------------------------------------------------------------------------------------------------*/
 Bool gExitFromStandby = false;
 DeviceUid_t *gDevUniqueId = (DeviceUid_t *)(DEV_UID_OFFSET);
-uint32_t g_logging = 0x40;
+uint32_t g_logging = 0; //0x40;
 
 LedsInfo_t DiagLEDs[NUM_LEDS] = {
-    { //LED_A
+    { //LED_GREEN
         RCC_APB2Periph_GPIOC,
         GPIOC,
         GPIO_Pin_10
     },
-    { //LED_B
+    { //LED_RED
         RCC_APB2Periph_GPIOC,
         GPIOC,
         GPIO_Pin_11
     },
-    { //LED_C
+    { //LED_YELLOW
         RCC_APB2Periph_GPIOB,
         GPIOB,
         GPIO_Pin_5
     },
 };
+
+uint32_t AccelTimeExtend = 0;
+uint32_t MagTimeExtend = 0;
+uint32_t GyroTimeExtend = 0;
+uint32_t QuatTimeExtend = 0;
 
 
 /*-------------------------------------------------------------------------------------------------*\
@@ -434,27 +439,6 @@ void RTC_Configuration( void )
         /* Wait until last write operation on RTC registers has finished */
         RTC_WaitForLastTask();
     }
-}
-
-
-/****************************************************************************************************
- * @fn      GetContext
- *          Identifies if we are currently in ISR or Thread context and returns the corresponding
- *          enum value for it. The logic is based on the fact that ISR uses system stack and Thread
- *          use their allocated stack. We only need to read the current value of SP to figure out
- *          whether we are in a Thread or ISR. (Maybe there is a better way... but this is good
- *          enough for now)
- *
- * @param   none
- *
- * @return  CTX_THREAD or CTX_ISR
- *
- ***************************************************************************************************/
-uint8_t GetContext( void )
-{
-    extern uint32_t gStackMem;
-
-    return (__current_sp() < (uint32_t)&gStackMem)? CTX_THREAD : CTX_ISR;
 }
 
 
