@@ -53,7 +53,7 @@ typedef int64_t NTTIME; /* 64 bit, Q24 fixed point */
  *
  */
 
-/* fm_float_t to fixed point */
+/* Float to fixed point */
 #define TOFIX(x)  ((NT)(((fm_float_t)x) * (fm_float_t)(1UL << QFIXEDPOINT) ))
 
 /* fm_float_t to fixed point precise */
@@ -61,17 +61,17 @@ typedef int64_t NTTIME; /* 64 bit, Q24 fixed point */
 #define TOFIX_PRECISE(x) ((NTPRECISE)(((fm_float_t)x) * (fm_float_t)(1UL << QFIXEDPOINTPRECISE) ))
 
 
-/* fm_float_t to fixed point time */
+/* Float to fixed point time */
 #define TOFIX_TIME(x) ((NTTIME)(((fm_dbl_t)x) * (fm_dbl_t)(1UL << QFIXEDPOINTTIME)))
 
 /* Conversion from float to time coefficient, valid range is between 0 and 0.999999 */
 #define TOFIX_TIMECOEFFICIENT(x) ((uint32_t)(((fm_dbl_t)x) * (fm_dbl_t)(4294967296.0) ))
 
-/*fm_float_t to fixed point extended */
+/* Float to fixed point extended */
 #define CONST_EXTENDED(x) ((NTEXTENDED)(((fm_float_t)x) * (fm_float_t)(1UL << QFIXEDPOINTEXTENDED) ))
 #define TOFIX_EXTENDED(x) ((NTEXTENDED)(((fm_float_t)x) * (fm_float_t)(1UL << QFIXEDPOINTEXTENDED) ))
 
-/*fixed point number of arbitrary q to a floating point number  */
+/* fixed point number of arbitrary q to a floating point number  */
 #define TOFLT_CUSTOM(x,q) ((fm_float_t)(x) / (fm_float_t)(1UL << (q)))
 
 /* to floating point from fixed point */
