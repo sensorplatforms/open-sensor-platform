@@ -614,6 +614,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\..\Common\App\SensorAcq_T.c</FilePath>
             </File>
+            <File>
+              <FileName>Algorithm_T.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Common\App\Algorithm_T.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
