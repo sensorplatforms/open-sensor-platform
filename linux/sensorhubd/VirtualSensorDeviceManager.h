@@ -35,7 +35,7 @@ public:
     void publish(int deviceFd, int* data,
                  const unsigned int* const timeInMillis = 0);
     void publish(int deviceFd, const int32_t data[],
-                 const int64_t time64);
+                 const int64_t time64, int numAxis=3);
 
 protected:
 

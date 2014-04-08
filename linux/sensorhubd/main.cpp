@@ -31,24 +31,9 @@
 #include <errno.h>
 #include <time.h>
 
+#include "DebugLog.h"
 #include "VirtualSensorDeviceManager.h"
 #include "FreeMotion_RemoteProcedureCalls.h"
-
-//// Macros
-#define LOGE(...) fprintf(stderr, __VA_ARGS__)
-#define LOGW(...) fprintf(stderr, __VA_ARGS__)
-
-#ifdef NDEBUG
-  #define LOGI(...)
-  #define LOGD(...)
-  #define LOGT(...)
-  #define LOGS(...)
-#else
-  #define LOGI(...) printf(__VA_ARGS__)
-  #define LOGD(...) printf(__VA_ARGS__)
-  #define LOGT(...) fprintf(stderr, __VA_ARGS__)
-  #define LOGS(...) printf(__VA_ARGS__)
-#endif
 
 
 #define MAX_NUM_FDS(x,y) ((x) > (y) ? (x) : (y))
@@ -82,12 +67,15 @@ static int _evdevFds[SENSORHUBD_RESULT_INDEX_COUNT] ={-1};
 static int _resultHandles[SENSORHUBD_RESULT_INDEX_COUNT] = {0};
 
 static int _enablePipeFds[SENSORHUBD_RESULT_INDEX_COUNT] ={-1};
-static const char* _sensorNames[SENSORHUBD_RESULT_INDEX_COUNT] = {"accel", "mag", "gyro", "sig-motion", "step-count"};
-static uint32_t _fmResultCodes[SENSORHUBD_RESULT_INDEX_COUNT]= {SENSOR_TYPE_ACCELEROMETER,
-                                                                SENSOR_TYPE_MAGNETIC_FIELD,
-                                                                SENSOR_TYPE_GYROSCOPE,
-                                                                SENSOR_TYPE_SIGNIFICANT_MOTION,
-                                                                SENSOR_TYPE_STEP_COUNTER};
+static const char* _sensorNames[SENSORHUBD_RESULT_INDEX_COUNT] = {
+    "accel", "mag", "gyro", "sig-motion", "step-count"};
+static uint32_t _fmResultCodes[SENSORHUBD_RESULT_INDEX_COUNT]= {
+    SENSOR_TYPE_ACCELEROMETER,
+    SENSOR_TYPE_MAGNETIC_FIELD,
+    SENSOR_TYPE_GYROSCOPE,
+    SENSOR_TYPE_SIGNIFICANT_MOTION,
+    SENSOR_TYPE_STEP_COUNTER
+};
 
 void _onTriAxisSensorResultDataUpdate(uint32_t sensorType, void* pData);
 
@@ -99,7 +87,7 @@ int main(int argc, char** argv) {
     int result =0;
     fd_set readFdSet;
     fd_set errFdSet;
-    int32_t maxNumFds;
+    int32_t maxNumFds = 0;
     int selectResult;
 
     //
@@ -139,7 +127,8 @@ int main(int argc, char** argv) {
                     if (0 == bytesRead) {
                         char pipename[255];
 
-                        //close and reopen the pipe or we'll spike CPU usage b/c select will always return available and we'll always get 0 bytes from read
+                        //close and reopen the pipe or we'll spike CPU usage b/c select will always
+                        //return available and we'll always get 0 bytes from read
                         close(_enablePipeFds[sensorIndex]);
                         snprintf(pipename, 255, ENABLE_PIPE_NAME_TEMPLATE, _sensorNames[sensorIndex]);
                         int fd = open(pipename, O_RDONLY|O_NONBLOCK);
@@ -191,12 +180,12 @@ void _parseAndHandleEnable(int sensorIndex, char* buffer, ssize_t numBytesInBuff
     LOGT("%s: sensorIndex %d\r\n", __FUNCTION__, sensorIndex);
 
     if ('0' == buffer[0]) {
-        LOGD("UNsubscribe to sensorcode %d\n", (int)sensorIndex);
+        LOGI("UNsubscribe to sensorcode %d\n", (int)sensorIndex);
         OSP_STATUS_t status= FMRPC_UnsubscribeResult(_fmResultCodes[sensorIndex]);
         _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing from result\n");
 
     } else if ('1' == buffer[0]) {
-        LOGD("SUBSCRIBE to sensorcode %d\n", (int)sensorIndex);
+        LOGI("SUBSCRIBE to sensorcode %d\n", (int)sensorIndex);
         OSP_STATUS_t status= FMRPC_SubscribeResult(_fmResultCodes[sensorIndex], _onTriAxisSensorResultDataUpdate);
         _logErrorIf(status != OSP_STATUS_OK, "error subscribing to result\n");
 
@@ -285,11 +274,9 @@ void _onTriAxisSensorResultDataUpdate(uint32_t sensorType, void* pData) {
         //LOGS("SIGM %.3f (0x%8x), %.3f (0x%8x), %.3f (0x%8x)\n", pSensorData->data[0]);
 
         uinputCompatibleDataFormat[0]= (int)(pSensorData->data[0]);
-        uinputCompatibleDataFormat[1]= 0;
-        uinputCompatibleDataFormat[2]= 0;
         timeInNano= (int64_t)(NSEC_PER_SEC * pSensorData->timestamp);
 
-        _pVsDevMgr->publish(_evdevFds[SENSORHUBD_SIG_MOTION_INDEX], uinputCompatibleDataFormat, timeInNano);
+        _pVsDevMgr->publish(_evdevFds[SENSORHUBD_SIG_MOTION_INDEX], uinputCompatibleDataFormat, timeInNano, 1);
         break;
 
     default:
@@ -340,9 +327,9 @@ static void _initialize() {
     _fatalErrorIf(status!= OSP_STATUS_OK, status, "Failed on FreeMotion RPC Initialization!");
 
     //print out the FreeMotion version
-    char versionString[255];
-    FMRPC_GetVersion(versionString, 255);
-    LOGD("freeMotion version %s\n", versionString);
+    //char versionString[255];
+    //FMRPC_GetVersion(versionString, 255);
+    //LOGI("freeMotion version %s\n", versionString);
 
     _initializeNamedPipes();
 

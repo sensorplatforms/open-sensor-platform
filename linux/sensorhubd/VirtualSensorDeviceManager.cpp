@@ -31,7 +31,7 @@
 #include "uinput.h" //this is our local one b/c android doesn't include all the #defines we want
 
 #include <errno.h>
-
+#include "DebugLog.h"
 #include "VirtualSensorDeviceManager.h"
 
 
@@ -114,7 +114,7 @@ int VirtualSensorDeviceManager::createSensor(const char* name, const char* physn
 
     status= ioctl(result, UI_DEV_CREATE);
     if (status < 0){
-        fprintf(stderr, "Error on dev crate: %s", strerror(errno) );
+        LOGE("Error on dev crate: %s", strerror(errno));
     }
     fatalErrorIf(status < 0, -1, "error create \n");
 
@@ -155,8 +155,6 @@ void VirtualSensorDeviceManager::publish(int deviceFd, int* data,
     }
 
     memset(&event, 0, sizeof(event));
-    //  gettimeofday(&event.time, NULL);
-    //printf("Time: %d %d\n", event.time.tv_sec, event.time.tv_usec );
     event.type = EV_SYN;
     status= write(deviceFd, &event, sizeof(event));
     fatalErrorIf(status != sizeof(event), -1, "Error on send_event");
@@ -165,7 +163,7 @@ void VirtualSensorDeviceManager::publish(int deviceFd, int* data,
 }
 
 void VirtualSensorDeviceManager::publish(int deviceFd, const int32_t data[],
-                                         const int64_t timeNanoSec) {
+                                         const int64_t timeNanoSec, int numAxis) {
     struct input_event event;
     int status;
     int i;
@@ -173,7 +171,7 @@ void VirtualSensorDeviceManager::publish(int deviceFd, const int32_t data[],
     memset(&event, 0, sizeof(event));
 
     event.type = EV_ABS;
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < numAxis; i++) {
         event.code = ABS_X + i;
         event.value = data[i];
         status= write(deviceFd, &event, sizeof(event));
@@ -204,7 +202,7 @@ void VirtualSensorDeviceManager::publish(int deviceFd, const int32_t data[],
 //! \todo this should call a registered error callback not give an exit code!
 void VirtualSensorDeviceManager::fatalErrorIf(bool condition, int code, const char* msg) {
     if (condition) {
-        fprintf(stderr, "%s\n", msg);
+        LOGE("%s\n", msg);
         exit(code);
     }
 }

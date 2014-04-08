@@ -30,26 +30,14 @@
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <string>
+#include "DebugLog.h"
 
-//// Macros
-#define LOGE(...) fprintf(stderr, __VA_ARGS__)
-#define LOGW(...) fprintf(stderr, __VA_ARGS__)
-
-#ifdef NDEBUG
-  #define LOGI(...)
-  #define LOGD(...)
-  #define LOGT(...)
-  #define LOGS(...)
-#else
-  #define LOGI(...) printf(__VA_ARGS__)
-  #define LOGD(...) printf(__VA_ARGS__)
-  #define LOGT(...) fprintf(stderr, __VA_ARGS__)
-  #define LOGS(...) printf(__VA_ARGS__)
-#endif
+#define SERIAL_BUFFER_SIZE 255
 
 ///// Private Data
 static pthread_t _serialThread;
 static volatile bool _serialThreadActive = false;
+static char *ReadData;
 
 static FMRPC_ResultDataCallback_t _resultReadyCallbacks[COUNT_OF_SENSOR_TYPES] = {0};
 
@@ -85,7 +73,6 @@ OSP_STATUS_t FMRPC_SubscribeResult(uint32_t sensorType, FMRPC_ResultDataCallback
     OSP_STATUS_t result = OSP_STATUS_OK;
 
     LOGT("%s\r\n", __FUNCTION__);
-//    _subscribeMask|= _enableMasks[resultType];
 
     _resultReadyCallbacks[sensorType]= dataReadyCallback;
 
@@ -96,8 +83,6 @@ OSP_STATUS_t FMRPC_UnsubscribeResult(uint32_t sensorType) {
     OSP_STATUS_t result = OSP_STATUS_OK;
 
     LOGT("%s\r\n", __FUNCTION__);
-
-//    _subscribeMask&= ~(_enableMasks[resultType]);
 
     _resultReadyCallbacks[sensorType]= NULL;
 
@@ -119,16 +104,16 @@ OSP_STATUS_t FMRPC_Deinitialize(void) {
 static void* _processSerialDevice(void* data)
 {
     const char* deviceName = "/dev/ttyUSB0"; //For Prolific USB-Uart
-    const int baudRate= B230400;
-    FMRPC_ThreeAxisData_t dummyData ={0};
+    const int baudRate= B115200;
+
     LOGT("%s\r\n", __FUNCTION__);
 
     //Open the device
-    int serialFd= _serialDeviceInit(deviceName, baudRate);
+    int serialFd = _serialDeviceInit(deviceName, baudRate);
     if (serialFd >= 0) {
         _serialThreadActive= true;
         /* Send indication to SH that we are ready! */
-        write(serialFd, "syn=0\r\n",7);
+        write(serialFd, "{!$,34,0,,!}\r\n",14);
     }
 
     //Main processing loop
@@ -143,18 +128,30 @@ static void* _processSerialDevice(void* data)
 static char * _pStrTokState =NULL;
 
 static void _parseThreeAxisAndPublish(uint32_t sensorType, FMRPC_ResultDataCallback_t dataCallbacks[], int numExpectedArgs =3) {
-    FMRPC_ThreeAxisData_t parsedData= {0};
+    FMRPC_ThreeAxisData_t parsedData = {0.0,{0.0f,0.0f,0.0f}};
     const char delimiters[] = " ,";
-    char * pToken;
+    char * pToken, *endptr;
 
     //get the timestamp first
+    errno = 0;
     pToken = strtok_r(NULL, delimiters, &_pStrTokState);
-    parsedData.timestamp= strtod(pToken, NULL);
+    parsedData.timestamp = strtod(pToken, &endptr);
+    if ((errno == ERANGE) || (endptr == pToken)) {
+        /* Parse error... just skip */
+        LOGE("%s - Parse Error-1\n", __FUNCTION__);
+        return;
+    }
 
     //now grab out the data
     for (int i=0; i<numExpectedArgs; ++i) {
+        errno = 0;
         pToken = strtok_r(NULL, delimiters, &_pStrTokState);
-        parsedData.data[i]= strtod(pToken, NULL);
+        parsedData.data[i]= strtod(pToken, &endptr);
+        if ((errno == ERANGE) || (endptr == pToken)) {
+            /* Parse error... just skip */
+            LOGE("%s - Parse Error-2\n", __FUNCTION__);
+            return;
+        }
         LOGS("%s->data[%d] '%s' as flt %f\n", __FUNCTION__, i, pToken, parsedData.data[i]);
     }
 
@@ -164,26 +161,21 @@ static void _parseThreeAxisAndPublish(uint32_t sensorType, FMRPC_ResultDataCallb
 
 }
 
-#define SERIAL_BUFFER_SIZE 255
 static int _serialReadLine( const int fd, const char *&data){
     static std::string buffer;
     static std::string retval;
     static char line[SERIAL_BUFFER_SIZE];
-    int pos;
+    size_t pos;
 
     /* If there was stuff remaining in buffer, deal with it first */
     if ((pos = buffer.find("\r\n")) != std::string::npos){
         retval = buffer;
         retval.erase(retval.begin()+pos, retval.end());
-        //int pos2;
-        //if ((pos2 = retval.find("\r")) != std::string::npos){
-        //    retval.erase(pos2);
-        //}
         buffer.erase(0, pos+2);
 
         if(retval.size()){
             data = retval.c_str();
-            fprintf(stdout, "#%s\n", retval.c_str());
+            //fprintf(stdout, "#%s\n", retval.c_str());
             return 0;
         }
     }
@@ -214,10 +206,6 @@ static int _serialReadLine( const int fd, const char *&data){
         if ((pos = buffer.find("\r\n")) != std::string::npos){
             retval = buffer;
             retval.erase(retval.begin()+pos, retval.end());
-            //int pos2;
-            //if ((pos2 = retval.find("\r")) != std::string::npos){
-            //    retval.erase(pos2);
-            //}
             buffer.erase(0,pos+2);
 
             if(retval.size()){
@@ -244,6 +232,7 @@ static void _serialReadAndProcessSensorData(int fd, FMRPC_ResultDataCallback_t d
         return;
     }
 
+    ReadData = (char*)line;
     //Parse
     const char delimiters[] = "{ ,!";
     char *pToken;
@@ -253,13 +242,11 @@ static void _serialReadAndProcessSensorData(int fd, FMRPC_ResultDataCallback_t d
         char sanitizedMsg[60];
         int len;
         strncpy(sanitizedMsg, (const char*)line, 60);
-        LOGI("skipping: %s\n", sanitizedMsg);
-        fprintf(stdout, ":: %s\n", sanitizedMsg);
+        LOGI(":: %s\n", sanitizedMsg);
         if ((line[0] == '#') && (line[1] == '$') && (line[2] == '*')) {
             clock_gettime(CLOCK_MONOTONIC, &sysTime);
-            //clock_gettime(CLOCK_REALTIME, &sysTime);
             len = snprintf(sanitizedMsg, sizeof(sanitizedMsg),
-                     "syn=%X%08X\r\n", sysTime.tv_sec, sysTime.tv_nsec);
+                     "{!$,32,%lX%08lX,,!}\r\n", sysTime.tv_sec, sysTime.tv_nsec);
             write(fd, sanitizedMsg, len);
         }
         return;

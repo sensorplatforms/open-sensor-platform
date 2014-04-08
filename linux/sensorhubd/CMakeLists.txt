@@ -40,7 +40,7 @@ set(app_SOURCES
 add_executable(sensorhubd ${app_SOURCES})
 
 if(${CMAKE_CXX_COMPILER} MATCHES "arm")
-  target_link_libraries(sensorhubd)
+  target_link_libraries(sensorhubd log android)
 else()
   target_link_libraries(sensorhubd pthread)
 endif()

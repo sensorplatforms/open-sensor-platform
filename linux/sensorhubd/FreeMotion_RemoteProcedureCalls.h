@@ -21,7 +21,7 @@
 #include <stdint.h>
 
 //// Sensor Types from Android
-#define SENSOR_TYPE_META_DATA                           (0)
+#define SENSOR_TYPE_META_DATA                        (0)
 #define SENSOR_TYPE_ACCELEROMETER                    (1)
 #define SENSOR_TYPE_GEOMAGNETIC_FIELD                (2)
 #define SENSOR_TYPE_MAGNETIC_FIELD  SENSOR_TYPE_GEOMAGNETIC_FIELD
@@ -42,8 +42,8 @@
 #define SENSOR_TYPE_SIGNIFICANT_MOTION              (17)
 #define SENSOR_TYPE_STEP_DETECTOR                   (18)
 #define SENSOR_TYPE_STEP_COUNTER                    (19)
-#define SENSOR_TYPE_GEOMAGNETIC_ROTATION_VECTOR            (20)
-#define COUNT_OF_SENSOR_TYPES                       (SENSOR_TYPE_GEOMAGNETIC_ROTATION_VECTOR)
+#define SENSOR_TYPE_GEOMAGNETIC_ROTATION_VECTOR     (20)
+#define COUNT_OF_SENSOR_TYPES                       (SENSOR_TYPE_GEOMAGNETIC_ROTATION_VECTOR+1)
 
 ////
 typedef struct {
