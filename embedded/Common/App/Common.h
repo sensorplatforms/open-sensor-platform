@@ -26,6 +26,7 @@
 #include "ASF_MsgStruct.h"
 #include "Main.h"
 #include "Types.h"
+#include "OspVersion.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S

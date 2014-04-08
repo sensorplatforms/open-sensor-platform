@@ -27,6 +27,7 @@
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
 #include "stm32f10x.h"              /* STM32F1xx Library Definitions     */
+#include "AppVersion.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
@@ -115,6 +116,7 @@ enum ParserTokensTag {
     TOKEN_2 = 'o',
     TOKEN_3 = 'g',
     TOKEN_4 = '=',
+    TOKEN_STATS = '\r',
     TOKEN_PARAM = 0xAA
 };
 
