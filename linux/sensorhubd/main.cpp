@@ -58,23 +58,24 @@ typedef enum {
     SENSORHUBD_ACCELEROMETER_INDEX =0,
     SENSORHUBD_MAGNETOMETER_INDEX,
     SENSORHUBD_GYROSCOPE_INDEX,
-    SENSORHUBD_SIG_MOTION_INDEX,
-    SENSORHUBD_STEP_COUNTER_INDEX,
+    //SENSORHUBD_SIG_MOTION_INDEX,
+    //SENSORHUBD_STEP_COUNTER_INDEX,
     SENSORHUBD_RESULT_INDEX_COUNT
 } SensorIndices_t;
+
 static VirtualSensorDeviceManager* _pVsDevMgr;
 static int _evdevFds[SENSORHUBD_RESULT_INDEX_COUNT] ={-1};
 static int _resultHandles[SENSORHUBD_RESULT_INDEX_COUNT] = {0};
 
 static int _enablePipeFds[SENSORHUBD_RESULT_INDEX_COUNT] ={-1};
 static const char* _sensorNames[SENSORHUBD_RESULT_INDEX_COUNT] = {
-    "accel", "mag", "gyro", "sig-motion", "step-count"};
+    "accel", "mag", "gyro", /*"sig-motion", "step-count"*/};
 static uint32_t _fmResultCodes[SENSORHUBD_RESULT_INDEX_COUNT]= {
     SENSOR_TYPE_ACCELEROMETER,
     SENSOR_TYPE_MAGNETIC_FIELD,
     SENSOR_TYPE_GYROSCOPE,
-    SENSOR_TYPE_SIGNIFICANT_MOTION,
-    SENSOR_TYPE_STEP_COUNTER
+    //SENSOR_TYPE_SIGNIFICANT_MOTION,
+    //SENSOR_TYPE_STEP_COUNTER
 };
 
 void _onTriAxisSensorResultDataUpdate(uint32_t sensorType, void* pData);
@@ -99,13 +100,16 @@ int main(int argc, char** argv) {
 
     //After initialize, all the magic happens in the callbacks such as _onAccelerometerResultDataUpdate
     _initialize();
+
+    /* This loop handles sensor enable/disable requests */
+    // FROM WHERE??
     while (1) {
 
         // setup the select to read on all pipes
         FD_ZERO(&readFdSet);
         FD_ZERO(&errFdSet);
 
-        for (int i=0; i<SENSORHUBD_RESULT_INDEX_COUNT; ++i) {
+        for (int i=0; i < SENSORHUBD_RESULT_INDEX_COUNT; ++i) {
             FD_SET( _enablePipeFds[i], &readFdSet);
             FD_SET( _enablePipeFds[i], &errFdSet);
             maxNumFds = MAX_NUM_FDS( maxNumFds, _enablePipeFds[i]);
@@ -116,7 +120,7 @@ int main(int argc, char** argv) {
 
         if ( selectResult > 0 ) {
 
-            for (int sensorIndex=0; sensorIndex<SENSORHUBD_RESULT_INDEX_COUNT; ++sensorIndex) {
+            for (int sensorIndex=0; sensorIndex < SENSORHUBD_RESULT_INDEX_COUNT; ++sensorIndex) {
                 _logErrorIf(FD_ISSET(_enablePipeFds[sensorIndex], &errFdSet), "error on FD!\n");
                 if (FD_ISSET(_enablePipeFds[sensorIndex], &readFdSet) ) {
                     char readBuf[255];
@@ -201,7 +205,7 @@ void _initializeNamedPipes() {
     LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
 
     // create an enable pipe for each sensor type
-    for (int i=0; i<SENSORHUBD_RESULT_INDEX_COUNT; ++i) {
+    for (int i=0; i < SENSORHUBD_RESULT_INDEX_COUNT; ++i) {
         char pipename[255];
         int fd;
 
@@ -269,7 +273,7 @@ void _onTriAxisSensorResultDataUpdate(uint32_t sensorType, void* pData) {
 
         _pVsDevMgr->publish(_evdevFds[SENSORHUBD_GYROSCOPE_INDEX], uinputCompatibleDataFormat, timeInNano);
         break;
-
+#if 0
     case SENSOR_TYPE_SIGNIFICANT_MOTION:
         //LOGS("SIGM %.3f (0x%8x), %.3f (0x%8x), %.3f (0x%8x)\n", pSensorData->data[0]);
 
@@ -278,7 +282,7 @@ void _onTriAxisSensorResultDataUpdate(uint32_t sensorType, void* pData) {
 
         _pVsDevMgr->publish(_evdevFds[SENSORHUBD_SIG_MOTION_INDEX], uinputCompatibleDataFormat, timeInNano, 1);
         break;
-
+#endif
     default:
         LOGE("%s unexpected result type %d\n", __FUNCTION__, sensorType);
         break;
@@ -287,22 +291,23 @@ void _onTriAxisSensorResultDataUpdate(uint32_t sensorType, void* pData) {
 }
 
 static void _subscribeToAllResults() {
+    OSP_STATUS_t status;
     LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
 
-    OSP_STATUS_t status= FMRPC_SubscribeResult(SENSOR_TYPE_ACCELEROMETER, _onTriAxisSensorResultDataUpdate);
+    status = FMRPC_SubscribeResult(SENSOR_TYPE_ACCELEROMETER, _onTriAxisSensorResultDataUpdate);
     _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_UNCALIBRATED_ACCELEROMETER");
 
-    status= FMRPC_SubscribeResult(SENSOR_TYPE_MAGNETIC_FIELD, _onTriAxisSensorResultDataUpdate);
+    status = FMRPC_SubscribeResult(SENSOR_TYPE_MAGNETIC_FIELD, _onTriAxisSensorResultDataUpdate);
     _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_UNCALIBRATED_ACCELEROMETER");
 
-    status= FMRPC_SubscribeResult(SENSOR_TYPE_GYROSCOPE, _onTriAxisSensorResultDataUpdate);
+    status = FMRPC_SubscribeResult(SENSOR_TYPE_GYROSCOPE, _onTriAxisSensorResultDataUpdate);
     _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_UNCALIBRATED_GYRO");
 
-    status= FMRPC_SubscribeResult(SENSOR_TYPE_SIGNIFICANT_MOTION, _onTriAxisSensorResultDataUpdate);
-    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_SIGNIFICANT_MOTION");
+    //    status = FMRPC_SubscribeResult(SENSOR_TYPE_SIGNIFICANT_MOTION, _onTriAxisSensorResultDataUpdate);
+    //    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_SIGNIFICANT_MOTION");
 
-    status= FMRPC_SubscribeResult(SENSOR_TYPE_STEP_COUNTER, _onTriAxisSensorResultDataUpdate);
-    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_STEP_COUNTER");
+    //    status = FMRPC_SubscribeResult(SENSOR_TYPE_STEP_COUNTER, _onTriAxisSensorResultDataUpdate);
+    //    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_STEP_COUNTER");
 
 }
 
@@ -316,8 +321,8 @@ static void _initialize() {
     _evdevFds[SENSORHUBD_ACCELEROMETER_INDEX]= _pVsDevMgr->createSensor("osp-accelerometer", "acc0",  INT_MIN, INT_MAX);
     _evdevFds[SENSORHUBD_MAGNETOMETER_INDEX]= _pVsDevMgr->createSensor("osp-magnetometer", "mag0",  INT_MIN, INT_MAX);
     _evdevFds[SENSORHUBD_GYROSCOPE_INDEX]= _pVsDevMgr->createSensor("osp-gyroscope", "gyr0",  INT_MIN, INT_MAX);
-    _evdevFds[SENSORHUBD_SIG_MOTION_INDEX]= _pVsDevMgr->createSensor("osp-significant-motion", "sigm0",  INT_MIN, INT_MAX);
-    _evdevFds[SENSORHUBD_STEP_COUNTER_INDEX]= _pVsDevMgr->createSensor("osp-step-counter", "stc0",  INT_MIN, INT_MAX);
+    //_evdevFds[SENSORHUBD_SIG_MOTION_INDEX]= _pVsDevMgr->createSensor("osp-significant-motion", "sigm0",  INT_MIN, INT_MAX);
+    //_evdevFds[SENSORHUBD_STEP_COUNTER_INDEX]= _pVsDevMgr->createSensor("osp-step-counter", "stc0",  INT_MIN, INT_MAX);
 
     //Initialize freeMotion
     LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
