@@ -26,6 +26,10 @@ message(STATUS "building in Release mode")
 add_definitions(-DNDEBUG)
 ENDIF(CMAKE_BUILD_TYPE MATCHES Release)
 
+set(CMAKE_CXX_FLAGS
+    "${CMAKE_CXX_FLAGS} -std=gnu++0x -fPIC")
+
+
 #
 # App
 ##
@@ -34,7 +38,9 @@ set(app_SOURCES
   VirtualSensorDeviceManager.h
   VirtualSensorDeviceManager.cpp
   FreeMotion_RemoteProcedureCalls.h
-  FreeMotion_RemoteProcedureCalls_SerialUart.cpp
+  FreeMotion_RemoteProcedureCalls_Relay.cpp
+  FmConfiguration.cpp
+  UinputUtils.c
 )
 
 add_executable(sensorhubd ${app_SOURCES})
