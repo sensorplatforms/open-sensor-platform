@@ -52,8 +52,9 @@ typedef struct {
 } FMRPC_ThreeAxisData_t;
 
 typedef int OSP_STATUS_t;
-#define OSP_STATUS_OK       (  0)
-#define OSP_STATUS_ERROR    ( -1)
+#define OSP_STATUS_OK                               ( 0)
+#define OSP_STATUS_ERROR                            (-1)
+#define OSP_STATUS_UNKNOWN_INPUT                    (-2)
 
 typedef void (*FMRPC_ResultDataCallback_t)(uint32_t sensorType, void* data);
 
