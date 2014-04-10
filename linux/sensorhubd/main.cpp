@@ -15,6 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*-------------------------------------------------------------------------------------------------*\
+ |    I N C L U D E   F I L E S
+\*-------------------------------------------------------------------------------------------------*/
 #include <climits>
 #include <cstdlib>
 #include <cstdio>
@@ -35,27 +38,26 @@
 #include "VirtualSensorDeviceManager.h"
 #include "FreeMotion_RemoteProcedureCalls.h"
 
+/*-------------------------------------------------------------------------------------------------*\
+ |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
+\*-------------------------------------------------------------------------------------------------*/
 
-#define MAX_NUM_FDS(x,y) ((x) > (y) ? (x) : (y))
+/*-------------------------------------------------------------------------------------------------*\
+ |    P R I V A T E   C O N S T A N T S   &   M A C R O S
+\*-------------------------------------------------------------------------------------------------*/
+#define MAX_NUM_FDS(x,y)                ((x) > (y) ? (x) : (y))
+#define ACCEL_UINPUT_NAME               "fm-accelerometer"
+#define GYRO_UINPUT_NAME                "fm-gyroscope"
+#define MAG_UINPUT_NAME                 "fm-magnetometer"
 
+#define TWENTY_MS_IN_US                 (20000)
+#define ENABLE_PIPE_NAME_TEMPLATE       "/data/misc/osp-%s-enable"
 
-//// Public
-
-
-//// Constants
-#define TWENTY_MS_IN_US (20000)
-#define ENABLE_PIPE_NAME_TEMPLATE "/data/misc/osp-%s-enable"
-
-////Private
-static void _logErrorIf(bool condition, const char* msg);
-static void _fatalErrorIf(bool condition, int code, const char* msg);
-static void _handleQuitSignals(int signum);
-static void _initialize();
-static void _deinitialize();
-static void _parseAndHandleEnable(int sensorIndex, char* buffer, ssize_t numBytesInBuffer);
-
+/*-------------------------------------------------------------------------------------------------*\
+ |    P R I V A T E   T Y P E   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
 typedef enum {
-    SENSORHUBD_ACCELEROMETER_INDEX =0,
+    SENSORHUBD_ACCELEROMETER_INDEX,
     SENSORHUBD_MAGNETOMETER_INDEX,
     SENSORHUBD_GYROSCOPE_INDEX,
     //SENSORHUBD_SIG_MOTION_INDEX,
@@ -63,6 +65,15 @@ typedef enum {
     SENSORHUBD_RESULT_INDEX_COUNT
 } SensorIndices_t;
 
+/*-------------------------------------------------------------------------------------------------*\
+ |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+static void _logErrorIf(bool condition, const char* msg);
+static void _fatalErrorIf(bool condition, int code, const char* msg);
+static void _handleQuitSignals(int signum);
+static void _initialize();
+static void _deinitialize();
+static void _parseAndHandleEnable(int sensorIndex, char* buffer, ssize_t numBytesInBuffer);
 static VirtualSensorDeviceManager* _pVsDevMgr;
 static int _evdevFds[SENSORHUBD_RESULT_INDEX_COUNT] ={-1};
 static int _resultHandles[SENSORHUBD_RESULT_INDEX_COUNT] = {0};
@@ -78,12 +89,318 @@ static uint32_t _fmResultCodes[SENSORHUBD_RESULT_INDEX_COUNT]= {
     //SENSOR_TYPE_STEP_COUNTER
 };
 
-void _onTriAxisSensorResultDataUpdate(uint32_t sensorType, void* pData);
+/*-------------------------------------------------------------------------------------------------*\
+ |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+static void _onTriAxisSensorResultDataUpdate(uint32_t sensorType, void* pData);
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P R I V A T E     F U N C T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/****************************************************************************************************
+ * @fn      _logErrorIf
+ *          Helper routine to log error on condition
+ *
+ ***************************************************************************************************/
+static void _logErrorIf(bool condition, const char* msg)
+{
+    if (condition) {
+        LOG_Err("%s\n", msg);
+    }
+}
 
 
-//// Implementation
+/****************************************************************************************************
+ * @fn      _fatalErrorIf
+ *          Helper routine to log error on condition & exit the application
+ *
+ ***************************************************************************************************/
+static void _fatalErrorIf(bool condition, int code, const char* msg)
+{
+    if (condition) {
+        LOG_Err("%s\n", msg);
+        _deinitialize();
+        _exit(code);
+    }
+}
 
-int main(int argc, char** argv) {
+
+/****************************************************************************************************
+ * @fn      _parseAndHandleEnable
+ *          Helper routine for enabling/disabling sensors in the system
+ *
+ ***************************************************************************************************/
+static void _parseAndHandleEnable(int sensorIndex, char* buffer, ssize_t numBytesInBuffer)
+{
+
+    if (NULL == buffer) {
+        LOG_Err("buffer should never be NULL!!!\n");
+        return;
+    }
+
+    if (numBytesInBuffer < 0) {
+        LOG_Err("not going to try parsing empty buffer\n");
+        return;
+    }
+    if (numBytesInBuffer == 0) {
+        return;
+    }
+    LOGT("%s: sensorIndex %d\r\n", __FUNCTION__, sensorIndex);
+
+    if ('0' == buffer[0]) {
+        LOG_Info("UNsubscribe to sensorcode %d\n", (int)sensorIndex);
+        OSP_STATUS_t status= FMRPC_UnsubscribeResult(_fmResultCodes[sensorIndex]);
+        _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing from result\n");
+
+    } else if ('1' == buffer[0]) {
+        LOG_Info("SUBSCRIBE to sensorcode %d\n", (int)sensorIndex);
+        OSP_STATUS_t status= FMRPC_SubscribeResult(_fmResultCodes[sensorIndex], _onTriAxisSensorResultDataUpdate);
+        _logErrorIf(status != OSP_STATUS_OK, "error subscribing to result\n");
+
+    } else {
+        //LOG_Err("unexpected data in enable buffer: %s", buffer);
+    }
+
+
+}
+
+
+/****************************************************************************************************
+ * @fn      _initializeNamedPipes
+ *          Initializes named pipes that receive requests for sensor control
+ *
+ ***************************************************************************************************/
+static void _initializeNamedPipes()
+{
+    LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
+
+    // create an enable pipe for each sensor type
+    for (int i=0; i < SENSORHUBD_RESULT_INDEX_COUNT; ++i) {
+        char pipename[255];
+        int fd;
+
+        snprintf(pipename, 255, ENABLE_PIPE_NAME_TEMPLATE, _sensorNames[i]);
+
+        //Try and remove the pipe if it's already there, but don't complain if it's not
+        unlink(pipename);
+
+        _fatalErrorIf(mkfifo(pipename, 0666) != 0, -1, "could not create named pipe");
+
+        fd = open(pipename, O_RDONLY|O_NONBLOCK);
+        _fatalErrorIf(fd < 0, -1, "could not open named pipe for reading");
+        _enablePipeFds[i]= fd;
+    }
+
+}
+
+
+/****************************************************************************************************
+ * @fn      _onTriAxisSensorResultDataUpdate
+ *          Common callback for sensor data or results received from the hub
+ *
+ ***************************************************************************************************/
+static void _onTriAxisSensorResultDataUpdate(uint32_t sensorType, void* pData)
+{
+    FMRPC_ThreeAxisData_t* pSensorData= (FMRPC_ThreeAxisData_t*)pData;
+    int32_t uinputCompatibleDataFormat[3];
+
+
+    switch(sensorType)  {
+
+    case SENSOR_TYPE_ACCELEROMETER:
+        uinputCompatibleDataFormat[0] = pSensorData->data[0].i;
+        uinputCompatibleDataFormat[1] = pSensorData->data[1].i;
+        uinputCompatibleDataFormat[2] = pSensorData->data[2].i;
+#if 0
+        LOGS("RA %.3f (0x%8x), %.3f (0x%8x), %.3f (0x%8x), %lld\n",
+             pSensorData->data[0].f, uinputCompatibleDataFormat[0],
+             pSensorData->data[1].f, uinputCompatibleDataFormat[1],
+             pSensorData->data[2].f, uinputCompatibleDataFormat[2],
+             pSensorData->timestamp.ll);
+#endif
+        _pVsDevMgr->publish(
+                    _evdevFds[SENSORHUBD_ACCELEROMETER_INDEX],
+                    uinputCompatibleDataFormat,
+                    pSensorData->timestamp.ll);
+        break;
+
+
+    case SENSOR_TYPE_MAGNETIC_FIELD:
+        uinputCompatibleDataFormat[0] = pSensorData->data[0].i;
+        uinputCompatibleDataFormat[1] = pSensorData->data[1].i;
+        uinputCompatibleDataFormat[2] = pSensorData->data[2].i;
+
+        _pVsDevMgr->publish(
+                    _evdevFds[SENSORHUBD_MAGNETOMETER_INDEX],
+                    uinputCompatibleDataFormat,
+                    pSensorData->timestamp.ll);
+        break;
+
+    case SENSOR_TYPE_GYROSCOPE:
+        uinputCompatibleDataFormat[0] = pSensorData->data[0].i;
+        uinputCompatibleDataFormat[1] = pSensorData->data[1].i;
+        uinputCompatibleDataFormat[2] = pSensorData->data[2].i;
+
+        _pVsDevMgr->publish(
+                    _evdevFds[SENSORHUBD_GYROSCOPE_INDEX],
+                    uinputCompatibleDataFormat,
+                    pSensorData->timestamp.ll);
+        break;
+#if 0
+    case SENSOR_TYPE_SIGNIFICANT_MOTION:
+        //LOGS("SIGM %.3f (0x%8x), %.3f (0x%8x), %.3f (0x%8x)\n", pSensorData->data[0]);
+
+        uinputCompatibleDataFormat[0]= (int)(pSensorData->data[0]);
+        timeInNano= (int64_t)(NSEC_PER_SEC * pSensorData->timestamp);
+
+        _pVsDevMgr->publish(_evdevFds[SENSORHUBD_SIG_MOTION_INDEX], uinputCompatibleDataFormat, timeInNano, 1);
+        break;
+#endif
+    default:
+        LOG_Err("%s unexpected result type %d\n", __FUNCTION__, sensorType);
+        break;
+    }
+
+}
+
+
+/****************************************************************************************************
+ * @fn      _subscribeToAllResults
+ *          Subscribes to all available results from sensor hub
+ *
+ ***************************************************************************************************/
+static void _subscribeToAllResults()
+{
+    OSP_STATUS_t status;
+    LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
+
+    status = FMRPC_SubscribeResult(SENSOR_TYPE_ACCELEROMETER, _onTriAxisSensorResultDataUpdate);
+    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_UNCALIBRATED_ACCELEROMETER");
+
+    status = FMRPC_SubscribeResult(SENSOR_TYPE_MAGNETIC_FIELD, _onTriAxisSensorResultDataUpdate);
+    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_UNCALIBRATED_ACCELEROMETER");
+
+    status = FMRPC_SubscribeResult(SENSOR_TYPE_GYROSCOPE, _onTriAxisSensorResultDataUpdate);
+    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_UNCALIBRATED_GYRO");
+
+    //    status = FMRPC_SubscribeResult(SENSOR_TYPE_SIGNIFICANT_MOTION, _onTriAxisSensorResultDataUpdate);
+    //    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_SIGNIFICANT_MOTION");
+
+    //    status = FMRPC_SubscribeResult(SENSOR_TYPE_STEP_COUNTER, _onTriAxisSensorResultDataUpdate);
+    //    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_STEP_COUNTER");
+
+}
+
+
+/****************************************************************************************************
+ * @fn      _initialize
+ *          Application initializer
+ *
+ ***************************************************************************************************/
+static void _initialize()
+{
+    OSP_STATUS_t status;
+    static int retryCount =0;
+
+    LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
+
+    //create our raw input virtual sensors
+    _evdevFds[SENSORHUBD_ACCELEROMETER_INDEX] = _pVsDevMgr->createSensor(ACCEL_UINPUT_NAME, "acc0",  INT_MIN, INT_MAX);
+    _evdevFds[SENSORHUBD_MAGNETOMETER_INDEX] = _pVsDevMgr->createSensor(MAG_UINPUT_NAME, "mag0",  INT_MIN, INT_MAX);
+    _evdevFds[SENSORHUBD_GYROSCOPE_INDEX] = _pVsDevMgr->createSensor(GYRO_UINPUT_NAME, "gyr0",  INT_MIN, INT_MAX);
+    //_evdevFds[SENSORHUBD_SIG_MOTION_INDEX]= _pVsDevMgr->createSensor("osp-significant-motion", "sigm0",  INT_MIN, INT_MAX);
+    //_evdevFds[SENSORHUBD_STEP_COUNTER_INDEX]= _pVsDevMgr->createSensor("osp-step-counter", "stc0",  INT_MIN, INT_MAX);
+
+    //Initialize freeMotion
+    LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
+    status= FMRPC_Initialize();
+
+    LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
+    _fatalErrorIf(status!= OSP_STATUS_OK, status, "Failed on FreeMotion RPC Initialization!");
+
+    //print out the FreeMotion version
+    //char versionString[255];
+    //FMRPC_GetVersion(versionString, 255);
+    //LOG_Info("freeMotion version %s\n", versionString);
+
+    _initializeNamedPipes();
+
+    //!!! Debug only
+    _subscribeToAllResults();
+
+}
+
+
+/****************************************************************************************************
+ * @fn      _stopAllResults
+ *          Unsubscribe/stop data flow for sensor data or results
+ *
+ ***************************************************************************************************/
+static void _stopAllResults()
+{
+    LOGT("%s\r\n", __FUNCTION__);
+
+    OSP_STATUS_t status= FMRPC_UnsubscribeResult(SENSOR_TYPE_ACCELEROMETER);
+    _logErrorIf(status != OSP_STATUS_OK, "error Unsubscribing to RESULT_UNCALIBRATED_ACCELEROMETER");
+
+    status= FMRPC_UnsubscribeResult(SENSOR_TYPE_MAGNETIC_FIELD);
+    _logErrorIf(status != OSP_STATUS_OK, "error Unsubscribing to RESULT_UNCALIBRATED_MAGNETOMETER");
+
+    status= FMRPC_UnsubscribeResult(SENSOR_TYPE_GYROSCOPE);
+    _logErrorIf(status != OSP_STATUS_OK, "error Unsubscribing to RESULT_UNCALIBRATED_GYRO");
+
+    status= FMRPC_UnsubscribeResult(SENSOR_TYPE_SIGNIFICANT_MOTION);
+    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to RESULT_SIGNIFICANT_MOTION");
+
+    status= FMRPC_UnsubscribeResult(SENSOR_TYPE_STEP_COUNTER);
+    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to RESULT_STEP_COUNTER");
+}
+
+/****************************************************************************************************
+ * @fn      _deinitialize
+ *          Cleanup & teardown on application exit
+ *
+ ***************************************************************************************************/
+static void _deinitialize()
+{
+    LOGT("%s\r\n", __FUNCTION__);
+
+    _stopAllResults();
+
+    FMRPC_Deinitialize();
+}
+
+
+/****************************************************************************************************
+ * @fn      _handleQuitSignals
+ *          Handler for linux exit/terminate signal for the application
+ *
+ ***************************************************************************************************/
+static void _handleQuitSignals(int signum)
+{
+    LOGT("%s\r\n", __FUNCTION__);
+
+    _deinitialize();
+    exit(0);
+}
+
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C     F U N C T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/****************************************************************************************************
+ * @fn      main
+ *          Application entry point
+ *
+ ***************************************************************************************************/
+int main(int argc, char** argv)
+{
 #define MS_TO_US 1000
     int result =0;
     fd_set readFdSet;
@@ -152,228 +469,7 @@ int main(int argc, char** argv) {
     return result;
 }
 
-static void _logErrorIf(bool condition, const char* msg) {
-    if (condition) {
-        LOGE("%s\n", msg);
-    }
-}
 
-
-void _fatalErrorIf(bool condition, int code, const char* msg) {
-    if (condition) {
-        LOGE("%s\n", msg);
-        _deinitialize();
-        _exit(code);
-    }
-}
-
-void _parseAndHandleEnable(int sensorIndex, char* buffer, ssize_t numBytesInBuffer) {
-
-    if (NULL == buffer) {
-        LOGE("buffer should never be NULL!!!\n");
-        return;
-    }
-
-    if (numBytesInBuffer < 0) {
-        LOGE("not going to try parsing empty buffer\n");
-        return;
-    }
-    if (numBytesInBuffer == 0) {
-        return;
-    }
-    LOGT("%s: sensorIndex %d\r\n", __FUNCTION__, sensorIndex);
-
-    if ('0' == buffer[0]) {
-        LOGI("UNsubscribe to sensorcode %d\n", (int)sensorIndex);
-        OSP_STATUS_t status= FMRPC_UnsubscribeResult(_fmResultCodes[sensorIndex]);
-        _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing from result\n");
-
-    } else if ('1' == buffer[0]) {
-        LOGI("SUBSCRIBE to sensorcode %d\n", (int)sensorIndex);
-        OSP_STATUS_t status= FMRPC_SubscribeResult(_fmResultCodes[sensorIndex], _onTriAxisSensorResultDataUpdate);
-        _logErrorIf(status != OSP_STATUS_OK, "error subscribing to result\n");
-
-    } else {
-        //LOGE("unexpected data in enable buffer: %s", buffer);
-    }
-
-
-}
-
-
-void _initializeNamedPipes() {
-    LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
-
-    // create an enable pipe for each sensor type
-    for (int i=0; i < SENSORHUBD_RESULT_INDEX_COUNT; ++i) {
-        char pipename[255];
-        int fd;
-
-        snprintf(pipename, 255, ENABLE_PIPE_NAME_TEMPLATE, _sensorNames[i]);
-
-        //Try and remove the pipe if it's already there, but don't complain if it's not
-        unlink(pipename);
-
-        _fatalErrorIf(mkfifo(pipename, 0666) != 0, -1, "could not create named pipe");
-
-        fd = open(pipename, O_RDONLY|O_NONBLOCK);
-        _fatalErrorIf(fd < 0, -1, "could not open named pipe for reading");
-        _enablePipeFds[i]= fd;
-    }
-
-}
-
-void _onTriAxisSensorResultDataUpdate(uint32_t sensorType, void* pData) {
-#define SCALE_FOUR_DECIMAL_PLACES       (1000.0f)
-#define NSEC_PER_SEC                    (1000000000.0f)
-
-    FMRPC_ThreeAxisData_t* pSensorData= (FMRPC_ThreeAxisData_t*)pData;
-    int32_t uinputCompatibleDataFormat[3];
-    int64_t timeInNano =0;
-
-
-    switch(sensorType)  {
-    case SENSOR_TYPE_ACCELEROMETER:
-        uinputCompatibleDataFormat[0]= (int)(pSensorData->data[0] * SCALE_FOUR_DECIMAL_PLACES);
-        uinputCompatibleDataFormat[1]= (int)(pSensorData->data[1] * SCALE_FOUR_DECIMAL_PLACES);
-        uinputCompatibleDataFormat[2]= (int)(pSensorData->data[2] * SCALE_FOUR_DECIMAL_PLACES);
-        timeInNano= (int64_t)(NSEC_PER_SEC * pSensorData->timestamp);
-
-        LOGS("RA %.3f (0x%8x), %.3f (0x%8x), %.3f (0x%8x), %lld\n",
-             pSensorData->data[0], uinputCompatibleDataFormat[0],
-             pSensorData->data[1], uinputCompatibleDataFormat[1],
-             pSensorData->data[2], uinputCompatibleDataFormat[2],
-             timeInNano);
-
-        _pVsDevMgr->publish(_evdevFds[SENSORHUBD_ACCELEROMETER_INDEX], uinputCompatibleDataFormat, timeInNano);
-        break;
-
-    case SENSOR_TYPE_MAGNETIC_FIELD:
-        LOGS("RM %.3f (0x%8x), %.3f (0x%8x), %.3f (0x%8x)\n", pSensorData->data[0], (int)(pSensorData->data[0] * SCALE_FOUR_DECIMAL_PLACES),
-             pSensorData->data[1], (int)(pSensorData->data[1] * SCALE_FOUR_DECIMAL_PLACES),
-             pSensorData->data[2], (int)(pSensorData->data[2] * SCALE_FOUR_DECIMAL_PLACES));
-
-        uinputCompatibleDataFormat[0]= (int)(pSensorData->data[0] * SCALE_FOUR_DECIMAL_PLACES);
-        uinputCompatibleDataFormat[1]= (int)(pSensorData->data[1] * SCALE_FOUR_DECIMAL_PLACES);
-        uinputCompatibleDataFormat[2]= (int)(pSensorData->data[2] * SCALE_FOUR_DECIMAL_PLACES);
-        timeInNano= (int64_t)(NSEC_PER_SEC * pSensorData->timestamp);
-
-        _pVsDevMgr->publish(_evdevFds[SENSORHUBD_MAGNETOMETER_INDEX], uinputCompatibleDataFormat, timeInNano);
-        break;
-
-    case SENSOR_TYPE_GYROSCOPE:
-        LOGS("RG %.3f (0x%8x), %.3f (0x%8x), %.3f (0x%8x)\n", pSensorData->data[0], (int)(pSensorData->data[0] * SCALE_FOUR_DECIMAL_PLACES),
-             pSensorData->data[1], (int)(pSensorData->data[1] * SCALE_FOUR_DECIMAL_PLACES),
-             pSensorData->data[2], (int)(pSensorData->data[2] * SCALE_FOUR_DECIMAL_PLACES));
-
-        uinputCompatibleDataFormat[0]= (int)(pSensorData->data[0] * SCALE_FOUR_DECIMAL_PLACES);
-        uinputCompatibleDataFormat[1]= (int)(pSensorData->data[1] * SCALE_FOUR_DECIMAL_PLACES);
-        uinputCompatibleDataFormat[2]= (int)(pSensorData->data[2] * SCALE_FOUR_DECIMAL_PLACES);
-        timeInNano= (int64_t)(NSEC_PER_SEC * pSensorData->timestamp);
-
-        _pVsDevMgr->publish(_evdevFds[SENSORHUBD_GYROSCOPE_INDEX], uinputCompatibleDataFormat, timeInNano);
-        break;
-#if 0
-    case SENSOR_TYPE_SIGNIFICANT_MOTION:
-        //LOGS("SIGM %.3f (0x%8x), %.3f (0x%8x), %.3f (0x%8x)\n", pSensorData->data[0]);
-
-        uinputCompatibleDataFormat[0]= (int)(pSensorData->data[0]);
-        timeInNano= (int64_t)(NSEC_PER_SEC * pSensorData->timestamp);
-
-        _pVsDevMgr->publish(_evdevFds[SENSORHUBD_SIG_MOTION_INDEX], uinputCompatibleDataFormat, timeInNano, 1);
-        break;
-#endif
-    default:
-        LOGE("%s unexpected result type %d\n", __FUNCTION__, sensorType);
-        break;
-    }
-
-}
-
-static void _subscribeToAllResults() {
-    OSP_STATUS_t status;
-    LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
-
-    status = FMRPC_SubscribeResult(SENSOR_TYPE_ACCELEROMETER, _onTriAxisSensorResultDataUpdate);
-    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_UNCALIBRATED_ACCELEROMETER");
-
-    status = FMRPC_SubscribeResult(SENSOR_TYPE_MAGNETIC_FIELD, _onTriAxisSensorResultDataUpdate);
-    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_UNCALIBRATED_ACCELEROMETER");
-
-    status = FMRPC_SubscribeResult(SENSOR_TYPE_GYROSCOPE, _onTriAxisSensorResultDataUpdate);
-    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_UNCALIBRATED_GYRO");
-
-    //    status = FMRPC_SubscribeResult(SENSOR_TYPE_SIGNIFICANT_MOTION, _onTriAxisSensorResultDataUpdate);
-    //    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_SIGNIFICANT_MOTION");
-
-    //    status = FMRPC_SubscribeResult(SENSOR_TYPE_STEP_COUNTER, _onTriAxisSensorResultDataUpdate);
-    //    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_STEP_COUNTER");
-
-}
-
-static void _initialize() {
-    OSP_STATUS_t status;
-    static int retryCount =0;
-
-    LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
-
-    //create our raw input virtual sensors
-    _evdevFds[SENSORHUBD_ACCELEROMETER_INDEX]= _pVsDevMgr->createSensor("osp-accelerometer", "acc0",  INT_MIN, INT_MAX);
-    _evdevFds[SENSORHUBD_MAGNETOMETER_INDEX]= _pVsDevMgr->createSensor("osp-magnetometer", "mag0",  INT_MIN, INT_MAX);
-    _evdevFds[SENSORHUBD_GYROSCOPE_INDEX]= _pVsDevMgr->createSensor("osp-gyroscope", "gyr0",  INT_MIN, INT_MAX);
-    //_evdevFds[SENSORHUBD_SIG_MOTION_INDEX]= _pVsDevMgr->createSensor("osp-significant-motion", "sigm0",  INT_MIN, INT_MAX);
-    //_evdevFds[SENSORHUBD_STEP_COUNTER_INDEX]= _pVsDevMgr->createSensor("osp-step-counter", "stc0",  INT_MIN, INT_MAX);
-
-    //Initialize freeMotion
-    LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
-    status= FMRPC_Initialize();
-
-    LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
-    _fatalErrorIf(status!= OSP_STATUS_OK, status, "Failed on FreeMotion RPC Initialization!");
-
-    //print out the FreeMotion version
-    //char versionString[255];
-    //FMRPC_GetVersion(versionString, 255);
-    //LOGI("freeMotion version %s\n", versionString);
-
-    _initializeNamedPipes();
-
-    //!!! Debug only
-    _subscribeToAllResults();
-
-}
-
-
-static void _stopAllResults() {
-    LOGT("%s\r\n", __FUNCTION__);
-
-    OSP_STATUS_t status= FMRPC_UnsubscribeResult(SENSOR_TYPE_ACCELEROMETER);
-    _logErrorIf(status != OSP_STATUS_OK, "error Unsubscribing to RESULT_UNCALIBRATED_ACCELEROMETER");
-
-    status= FMRPC_UnsubscribeResult(SENSOR_TYPE_MAGNETIC_FIELD);
-    _logErrorIf(status != OSP_STATUS_OK, "error Unsubscribing to RESULT_UNCALIBRATED_MAGNETOMETER");
-
-    status= FMRPC_UnsubscribeResult(SENSOR_TYPE_GYROSCOPE);
-    _logErrorIf(status != OSP_STATUS_OK, "error Unsubscribing to RESULT_UNCALIBRATED_GYRO");
-
-    status= FMRPC_UnsubscribeResult(SENSOR_TYPE_SIGNIFICANT_MOTION);
-    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to RESULT_SIGNIFICANT_MOTION");
-
-    status= FMRPC_UnsubscribeResult(SENSOR_TYPE_STEP_COUNTER);
-    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to RESULT_STEP_COUNTER");
-}
-
-static void _deinitialize() {
-    LOGT("%s\r\n", __FUNCTION__);
-
-    _stopAllResults();
-
-    FMRPC_Deinitialize();
-}
-
-static void _handleQuitSignals(int signum) {
-    LOGT("%s\r\n", __FUNCTION__);
-
-    _deinitialize();
-    exit(0);
-}
+/*-------------------------------------------------------------------------------------------------*\
+ |    E N D   O F   F I L E
+\*-------------------------------------------------------------------------------------------------*/

@@ -93,8 +93,109 @@ static void ProcessInputEventsRelay(void);
 \*-------------------------------------------------------------------------------------------------*/
 
 /****************************************************************************************************
+ * @fn      _sensorDataPublish
+ *          Parse the sensor data and invoke result callbacks
+ *
+ ***************************************************************************************************/
+static void _sensorDataPublish(uint32_t sensorIndex, FMRPC_ThreeAxisData_t *pSensData)
+{
+    int32_t sensorType = -1;
+
+    switch(sensorIndex) {
+    case ACCEL_INDEX:
+        sensorType = SENSOR_TYPE_ACCELEROMETER;
+        LOG_Info("RA %.3f, %.3f, %.3f, %lld\n",
+             pSensData->data[0].f,
+             pSensData->data[1].f,
+             pSensData->data[2].f,
+             pSensData->timestamp.ll);
+        break;
+
+    case GYRO_INDEX:
+        sensorType = SENSOR_TYPE_GYROSCOPE;
+        //LOG_Info("RG %.3f, %.3f, %.3f, %lld\n",
+        //     pSensData->data[0].f,
+        //     pSensData->data[1].f,
+        //     pSensData->data[2].f,
+        //     pSensData->timestamp.ll);
+        break;
+
+    case MAG_INDEX:
+        sensorType = SENSOR_TYPE_MAGNETIC_FIELD;
+        //LOG_Info("RM %.3f, %.3f, %.3f, %lld\n",
+        //     pSensData->data[0].f,
+        //     pSensData->data[1].f,
+        //     pSensData->data[2].f,
+        //     pSensData->timestamp.ll);
+        break;
+
+    default:
+        break;
+    }
+
+    if (( sensorType > 0) && (_resultReadyCallbacks[sensorType] != NULL)) {
+        _resultReadyCallbacks[sensorType](sensorType, pSensData);
+    }
+}
+
+
+/****************************************************************************************************
+ * @fn      _doAxisSwap
+ *          Helper function that does the axis swap as specified in configuration
+ *
+ ***************************************************************************************************/
+int32_t _doAxisSwap(int32_t eventCode, int32_t sensorIndex, const int swap[3])
+{
+    int32_t result = 0;
+    int32_t zeroIndexedDeviceAxis = -1;
+
+    assert((sensorIndex >= ACCEL_INDEX) && (sensorIndex < MAX_NUM_SENSORS_TO_HANDLE));
+    switch(eventCode) {
+    case ABS_X:
+    case ABS_Y:
+    case ABS_Z:
+        zeroIndexedDeviceAxis = eventCode - ABS_X;
+        break;
+    case ABS_RX:
+    case ABS_RY:
+    case ABS_RZ:
+        zeroIndexedDeviceAxis = eventCode - ABS_RX;
+        break;
+    case ABS_GAS:   //used as code for light sensor
+    case ABS_DISTANCE:  //used as code for prox sensor
+    case ABS_PRESSURE:  // used for Barometer
+        zeroIndexedDeviceAxis = 0;
+        break;
+    default:
+        result = -1;
+        break;
+    }
+    if (result == 0) {
+        //TODO: This is based on assumption - may need fixing
+        if (sensorIndex < MAX_NUM_SENSORS_TO_HANDLE) {
+            assert( zeroIndexedDeviceAxis >= 0 );
+            assert( zeroIndexedDeviceAxis < 3 );
+            result = swap[zeroIndexedDeviceAxis];
+        }
+#if 0
+        else {
+            FM_ASSERT( zeroIndexedDeviceAxis >= 0, "Quaternion Axis index out of bounds!"); //should never happen
+            FM_ASSERT( zeroIndexedDeviceAxis < 4, "Quaternion Axis index out of bounds!"); //should never happen
+            result = zeroIndexedDeviceAxis; // no need for Axis conversion
+        }
+#endif
+    } else {
+        if (result < 0) {
+            LOG_Err("Received unknown event code: %d", eventCode );
+        }
+        result  = -1;
+    }
+    return result;
+}
+
+/****************************************************************************************************
  * @fn      Initialize
- *          Main Initialization routine.
+ *          Main Initialization routine. Initializes device configuration
  *
  ***************************************************************************************************/
 static int32_t Initialize( void )
@@ -170,6 +271,13 @@ static int32_t Initialize( void )
         }
     }
 
+    /* Initialize the micro-second per tick value */
+    _relayTickUsec = FMConfig::getConfigItemIntV(
+                FMConfig::PROTOCOL_RELAY_TICK_USEC,
+                1,
+                NULL);
+    LOG_Info("Relay Ticks per us: %d", _relayTickUsec);
+
     return result;
 }
 
@@ -244,7 +352,6 @@ static int32_t InitializeRelayInput( void )
 
     for (cpu = 0; (cpu < 16); ) {
         const RelayBufStatus_t dummyBufStatus = {0, 0, 0};
-        LOG_Info("cpu %d start", cpu);
 
         sprintf(devname, "/sys/kernel/debug/sensor_relay_kernel%d", cpu);
         const int fileHandle = open(devname, O_RDONLY | O_NONBLOCK);
@@ -307,7 +414,7 @@ static int32_t InitializeRelayInput( void )
     }
 
     if (cpu == 0) {
-        LOGE("No CPU relay files found");
+        LOG_Err("No CPU relay files found");
         return OSP_STATUS_UNKNOWN_INPUT;
     }
     return OSP_STATUS_OK;
@@ -320,7 +427,7 @@ static int32_t InitializeRelayInput( void )
  ***************************************************************************************************/
 static void *_processRelayInput(void *pData)
 {
-    LOGI("%s", __FUNCTION__);
+    LOG_Info("%s", __FUNCTION__);
 
     if (_relay_fd > 0) {
         _relayThreadActive = true;
@@ -331,7 +438,7 @@ static void *_processRelayInput(void *pData)
         _relayReadAndProcessSensorData(_relay_fd, _resultReadyCallbacks);
     }
 
-    LOGI("Relay thread exiting...");
+    LOG_Info("Relay thread exiting...");
 
     return 0;
 }
@@ -448,7 +555,7 @@ static void ProcessInputEventsRelay(void)
             subbuf_ptr = __relay_buffer[cpu] + (subbuf_idx * sizeof(union sensor_relay_broadcast_node));
             union  sensor_relay_broadcast_node *sensorNode = (union  sensor_relay_broadcast_node *) subbuf_ptr;
 
-#if 1
+#if 0
 
             LOG_Info("relay_buffer[%d] index %d of %d\n"
                      "%2.2x %2.2x %2.2x %2.2x %2.2x %2.2x %2.2x %2.2x %2.2x %2.2x %2.2x %2.2x\n"
@@ -471,28 +578,25 @@ static void ProcessInputEventsRelay(void)
                 continue;
             }
 
-            int lastSensorEvent = -1;
             sensorIndex = -1;
 
             switch (sensorNode->sensorData.sensorId) {
             case SENSOR_RELAY_SENSOR_ID_ACCELEROMETER:
                 sensorIndex = ACCEL_INDEX;
-                lastSensorEvent = ABS_Z;
-                strncpy(label,"RA", sizeof(label));
+                //LOG_Info("Accel Data %d", sensorNode->sensorData.sensorId);
+                //strncpy(label,"RA", sizeof(label));
                 //goto ProcessInputEventsCommon;
                 break;
 
             case SENSOR_RELAY_SENSOR_ID_GYROSCOPE:
                 sensorIndex = GYRO_INDEX;
-                lastSensorEvent = ABS_Z;
-                strncpy(label,"RG", sizeof(label));
+                //strncpy(label,"RG", sizeof(label));
                 //goto ProcessInputEventsCommon;
                 break;
 
             case SENSOR_RELAY_SENSOR_ID_MAGNETOMETER:
                 sensorIndex = MAG_INDEX;
-                lastSensorEvent = ABS_Z;
-                strncpy(label,"RM", sizeof(label));
+                //strncpy(label,"RM", sizeof(label));
                 //goto ProcessInputEventsCommon;
                 break;
 
@@ -510,44 +614,36 @@ static void ProcessInputEventsRelay(void)
                 continue;
             }
 
-            // common handling for ALL motion sensors
-            //Conversion is applied after any potential axis swap
-
-            uint64_t timeTicks = sensorNode->sensorData.TimeStamp;
-            uint64_t timeUsec = (uint64_t) _relayTickUsec * timeTicks;
-
-            //const fm_dbl_t  eventTimeDbl = ((fm_dbl_t) timeUsec) / ((fm_dbl_t)1e6);
-
             /* Axis unit conversions & result callbacks */
-#if 0
-            for (int eventCode = ABS_X; eventCode <= lastSensorEvent; eventCode++) {
+            FMRPC_ThreeAxisData_t floatSensorData;
+            uint64_t timeTicks = sensorNode->sensorData.TimeStamp;
+            int64_t timeNsec = (int64_t)(_relayTickUsec * timeTicks * 1000);
 
-                int32_t axisIndex= 0;
-
-                switch(sensorIndex) {
-                case ACCEL_INDEX:
-                case MAG_INDEX:
-                case GYRO_INDEX:
-                    axisIndex = convertDeviceAxisToFreeMotionAxis
-                            (
-                                eventCode, sensorIndex ,
+            switch(sensorIndex) {
+            case ACCEL_INDEX:
+            case MAG_INDEX:
+            case GYRO_INDEX:
+                for (int eventCode = ABS_X; eventCode <= ABS_Z; eventCode++) {
+                    int32_t axisIndex = 0;
+                    axisIndex = _doAxisSwap(
+                                eventCode,
+                                sensorIndex ,
                                 _deviceConfig[sensorIndex].swap);
 
-                    _sfloatSensorData[sensorIndex][axisIndex]=
+                    floatSensorData.data[axisIndex].f =
                             _deviceConfig[sensorIndex].conversion[axisIndex]*
                             sensorNode->sensorData.Data[eventCode - ABS_X];
-                    if (_resultReadyCallbacks[sensorIndex] != NULL) {
-                        _resultReadyCallbacks[sensorIndex]();
-                    }
-                    break;
-
-                default:
-                    //TODO Error Handling??
-                    LOG_Err("Bad Sensor Index!!");
-                    return;
+                    floatSensorData.timestamp.ll = timeNsec;
                 }
+                _sensorDataPublish(sensorIndex, &floatSensorData);
+                break;
+
+            default:
+                //TODO Error Handling??
+                LOG_Err("Bad Sensor Index!!");
+                return;
             }
-#endif
+
 #if 0
 #ifdef ANDROID
             switch(sensorIndex) {
@@ -714,7 +810,7 @@ OSP_STATUS_t FMRPC_Initialize(void) {
         LOG_Err("Initialize failed (%d)", result);
 
     } else if ( pthread_create(&_relayThread, NULL, _processRelayInput, NULL )!= 0) {
-        LOGE("Unable to create relay input processing thread\n");
+        LOG_Err("Unable to create relay input processing thread\n");
         return OSP_STATUS_ERROR;
     }
     return result;

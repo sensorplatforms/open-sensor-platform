@@ -18,27 +18,24 @@
 #ifndef _FM_CONFIGURATION__H
 #define _FM_CONFIGURATION__H
 
+/*-------------------------------------------------------------------------------------------------*\
+ |    I N C L U D E   F I L E S
+\*-------------------------------------------------------------------------------------------------*/
 #include <string>
 #include <map>
 #include <vector>
 
-//#include "ConfigurationUtils.h"
-
-
-//namespace LibFm{
-
-//int setAccelNoise(float data[3]);
-//int setMagNoise(float data[3]);
-//int setGyroNoise(float data[3],float nonlinear[12],float shake[3],float biasstability[3]);
-//}
-//class FileBasedInputManager;
-//class CsdFileBasedInputManager;
-
+/*-------------------------------------------------------------------------------------------------*\
+ |    C O N S T A N T S   &   M A C R O S
+\*-------------------------------------------------------------------------------------------------*/
 namespace {
 const fm_size_t DIMENSION_DYNAMIC = 0;
 const fm_size_t SIZE_DYNAMIC = 0;
 }
 
+/*-------------------------------------------------------------------------------------------------*\
+ |    T Y P E / C L A S S   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
 enum class ESensorType: unsigned short {
     SENSOR_RAW_ACCELEROMETER,
     SENSOR_RAW_MAGNETOMETER,
@@ -111,15 +108,6 @@ public:
     static constexpr cstring SENSOR_REPUB_NAME = "repub-name";
 
     //to give access to setters:
-    //friend class FileBasedConfigParser;
-    //friend class ConfigParser;
-    //friend class ::FileBasedInputManager;
-    //friend class ::CsdFileBasedInputManager;
-    //friend class SPI::FreeMotion;
-    //friend int LibFm::setAccelNoise( float data[3]);
-    //friend int LibFm::setGyroNoise( float data[3],float nonlinear[12],float shake[3],float biasstability[3]);
-    //friend int LibFm::setMagNoise( float data[3]);
-    //friend fm_status_t SPI::processJsonHeader( FILE* file, std::string & inout_filename );
     //...
 
     /* Get a key from an item and property pair.  This is useful
@@ -305,4 +293,19 @@ private:
 
 typedef SPI::FmConfiguration FMConfig;
 
-#endif
+/*-------------------------------------------------------------------------------------------------*\
+ |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+#endif //_FM_CONFIGURATION__H
+/*-------------------------------------------------------------------------------------------------*\
+ |    E N D   O F   F I L E
+\*-------------------------------------------------------------------------------------------------*/

@@ -15,24 +15,88 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/*-------------------------------------------------------------------------------------------------*\
+ |    I N C L U D E   F I L E S
+\*-------------------------------------------------------------------------------------------------*/
 #include <string.h>
 #include <assert.h>
 #include "FM_DataTypes.h"
 #include "Names.h"
 #include "DebugLog.h"
-
 #include "FmConfiguration.h"
 #include "FreeMotion_RemoteProcedureCalls.h" //For Status codes -- FIXME!
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <algorithm>
 
-#define LOG_Err     LOGE
-#define LOG_Info    LOGI
+/*-------------------------------------------------------------------------------------------------*\
+ |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
+\*-------------------------------------------------------------------------------------------------*/
 
+/*-------------------------------------------------------------------------------------------------*\
+ |    P R I V A T E   C O N S T A N T S   &   M A C R O S
+\*-------------------------------------------------------------------------------------------------*/
 //TBD - Move to platform header
 #define DEFAULT_MAGNETOMETER_NOISE  1.0f
 #define DEFAULT_GYROSCOPE_NOISE     1.0f
 #define DEFAULT_ACCELEROMETER_NOISE 1.0f
 
+/*-------------------------------------------------------------------------------------------------*\
+ |    P R I V A T E   T Y P E/C L A S S   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+/* used for stl sort algorithm:
+*/
+namespace{
+class CompareKeys{
+public:
+    bool operator()( const std::string & left,
+                     const std::string & right){
+        if (left.find("protocol") == 0 && right.find("protocol") == 0){
+            return left < right;
+        } else if (left.find("protocol")== 0){
+            return true;
+        } else if (right.find("protocol") == 0){
+            return false;
+        }
+        if (left.find("sensor=") == 0 && right.find("sensor=") == 0){
+            return left < right;
+        } else if (left.find("sensor=")== 0){
+            auto leftkey = left;
+
+            return leftkey.erase( 0,7 ) < right;
+        } else if (right.find("sensor") == 0){
+            auto rightkey = right;
+            return left < rightkey.erase(0,7);
+        }
+        return left < right;
+    }
+};
+}
+
+
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P R I V A T E     F U N C T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/****************************************************************************************************
+ * @fn      endsWith
+ *          Helper routine for searching for a suffix
+ *
+ ***************************************************************************************************/
 static bool endsWith( std::string text, const std::string &suffix){
     if( text.size() >= suffix.size()){
         text.erase( 0, text.size() - suffix.size());
@@ -41,6 +105,16 @@ static bool endsWith( std::string text, const std::string &suffix){
     return false;
 }
 
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C     F U N C T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/****************************************************************************************************
+ * @fn      getSizeFromName
+ *          Helper routine for getting configuration parameter
+ *
+ ***************************************************************************************************/
 const unsigned short SPI::FmConfiguration::getSizeFromName( const char* const shortName){
     static bool initialized = false;
     static std::map<std::string, unsigned short> _typeToSize;
@@ -60,6 +134,11 @@ const unsigned short SPI::FmConfiguration::getSizeFromName( const char* const sh
 }
 
 
+/****************************************************************************************************
+ * @fn      getDimensionFromName
+ *          Helper routine for getting configuration parameter
+ *
+ ***************************************************************************************************/
 const int SPI::FmConfiguration::getDimensionFromName( const char* const shortName){
     static bool initialized = false;
     static std::map<std::string, int> _typeToDimension;
@@ -76,6 +155,12 @@ const int SPI::FmConfiguration::getDimensionFromName( const char* const shortNam
     return SIZE_DYNAMIC;
 }
 
+
+/****************************************************************************************************
+ * @fn      getTypeFromName
+ *          Helper routine for getting configuration parameter
+ *
+ ***************************************************************************************************/
 const ESensorType SPI::FmConfiguration::getTypeFromName( const char* const shortName ){
     static bool initialized = false;
     static std::map<std::string, ESensorType> _nameToSensorType;
@@ -93,10 +178,21 @@ const ESensorType SPI::FmConfiguration::getTypeFromName( const char* const short
 
 }
 
+
+/****************************************************************************************************
+ * @fn      Init
+ *          Init routine
+ *
+ ***************************************************************************************************/
 SPI::FmConfiguration::Init::Init(){
 }
 
 
+/****************************************************************************************************
+ * @fn      getConfigItem
+ *          Helper routine for getting configuration parameter
+ *
+ ***************************************************************************************************/
 const char* const
 SPI::FmConfiguration::getConfigItem( const char* const name ){
     if (name == NULL){
@@ -110,6 +206,11 @@ SPI::FmConfiguration::getConfigItem( const char* const name ){
 }
 
 
+/****************************************************************************************************
+ * @fn      getConfigItemsMultiple
+ *          Helper routine for getting configuration parameter
+ *
+ ***************************************************************************************************/
 std::vector<const char* >
 SPI::FmConfiguration::getConfigItemsMultiple( const char* const name ){
     std::vector< const char*  > retval;
@@ -128,6 +229,12 @@ SPI::FmConfiguration::getConfigItemsMultiple( const char* const name ){
     return retval;
 }
 
+
+/****************************************************************************************************
+ * @fn      getConfigItemFloat
+ *          Helper routine for getting configuration parameter
+ *
+ ***************************************************************************************************/
 const float *
 SPI::FmConfiguration::getConfigItemFloat( const char* const name ,  unsigned int* size ){
     if (name == NULL){
@@ -144,6 +251,12 @@ SPI::FmConfiguration::getConfigItemFloat( const char* const name ,  unsigned int
     return pair.first;
 }
 
+
+/****************************************************************************************************
+ * @fn      getConfigItemIntV
+ *          Helper routine for getting configuration parameter
+ *
+ ***************************************************************************************************/
 int
 SPI::FmConfiguration::getConfigItemIntV(
         const char* const name,
@@ -169,6 +282,12 @@ SPI::FmConfiguration::getConfigItemIntV(
     return item?*item:defaultValue;
 }
 
+
+/****************************************************************************************************
+ * @fn      getConfigItemInt
+ *          Helper routine for getting configuration parameter
+ *
+ ***************************************************************************************************/
 const int *
 SPI::FmConfiguration::getConfigItemInt(
         const char* const name,
@@ -186,6 +305,12 @@ SPI::FmConfiguration::getConfigItemInt(
     return pair.first;
 }
 
+
+/****************************************************************************************************
+ * @fn      setConfigItem
+ *          Helper routine for setting configuration parameter
+ *
+ ***************************************************************************************************/
 int
 SPI::FmConfiguration::setConfigItem(
         const char* const name,
@@ -228,6 +353,12 @@ SPI::FmConfiguration::setConfigItem(
     return status;
 }
 
+
+/****************************************************************************************************
+ * @fn      setConfigItemFloat
+ *          Helper routine for setting configuration parameter
+ *
+ ***************************************************************************************************/
 int
 SPI::FmConfiguration::setConfigItemFloat(
         const char* const name,
@@ -240,9 +371,9 @@ SPI::FmConfiguration::setConfigItemFloat(
         status = -1;
     } else {
         if (configItemsFloat.find(name) != configItemsFloat.end() ){
-            std::pair< const float * , unsigned int> pair = configItemsFloat.find(name)->second;
+            std::pair< const float * , unsigned int> pair = configItemsFloat[name];
             delete [] pair.first;
-            configItemsFloat.clear();
+            //configItemsFloat.clear();
         }
         std::pair< const float*, unsigned int> pair;
         pair.first = new float[ size ];
@@ -256,6 +387,12 @@ SPI::FmConfiguration::setConfigItemFloat(
     return status;
 }
 
+
+/****************************************************************************************************
+ * @fn      clear
+ *          Helper routine for clearing all configuration parameters
+ *
+ ***************************************************************************************************/
 void
 SPI::FmConfiguration::clear(const bool final){
     typedef std::map<std::string,  std::pair< const float *,  unsigned int> >::iterator it_type;
@@ -284,6 +421,12 @@ SPI::FmConfiguration::clear(const bool final){
     configItemsString.clear();
 }
 
+
+/****************************************************************************************************
+ * @fn      setConfigItemInt
+ *          Helper routine for setting configuration parameter
+ *
+ ***************************************************************************************************/
 int
 SPI::FmConfiguration::setConfigItemInt(
         const char* const name,
@@ -311,6 +454,12 @@ SPI::FmConfiguration::setConfigItemInt(
     return status;
 }
 
+
+/****************************************************************************************************
+ * @fn      establishAsynchronousSensor
+ *          Helper routine for sensor configuration
+ *
+ ***************************************************************************************************/
 void
 SPI::FmConfiguration::establishAsynchronousSensor(
         const char* name,
@@ -320,12 +469,17 @@ SPI::FmConfiguration::establishAsynchronousSensor(
     assert(FMConfig::setConfigItem( "sensor", name, true)==0);
     FMConfig::setConfigItem( FMConfig::keyFrom( name, SENSOR_PROTOCOL).c_str(), protocol);
     FMConfig::setConfigItemFloat( FMConfig::keyFrom( name,SENSOR_CONVERSION).c_str(),conversion,1);
-    FMConfig::setConfigItem( FMConfig::keyFrom( name,
-                                                FMConfig::SENSOR_TYPE).c_str(),
-                             type);
+    FMConfig::setConfigItem(
+                FMConfig::keyFrom( name, FMConfig::SENSOR_TYPE).c_str(),
+                type);
 }
 
 
+/****************************************************************************************************
+ * @fn      establishCartesianSensor
+ *          Helper routine for creating a default sensor configuration
+ *
+ ***************************************************************************************************/
 void
 SPI::FmConfiguration::establishCartesianSensor(
         const char* name,
@@ -354,11 +508,17 @@ SPI::FmConfiguration::establishCartesianSensor(
     }
 
     FMConfig::setConfigItemInt( FMConfig::keyFrom( name, SENSOR_SWAP).c_str(),swap,3);
-    FMConfig::setConfigItem( FMConfig::keyFrom( name,
-                                                FMConfig::SENSOR_TYPE).c_str(),
-                             type);
+    FMConfig::setConfigItem(
+                FMConfig::keyFrom( name, FMConfig::SENSOR_TYPE).c_str(),
+                type);
 }
 
+
+/****************************************************************************************************
+ * @fn      establishDefaultConfig
+ *          Helper routine for creating a default configuration as a starting point
+ *
+ ***************************************************************************************************/
 void
 SPI::FmConfiguration::establishDefaultConfig(const char* const protocol){
     int tick_us = 24;
@@ -374,7 +534,7 @@ SPI::FmConfiguration::establishDefaultConfig(const char* const protocol){
         };
         const float bias[3] = {0.0f, 0.0f, 0.0f};
         float period = 0.02f;//50Hz
-        float conversion[3] = {1.0f, 1.0f, 1.0f};
+        float conversion[3] = {0.0625f,0.0625f,0.0625f};
         int swap[3] = {0,1,2};
         establishCartesianSensor(
                     "mag1",
@@ -383,11 +543,14 @@ SPI::FmConfiguration::establishDefaultConfig(const char* const protocol){
                     period,
                     noise,
                     bias);
-        FMConfig::setConfigItem(FMConfig::keyFrom(
-                                    "mag1",
-                                    SENSOR_INPUT_NAME).c_str(),
-                                Names::RAW_MAGNETOMETER );
-        FMConfig::setConfigItemFloat( "mag1.conversion",conversion,3);
+        FMConfig::setConfigItem(
+                    FMConfig::keyFrom("mag1", SENSOR_INPUT_NAME).c_str(),
+                    Names::RAW_MAGNETOMETER );
+        FMConfig::setConfigItemFloat(
+                    FMConfig::keyFrom("mag1", SENSOR_CONVERSION).c_str(),
+                    conversion,
+                    3,
+                    true);
         FMConfig::setConfigItemInt( "mag1.swap",swap,3);
     }
 
@@ -401,7 +564,7 @@ SPI::FmConfiguration::establishDefaultConfig(const char* const protocol){
         };
         const float bias[3] = {0.0f, 0.0f, 0.0f};
         float period = 0.02f;//50Hz
-        float conversion[3] = {1.0f, 1.0f, 1.0f};
+        float conversion[3] = {0.01915893f,0.01915893f,0.01915893f};
         int swap[3] = {0,1,2};
         establishCartesianSensor(
                     "acc1",
@@ -410,9 +573,14 @@ SPI::FmConfiguration::establishDefaultConfig(const char* const protocol){
                     period,
                     noise,
                     bias);
-        FMConfig::setConfigItem( keyFrom("acc1", SENSOR_INPUT_NAME).c_str(),
-                                 Names::RAW_ACCELEROMETER);
-        FMConfig::setConfigItemFloat( "acc1.conversion",conversion,3);
+        FMConfig::setConfigItem(
+                    FMConfig::keyFrom("acc1", SENSOR_INPUT_NAME).c_str(),
+                    Names::RAW_ACCELEROMETER );
+        FMConfig::setConfigItemFloat(
+                    FMConfig::keyFrom("acc1", SENSOR_CONVERSION).c_str(),
+                    conversion,
+                    3,
+                    true);
         FMConfig::setConfigItemInt( "acc1.swap",swap,3);
     }
 
@@ -425,7 +593,7 @@ SPI::FmConfiguration::establishDefaultConfig(const char* const protocol){
         };
         const float bias[3] = {0.0f, 0.0f, 0.0f};
         float period = 0.01f;//100Hz
-        float conversion[3] = {1.0f, 1.0f, 1.0f};
+        float conversion[3] = {0.001064127f,0.001064127f,0.001064127f};
         int swap[3] = {0,1,2};
         establishCartesianSensor(
                     "gyr1",
@@ -434,48 +602,24 @@ SPI::FmConfiguration::establishDefaultConfig(const char* const protocol){
                     period,
                     noise,
                     bias);
-        FMConfig::setConfigItem( keyFrom("gyr1", SENSOR_INPUT_NAME).c_str(),
-                                 Names::RAW_GYROSCOPE);
-        FMConfig::setConfigItemFloat( "gyr1.conversion",conversion,3);
+        FMConfig::setConfigItem(
+                    FMConfig::keyFrom("gyr1", SENSOR_INPUT_NAME).c_str(),
+                    Names::RAW_GYROSCOPE );
+        FMConfig::setConfigItemFloat(
+                    FMConfig::keyFrom("gyr1", SENSOR_CONVERSION).c_str(),
+                    conversion,
+                    3,
+                    true);
         FMConfig::setConfigItemInt( "gyr1.swap",swap,3);
     }
 }
 
 
-/* used for stl sort algorithm:
-*/
-namespace{
-class CompareKeys{
-public:
-    bool operator()( const std::string & left,
-                     const std::string & right){
-        if (left.find("protocol") == 0 && right.find("protocol") == 0){
-            return left < right;
-        } else if (left.find("protocol")== 0){
-            return true;
-        } else if (right.find("protocol") == 0){
-            return false;
-        }
-        if (left.find("sensor=") == 0 && right.find("sensor=") == 0){
-            return left < right;
-        } else if (left.find("sensor=")== 0){
-            auto leftkey = left;
-
-            return leftkey.erase( 0,7 ) < right;
-        } else if (right.find("sensor") == 0){
-            auto rightkey = right;
-            return left < rightkey.erase(0,7);
-        }
-        return left < right;
-    }
-};
-}
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <algorithm>
-
+/****************************************************************************************************
+ * @fn      dump
+ *          Helper routine for dumping the current configuration to a file for debugging
+ *
+ ***************************************************************************************************/
 int
 SPI::FmConfiguration::dump( const char* const filename ){
     FILE* f = ::fopen( filename, "w");
@@ -569,111 +713,6 @@ SPI::FmConfiguration::dump( const char* const filename ){
 }
 
 
-int
-SPI::FmConfiguration::saveToJson( FILE* const f ){
-    int status = 0;
-    std::vector< std::string > keys;
-
-    if (!f){
-        LOG_Err("Null file when writing config");
-        status =  -1;
-        goto onerror;
-    }
-    fprintf(f, "\"config\":{");
-
-    /* collect all keys over string, float, int items for sorting*/
-    for (auto it = configItemsString.begin();
-         it != configItemsString.end();
-         ++it){
-        if (it->first == "sensor"){
-            for( auto item = it->second.begin();
-                 item != it->second.end();
-                 ++item){
-                keys.push_back( it->first+"="+*item );/* for sorting properly*/
-            }
-        } else{
-            if (!endsWith(it->first, FMConfig::SENSOR_FACTORYCAL) &&
-                    !endsWith(it->first, FMConfig::SENSOR_SWAP) &&
-                    !endsWith(it->first, FMConfig::SENSOR_CONVERSION)
-                    )/*do not save factory cal, swap, conversion as these are
-                   already applied in recorded data*/
-                keys.push_back( it->first );
-        }
-    }
-    for (auto it = configItemsFloat.begin();
-         it != configItemsFloat.end();
-         ++it){
-        if (!endsWith(it->first, FMConfig::SENSOR_FACTORYCAL) &&
-                !endsWith(it->first, FMConfig::SENSOR_SWAP) &&
-                !endsWith(it->first, FMConfig::SENSOR_CONVERSION)
-                )/*do not save factory cal, swap, conversion as these are
-               already applied in recorded data*/
-            keys.push_back( it->first );
-    }
-    for (auto it = configItemsInt.begin();
-         it != configItemsInt.end();
-         ++it){
-        if (!endsWith(it->first, FMConfig::SENSOR_FACTORYCAL) &&
-                !endsWith(it->first, FMConfig::SENSOR_SWAP) &&
-                !endsWith(it->first, FMConfig::SENSOR_CONVERSION)
-                )/*do not save factory cal, swap, conversion as these are
-               already applied in recorded data*/
-            keys.push_back( it->first );
-    }
-    std::sort<  std::vector<std::string>::iterator, CompareKeys>
-            ( keys.begin(), keys.end(), CompareKeys());
-    /* loope over sorted keys and spit out to file */
-    for (auto it = keys.begin();
-         it != keys.end();
-         ++it){
-        const std::string key = *it;
-        if (key.find("sensor=") == 0){
-            std::string val = key;
-            val.erase(0,7);
-            fprintf(f,"\n       \"sensor\":\"%s\",", val.c_str());
-        } else if (configItemsString.find(key) != configItemsString.end()){
-            const std::vector<const char*>& items = configItemsString.find(key)->second;
-            for(auto it2 = items.begin();
-                it2 != items.end();
-                ++it2){
-
-                fprintf( f, "\n       \"%s\":\"%s\",", key.c_str(),
-                         *it2);
-
-            }
-        } else if (configItemsFloat.find(key) != configItemsFloat.end()){
-            std::pair< const float*, unsigned int> floatarray =
-                    configItemsFloat[key];
-            fprintf( f, "\n       \"%s\":[", key.c_str());
-            for(unsigned int i = 0; i < floatarray.second; ++i){
-                if (i==0)
-                    fprintf( f, "%f", floatarray.first[i]);
-                else
-                    fprintf( f, ",%f", floatarray.first[i]);
-            }
-            fprintf(f, "],");
-        } else if (configItemsInt.find(key) != configItemsInt.end()){
-            std::pair< const int*, unsigned int> intarray =
-                    configItemsInt[key];
-            fprintf( f, "\n       \"%s\":[", key.c_str());
-            for(unsigned int i = 0; i < intarray.second; ++i){
-                if (i==0)
-                    fprintf( f, "%d", intarray.first[i]);
-                else
-                    fprintf( f, ",%d", intarray.first[i]);
-            }
-            fprintf(f, "],");
-        }
-
-    }
-    fprintf(f,"\"unused_end\":null}");
-onerror:
-    return status;
-}
-
-
-
-
 extern "C++"{
 std::map<std::string, std::vector<const char*> > SPI::FmConfiguration::configItemsString;
 std::map<std::string, std::pair< const float*, unsigned int>  > SPI::FmConfiguration::configItemsFloat;
@@ -681,3 +720,6 @@ std::map<std::string, std::pair< const int *,  unsigned int>  > SPI::FmConfigura
 SPI::FmConfiguration::Init SPI::FmConfiguration::initializer;
 }
 
+/*-------------------------------------------------------------------------------------------------*\
+ |    E N D   O F   F I L E
+\*-------------------------------------------------------------------------------------------------*/
