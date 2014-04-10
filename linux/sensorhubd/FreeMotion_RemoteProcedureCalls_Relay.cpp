@@ -510,7 +510,6 @@ static void _relayReadAndProcessSensorData(int fd, FMRPC_ResultDataCallback_t da
 static void ProcessInputEventsRelay(void)
 {
     size_t size;
-    char label[3];
     int32_t sensorIndex;
 
     for (unsigned int cpu = 0; cpu < _produced_file.size(); cpu++) {

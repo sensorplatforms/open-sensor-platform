@@ -76,7 +76,6 @@ static void _deinitialize();
 static void _parseAndHandleEnable(int sensorIndex, char* buffer, ssize_t numBytesInBuffer);
 static VirtualSensorDeviceManager* _pVsDevMgr;
 static int _evdevFds[SENSORHUBD_RESULT_INDEX_COUNT] ={-1};
-static int _resultHandles[SENSORHUBD_RESULT_INDEX_COUNT] = {0};
 
 static int _enablePipeFds[SENSORHUBD_RESULT_INDEX_COUNT] ={-1};
 static const char* _sensorNames[SENSORHUBD_RESULT_INDEX_COUNT] = {
@@ -305,7 +304,6 @@ static void _subscribeToAllResults()
 static void _initialize()
 {
     OSP_STATUS_t status;
-    static int retryCount =0;
 
     LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
 

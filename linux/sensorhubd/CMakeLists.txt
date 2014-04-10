@@ -26,9 +26,9 @@ message(STATUS "building in Release mode")
 add_definitions(-DNDEBUG)
 ENDIF(CMAKE_BUILD_TYPE MATCHES Release)
 
-set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -std=gnu++0x -fPIC")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -fPIC -Wall -Werror -Wundef -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Wno-format-security -fno-delete-null-pointer-checks")
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -fPIC -Wall -Werror")
 
 #
 # App
