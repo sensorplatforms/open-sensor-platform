@@ -94,12 +94,6 @@ typedef enum {
     SENSOR_PROXIMITY                       =  8, //!< proximity data
     SENSOR_RELATIVE_HUMIDITY               =  9, //!< relative humidity data
     SENSOR_AMBIENT_TEMPERATURE             = 10, //!< ambient temperature data
-    SENSOR_RGB_LIGHT = xx,
-    SENSOR_UV_LIGHT = xx,
-    SENSOR_HEART_RATE  =xx,
-    SENSOR_BLOOD_OXYGEN_LEVEL = xx,
-    SENSOR_SKIN_HYDRATION_LEVEL = XX,
-    SENSOR_BREATHALYZER = XX,
     SENSOR_GRAVITY                         = 11, //!< gravity part of acceleration in body frame 
     SENSOR_LINEAR_ACCELERATION             = 12, //!< dynamic acceleration 
     SENSOR_ORIENTATION                     = 13, //!< yaw, pitch, roll (also use this for Win8 Inclinometer)
@@ -118,8 +112,14 @@ typedef enum {
     SENSOR_STEP_SEGMENT_DETECTOR           = 26, //!< low compute trigger for analyzing if step may have occured
     SENSOR_GESTURE_EVENT                   = 27, //!< gesture event such as a double-tap or shake
     SENSOR_NEED_CALIBRATION                = 28, //!< boolean indication that the user should perform a calibration sequence
-    SENSOR_WARNING                         = 29, //!< warnings from the library: e.g. excessive timestamp jitter
-    SENSOR_FATAL_ERROR                     = 30, //!< errors from the library: e.g. numerical error, sensor data timeout
+    SENSOR_MESSAGE                         = 29, //!< warnings from the library: e.g. excessive timestamp jitter
+    // enum goes to 32 only now, so leave these until needed:
+    //    SENSOR_RGB_LIGHT                       = xx, //!< RGB light data
+    //    SENSOR_UV_LIGHT                        = xx, //!< UV light data
+    //    SENSOR_HEART_RATE                      = xx, //!< heart-rate data
+    //    SENSOR_BLOOD_OXYGEN_LEVEL              = xx, //!< blood-oxygen level data
+    //    SENSOR_SKIN_HYDRATION_LEVEL            = xx, //!< skin-hydration level data
+    //    SENSOR_BREATHALYZER                    = xx, //!< breathalyzer data
     SENSOR_ENUM_COUNT
 } SensorType_t ;
 
@@ -405,8 +405,8 @@ typedef struct  {
     SensorDataConvention_t DataConvention;      //!< Android, Win8, etc,...
     uint32_t DataWidthMask;                     //!< how much of the data word that is sent significant
     AxisMapType_t AxisMapping[3];               //!< swap or flip axes as necessary before conversion
-    int32_t ConversionOffset[3];                //!< offset of incoming data before conversion
-    NTPRECISE ConversionScale[3];               //!< conversion from raw to data convention e.g. 9.81/1024,  200dps/count
+    int32_t ConversionOffset[3];                //!< offset of incoming data before data is scaled
+    NTPRECISE ConversionScale[3];               //!< conversion from raw to dimensionful units based on data convention e.g. 9.81/1024,  200dps/count
     NTEXTENDED MaxValue;                        //!< max value possible after conversion
     NTEXTENDED MinValue;                        //!< min value possible after conversion
     NTPRECISE Noise[3];                         //!< sensor noise based on Power Spectral Density in conversion units per sqrt(Hz)
