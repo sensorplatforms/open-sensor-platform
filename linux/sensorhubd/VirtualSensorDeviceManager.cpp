@@ -15,7 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+/*-------------------------------------------------------------------------------------------------*\
+ |    I N C L U D E   F I L E S
+\*-------------------------------------------------------------------------------------------------*/
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
@@ -35,15 +37,72 @@
 #include "VirtualSensorDeviceManager.h"
 
 
+/*-------------------------------------------------------------------------------------------------*\
+ |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P R I V A T E   C O N S T A N T S   &   M A C R O S
+\*-------------------------------------------------------------------------------------------------*/
 #ifndef BUS_VIRTUAL
 #define BUS_VIRTUAL 6
 #endif // BUS_VIRTUAL
 
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P R I V A T E   T Y P E   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P R I V A T E     F U N C T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/****************************************************************************************************
+ * @fn      fatalErrorIf
+ *          Helper routine for error handling
+ *
+ ***************************************************************************************************/
+//! \todo this should call a registered error callback not give an exit code!
+void VirtualSensorDeviceManager::fatalErrorIf(bool condition, int code, const char* msg) {
+    if (condition) {
+        LOG_Err("%s\n", msg);
+        exit(code);
+    }
+}
+
+
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C     F U N C T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/****************************************************************************************************
+ * @fn      VirtualSensorDeviceManager
+ *          Class Constructor
+ *
+ ***************************************************************************************************/
 VirtualSensorDeviceManager::VirtualSensorDeviceManager( const int sleepus ):
     _sleepus(sleepus)
 {
 }
 
+/****************************************************************************************************
+ * @fn      ~VirtualSensorDeviceManager
+ *          Class Destructor
+ *
+ ***************************************************************************************************/
 VirtualSensorDeviceManager::~VirtualSensorDeviceManager()
 {
     for(std::vector<int>::iterator it = _deviceFds.begin(); it != _deviceFds.end(); ++it) {
@@ -53,6 +112,11 @@ VirtualSensorDeviceManager::~VirtualSensorDeviceManager()
 }
 
 
+/****************************************************************************************************
+ * @fn      createSensor
+ *          Creates uinput node corresponding to the name
+ *
+ ***************************************************************************************************/
 int VirtualSensorDeviceManager::createSensor(const char* name, const char* physname,
                                              int absMin, int absMax) {
     int result =-1;
@@ -114,7 +178,7 @@ int VirtualSensorDeviceManager::createSensor(const char* name, const char* physn
 
     status= ioctl(result, UI_DEV_CREATE);
     if (status < 0){
-        LOGE("Error on dev crate: %s", strerror(errno));
+        LOG_Err("Error on dev crate: %s", strerror(errno));
     }
     fatalErrorIf(status < 0, -1, "error create \n");
 
@@ -123,6 +187,13 @@ int VirtualSensorDeviceManager::createSensor(const char* name, const char* physn
     return result;
 
 }
+
+
+/****************************************************************************************************
+ * @fn      publish
+ *          Publish events to the given uinput node file handle
+ *
+ ***************************************************************************************************/
 void VirtualSensorDeviceManager::publish(int deviceFd, input_event event) {
     int status;
 
@@ -130,6 +201,12 @@ void VirtualSensorDeviceManager::publish(int deviceFd, input_event event) {
     fatalErrorIf(status != sizeof(event), -1, "Error on send_event");
 }
 
+
+/****************************************************************************************************
+ * @fn      publish
+ *          Publish events to the given uinput node file handle
+ *
+ ***************************************************************************************************/
 void VirtualSensorDeviceManager::publish(int deviceFd, int* data,
                                          const unsigned int* const timeInMillis) {
     struct input_event event;
@@ -162,6 +239,12 @@ void VirtualSensorDeviceManager::publish(int deviceFd, int* data,
     return;
 }
 
+
+/****************************************************************************************************
+ * @fn      publish
+ *          Publish events to the given uinput node file handle
+ *
+ ***************************************************************************************************/
 void VirtualSensorDeviceManager::publish(int deviceFd, const int32_t data[],
                                          const int64_t timeNanoSec, int numAxis) {
     struct input_event event;
@@ -197,15 +280,6 @@ void VirtualSensorDeviceManager::publish(int deviceFd, const int32_t data[],
 }
 
 
-
-
-//! \todo this should call a registered error callback not give an exit code!
-void VirtualSensorDeviceManager::fatalErrorIf(bool condition, int code, const char* msg) {
-    if (condition) {
-        LOGE("%s\n", msg);
-        exit(code);
-    }
-}
-
-
-
+/*-------------------------------------------------------------------------------------------------*\
+ |    E N D   O F   F I L E
+\*-------------------------------------------------------------------------------------------------*/

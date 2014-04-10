@@ -12,15 +12,24 @@
 */
 
 #ifndef _SENSOR_RELAY_H_
-#   define _SENSOR_RELAY_H_
+#define _SENSOR_RELAY_H_
 
-#   ifdef __KERNEL__
-#      include <linux/device.h>
-#   endif
+/*-------------------------------------------------------------------------------------------------*\
+ |    I N C L U D E   F I L E S
+\*-------------------------------------------------------------------------------------------------*/
+#ifdef __KERNEL__
+# include <linux/device.h>
+#endif
 
-#   define SENSOR_RELAY_NUM_RELAY_BUFFERS 300
-#   define SENSOR_RELAY_BUFF_SIZE 50
+/*-------------------------------------------------------------------------------------------------*\
+ |    C O N S T A N T S   &   M A C R O S
+\*-------------------------------------------------------------------------------------------------*/
+#define SENSOR_RELAY_NUM_RELAY_BUFFERS  300
+#define SENSOR_RELAY_BUFF_SIZE          50
 
+/*-------------------------------------------------------------------------------------------------*\
+ |    T Y P E   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
 enum SENSOR_RELAY_SENSOR_ID {
     SENSOR_RELAY_SENSOR_ID_FIRST = 0,
 
@@ -79,7 +88,7 @@ union  sensor_relay_broadcast_node {
     struct sensor_relay_quaternion_sensor_broadcast_node quaternionData;
 };
 
-#   ifdef __KERNEL__
+#ifdef __KERNEL__
 
 struct sensor_relay_classdev {
     char *sensor_name;
@@ -103,17 +112,15 @@ struct sensor_relay_classdev {
     /*
      * Must not sleep, use a workqueue if needed
      */
-    int (
-    *enable_set) (
-        struct sensor_relay_classdev * sensor_relay_cdev,
-        bool enable);
+    int (*enable_set) (
+            struct sensor_relay_classdev * sensor_relay_cdev,
+            bool enable);
     /*
      * Get Sensor Enable
      */
-    int (
-    *enable_get) (
-        struct sensor_relay_classdev * sensor_relay_cdev,
-        bool * enable);
+    int (*enable_get) (
+            struct sensor_relay_classdev * sensor_relay_cdev,
+            bool * enable);
 
     /*
      * Set Sensor Enable
@@ -121,38 +128,51 @@ struct sensor_relay_classdev {
     /*
      * Must not sleep, use a workqueue if needed
      */
-    int (
-    *delay_set) (
-        struct sensor_relay_classdev * sensor_relay_cdev,
-        unsigned int delay);
+    int (*delay_set) (
+            struct sensor_relay_classdev * sensor_relay_cdev,
+            unsigned int delay);
     /*
      * Get Sensor Enable
      */
-    int (
-    *delay_get) (
-        struct sensor_relay_classdev * sensor_relay_cdev,
-        unsigned int *delay);
+    int (*delay_get) (
+            struct sensor_relay_classdev * sensor_relay_cdev,
+            unsigned int *delay);
 
 
     struct device *dev;
     struct list_head node;
 };
+#endif
 
+/*-------------------------------------------------------------------------------------------------*\
+ |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
+\*-------------------------------------------------------------------------------------------------*/
 
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+#ifdef __KERNEL__
 int sensor_relay_device_register(
-    struct device *parent,
-    struct sensor_relay_classdev *sensor_relay_cdev);
+        struct device *parent,
+        struct sensor_relay_classdev *sensor_relay_cdev);
 
 void sensor_relay_device_unregister(
-    struct sensor_relay_classdev *sensor_relay_cdev);
+        struct sensor_relay_classdev *sensor_relay_cdev);
 
 int sensor_relay_write(
-    struct sensor_relay_classdev *sensor_relay_cdev,
-    union sensor_relay_broadcast_node *node);
+        struct sensor_relay_classdev *sensor_relay_cdev,
+        union sensor_relay_broadcast_node *node);
 
 int sensor_relay_wakeup(
-    struct sensor_relay_classdev *sensor_relay_cdev);
-#   endif
+        struct sensor_relay_classdev *sensor_relay_cdev);
 
 #endif
 
+#endif /* _SENSOR_RELAY_H_ */
+/*-------------------------------------------------------------------------------------------------*\
+ |    E N D   O F   F I L E
+\*-------------------------------------------------------------------------------------------------*/

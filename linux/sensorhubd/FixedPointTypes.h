@@ -18,6 +18,9 @@
 #ifndef _FIXEDPOINTTYPES_H_
 #define _FIXEDPOINTTYPES_H_
 
+/*-------------------------------------------------------------------------------------------------*\
+ |    I N C L U D E   F I L E S
+\*-------------------------------------------------------------------------------------------------*/
 #include "FM_DataTypes.h"
 
 #ifdef __cplusplus
@@ -25,14 +28,9 @@ extern "C" {
 #endif
 
 
-typedef int16_t NT; /* 16 bit, Q12 fixed point! */
-typedef int32_t NTPRECISE; /* 32 bit, Q24 fixed point */
-typedef int32_t NTDELTATIME; /* 32 bit, Q24 fixed point.  Useful when you're just working with time deltas and only want to use a 32 bit number  */
-typedef int32_t NTEXTENDED; /* 32 bit, Q12 fixed point */
-typedef uint32_t TIMECOEFFICIENT; /* U32Q32 which is a coefficient to convert counter tics to NTTIME */
-
-typedef int64_t NTTIME; /* 64 bit, Q24 fixed point */
-
+/*-------------------------------------------------------------------------------------------------*\
+ |    C O N S T A N T S   &   M A C R O S
+\*-------------------------------------------------------------------------------------------------*/
 /* for fixed point
  *
  *  Fixed point = S16Q12
@@ -86,8 +84,36 @@ typedef int64_t NTTIME; /* 64 bit, Q24 fixed point */
 /*to floating point from fixed point extended */
 #define TOFLT_EXTENDED(x) ((fm_float_t)(x) / (fm_float_t)(1UL << QFIXEDPOINTEXTENDED))
 
+/*-------------------------------------------------------------------------------------------------*\
+ |    T Y P E   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+typedef int16_t NT; /* 16 bit, Q12 fixed point! */
+typedef int32_t NTPRECISE; /* 32 bit, Q24 fixed point */
+typedef int32_t NTDELTATIME; /* 32 bit, Q24 fixed point.  Useful when you're just working with time deltas and only want to use a 32 bit number  */
+typedef int32_t NTEXTENDED; /* 32 bit, Q12 fixed point */
+typedef uint32_t TIMECOEFFICIENT; /* U32Q32 which is a coefficient to convert counter tics to NTTIME */
+
+typedef int64_t NTTIME; /* 64 bit, Q24 fixed point */
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif
+#endif //_FIXEDPOINTTYPES_H_
+/*-------------------------------------------------------------------------------------------------*\
+ |    E N D   O F   F I L E
+\*-------------------------------------------------------------------------------------------------*/
