@@ -396,6 +396,7 @@ void I2C_Slave_Handler(I2C_TypeDef *pI2C, uint8_t irqCh)
         /* Fall thru */
     case I2C_EVENT_SLAVE_BYTE_TRANSMITTING: /* 00060080 */
     case I2C_EVENT_SLAVE_BYTE_TRANSMITTED:
+    case 0x00060004: //Sometimes we get this event and the driver is stuck in ISR!
         /* In transmit we will do not want to send data beyond the register set */
         if (&slave_xfer.txBuff[slave_xfer.txCnt] < &SlaveRegMap.endMarker)
         {
