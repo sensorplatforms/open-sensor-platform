@@ -32,7 +32,7 @@ With respect to terminology, remember that everything coming in is considered a
 
 
 <h2> API Reference</h2>
-<a href="OSP__AlgorithmsApi_8h.html#func-members">Functions</a>
+<a href="osp-api_8h.html#func-members">Functions</a>
 <br>
 <a href="annotated.html">Data Structures</a>
 <br>
@@ -41,14 +41,14 @@ With respect to terminology, remember that everything coming in is considered a
 <h2>High Level Usage Overview</h2>
 At boot time:
   - read sensor calibration data from non-volatile memory
-  - call OSP_Algorithms_Initialize()
-  - let the Library know about what sensors are on the system by filling in a SensorDescriptor_t and calling OSP_Algorithms_RegisterSensor() for each sensor
-  - configure what sensor fusion products to compute by filling in a ResultRequestDescriptor_t and call OSP_Algorithms_SubscribeResult() for each ResultType_t desired
+  - call OSP_Initialize()
+  - let the Library know about what sensors are on the system by filling in a SensorDescriptor_t and calling OSP_RegisterSensor() for each sensor
+  - configure what sensor fusion products to compute by filling in a ResultRequestDescriptor_t and call OSP_SubscribeResult() for each ResultType_t desired
 
 During steady state operation:
-  - queue data from sensor ISRs by calling OSP_Algorithms_SetData()
-  - execute primary fusion computation by calling OSP_Algorithms_DoForegroundProcessing() at least twice as fast as your expected output rate 
-  - execute calibration computation by calling OSP_Algorithms_DoBackgroundProcessing() at least one tenth as fast as your expected output rate
+  - queue data from sensor ISRs by calling OSP_SetData()
+  - execute primary fusion computation by calling OSP_DoForegroundProcessing() at least twice as fast as your expected output rate 
+  - execute calibration computation by calling OSP_DoBackgroundProcessing() at least one tenth as fast as your expected output rate
 
 Data will be returned via callbacks:
   - Sensor fusion will call your callbacks with result data (Device Orientation Rotation Vector, Calibrated Magnetometer Data, etc)
