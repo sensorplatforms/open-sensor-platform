@@ -37,9 +37,9 @@ set(app_SOURCES
   main.cpp
   VirtualSensorDeviceManager.h
   VirtualSensorDeviceManager.cpp
-  FreeMotion_RemoteProcedureCalls.h
-  FreeMotion_RemoteProcedureCalls_Relay.cpp
-  FmConfiguration.cpp
+  osp_remoteprocedurecalls.h
+  osp_remoteprocedurecalls_relay.cpp
+  ospconfiguration.cpp
   UinputUtils.c
 )
 
