@@ -25,6 +25,7 @@
 #include "hw_setup.h"
 #include "ASF_MsgStruct.h"
 #include "Main.h"
+#include "RTL.h"
 #include "Types.h"
 #include "OspVersion.h"
 
@@ -123,6 +124,26 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------------*\
+ | Task Handle type. This type is OS-dependent.
+\*----------------------------------------------------------------------------*/
+typedef struct AsfTaskHandleTag {
+    OS_TID   handle;
+    void     *pStack;
+    uint16_t stkSize;
+} AsfTaskHandle;
+
+/*----------------------------------------------------------------------------*\
+ | Semaphore ID type. This type is OS-dependent.
+\*----------------------------------------------------------------------------*/
+typedef OS_SEM* AsfSemIdType;
+
+/*----------------------------------------------------------------------------*\
+ | Timer ID type. This type is OS-dependent.
+\*----------------------------------------------------------------------------*/
+typedef OS_ID TimerId;
+
 typedef enum AppResultCodesTag
 {
     APP_OK      = 0,
