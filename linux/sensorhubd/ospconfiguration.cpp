@@ -20,11 +20,11 @@
 \*-------------------------------------------------------------------------------------------------*/
 #include <string.h>
 #include <assert.h>
-#include "OSP_DataTypes.h"
+#include "osp_datatypes.h"
 #include "Names.h"
 #include "DebugLog.h"
-#include "OspConfiguration.h"
-#include "OSP_RemoteProcedureCalls.h" //For Status codes -- FIXME!
+#include "ospconfiguration.h"
+#include "osp_remoteprocedurecalls.h" //For Status codes -- FIXME!
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

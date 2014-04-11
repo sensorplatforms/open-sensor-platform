@@ -18,10 +18,9 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
-#include "OSP_RemoteProcedureCalls.h"
+#include "osp_remoteprocedurecalls.h"
 #include <cstring>
 #include <cstdlib>
-#include "OSP_rpc_messages.h"
 #include "DebugLog.h"
 
 

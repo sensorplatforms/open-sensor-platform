@@ -36,7 +36,7 @@
 
 #include "DebugLog.h"
 #include "VirtualSensorDeviceManager.h"
-#include "OSP_RemoteProcedureCalls.h"
+#include "osp_remoteprocedurecalls.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S

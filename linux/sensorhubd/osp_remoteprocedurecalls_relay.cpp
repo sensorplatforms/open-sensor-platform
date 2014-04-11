@@ -18,7 +18,7 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
-#include "OSP_RemoteProcedureCalls.h"
+#include "osp_remoteprocedurecalls.h"
 #include <fcntl.h>
 #include <errno.h>
 #include <cstring>
@@ -29,7 +29,7 @@
 #include <assert.h>
 #include "RelayInterface.h"
 #include "DebugLog.h"
-#include "OspConfiguration.h"
+#include "ospconfiguration.h"
 #include "sensor_relay.h"
 
 extern "C" {
