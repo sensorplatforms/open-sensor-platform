@@ -46,17 +46,6 @@ extern "C" {
 
 // Input enums
 
-//! specifies representation of data coming from a sensor described by a SensorDescriptor_t
-/*!
- */
-typedef enum {
-    SENSOR_DATA_UNSIGNED = 0,
-    SENSOR_DATA_SIGNED_TWO_COMP = 1,
-    SENSOR_DATA_FIXED = 2,
-    SENSOR_DATA_FLOAT = 3,
-    SENSOR_DATA_ENUM_COUNT
-} SensorDataType_t ;
-
 //! used to swap axes or conventions from sensor frame to body frame in a SensorDescriptor_t
 /*!
  *  this is most often used:
@@ -102,7 +91,7 @@ typedef enum {
     SENSOR_GEOMAGNETIC_ROTATION_VECTOR     = 16, //!< accel+mag quaternion
     SENSOR_GAME_ROTATION_VECTOR            = 17, //!< accel+gyro quaternion
     SENSOR_VIRTUAL_GYROSCOPE               = 18, //!< virtual gyroscope data from accel+mag
-    SENSOR_STEP_DETECTOR                   = 19, //!< step detector data
+    SENSOR_STEP_DETECTOR                   = 19, //!< precise time a step occured
     SENSOR_STEP_COUNTER                    = 20, //!< count of steps
     SENSOR_CONTEXT_DEVICE_MOTION           = 21, //!< context of device relative to world frame
     SENSOR_CONTEXT_CARRY                   = 22, //!< context of device relative to user
@@ -113,13 +102,12 @@ typedef enum {
     SENSOR_GESTURE_EVENT                   = 27, //!< gesture event such as a double-tap or shake
     SENSOR_NEED_CALIBRATION                = 28, //!< boolean indication that the user should perform a calibration sequence
     SENSOR_MESSAGE                         = 29, //!< warnings from the library: e.g. excessive timestamp jitter
-    // enum goes to 32 only now, so leave these until needed:
-    //    SENSOR_RGB_LIGHT                       = xx, //!< RGB light data
-    //    SENSOR_UV_LIGHT                        = xx, //!< UV light data
-    //    SENSOR_HEART_RATE                      = xx, //!< heart-rate data
-    //    SENSOR_BLOOD_OXYGEN_LEVEL              = xx, //!< blood-oxygen level data
-    //    SENSOR_SKIN_HYDRATION_LEVEL            = xx, //!< skin-hydration level data
-    //    SENSOR_BREATHALYZER                    = xx, //!< breathalyzer data
+    SENSOR_RGB_LIGHT                       = 30, //!< RGB light data
+    SENSOR_UV_LIGHT                        = 31, //!< UV light data
+    SENSOR_HEART_RATE                      = 32, //!< heart-rate data
+    SENSOR_BLOOD_OXYGEN_LEVEL              = 33, //!< blood-oxygen level data
+    SENSOR_SKIN_HYDRATION_LEVEL            = 34, //!< skin-hydration level data
+    SENSOR_BREATHALYZER                    = 35, //!< breathalyzer data
     SENSOR_ENUM_COUNT
 } SensorType_t ;
 
@@ -401,7 +389,6 @@ typedef uint16_t (* OSP_SensorControlCallback_t)(SensorControl_t* SensorControlC
 
 typedef struct  {
     SensorType_t SensorType;                    //!< accelerometer, gyro, etc
-    SensorDataType_t DataType;                  //!< signed 2s comp/unsigned/signed ones comp
     SensorDataConvention_t DataConvention;      //!< Android, Win8, etc,...
     uint32_t DataWidthMask;                     //!< how much of the data word that is sent significant
     AxisMapType_t AxisMapping[3];               //!< swap or flip axes as necessary before conversion
@@ -410,15 +397,10 @@ typedef struct  {
     NTEXTENDED MaxValue;                        //!< max value possible after conversion
     NTEXTENDED MinValue;                        //!< min value possible after conversion
     NTPRECISE Noise[3];                         //!< sensor noise based on Power Spectral Density in conversion units per sqrt(Hz)
-    NTPRECISE SensorTimestampDelay;             //!< time (in seconds) from sensor acquisition to time stamp (including filter propagation delay)
     void * pCalibrationData;                    //!< a per sensor calibration data structure (can be NULL if not needed)
     OSP_ResultReadyCallback_t pOptionalResultReadyCallback; //!<  called only when a new output result is ready (usually NULL for input sensors)
     OSP_WriteCalDataCallback_t pOptionalWriteDataCallback; //!<  called when calibration data is ready to write to NVM (NULL if not used)
     OSP_SensorControlCallback_t pOptionalSensorControlCallback; //!< Optional callback (NULL if not used) to request sensor control (on/off, low rate, etc...)
-    uint32_t StartupTime;                       //!< time (in microseconds) when going from OFF mode to ON mode to valid data available
-    uint32_t WakeTime;                          //!< time (in microseconds) when going from SLEEP mode to ON mode to valid data available
-    uint16_t HpfCutoff;                         //!< high pass filter 3db cutoff in Hz (0 if none)
-    uint16_t LpfCutoff;                         //!< low pass filter 3db cutoff in Hz (0 if none)
     NTPRECISE NotifyThresholds[16];             //!<  0= unused; otherwise used to do Win8 style significance, or trigger only on a subset of a context category's values
     char* SensorName;                           //!< short human readable description, Null terminated
     uint32_t VendorId;                          //!< sensor vendor ID, as assigned by OSP
