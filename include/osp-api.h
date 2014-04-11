@@ -15,8 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef OSP_ALGORITHMSAPI_H__
-#define OSP_ALGORITHMSAPI_H__
+#ifndef OSP_API_H__
+#define OSP_API_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -454,7 +454,7 @@ typedef struct  {
 *
 *  \return status as specified in OSP_Types.h
 */
-OSP_STATUS_t     OSP_Algorithms_Initialize(const SystemDescriptor_t* pSystemDesc);
+OSP_STATUS_t     OSP_Initialize(const SystemDescriptor_t* pSystemDesc);
 
 
 //! Call at startup for each sensor in the system
@@ -462,17 +462,17 @@ OSP_STATUS_t     OSP_Algorithms_Initialize(const SystemDescriptor_t* pSystemDesc
  *  Tells the Open-Sensor-Platform Library what kind of sensor inputs it has to work with so its Resource Manager
  *  can choose the most appropriate algorithms to execute.
  *
- *  If you need to change a sensors operating mode at runtime see OSP_Algorithms_ReplaceSensor().
+ *  If you need to change a sensors operating mode at runtime see OSP_ReplaceSensor().
  *
  *  \warning the caller must preserve the data pointed to by pSensorDescriptor after this call
  *
  *  \param pSensorDesc INPUT pointer to data which describes all the details of this sensor and its
  *      current operating mode; e.g. sensor type, SI unit conversion factor
- *  \param pReturnedHandle OUTPUT a handle to use when feeding data in via OSP_Algorithms_SetData()
+ *  \param pReturnedHandle OUTPUT a handle to use when feeding data in via OSP_SetData()
  *
  *  \return status as specified in OSP_Types.h
 */
-OSP_STATUS_t     OSP_Algorithms_RegisterSensor(SensorDescriptor_t *pSensorDescriptor, SensorHandle_t *pReturnedHandle);
+OSP_STATUS_t     OSP_RegisterSensor(SensorDescriptor_t *pSensorDescriptor, SensorHandle_t *pReturnedHandle);
 
 
 //! use to change a sensors operating mode (output rate, position, etc...)
@@ -481,7 +481,7 @@ OSP_STATUS_t     OSP_Algorithms_RegisterSensor(SensorDescriptor_t *pSensorDescri
  *
  *  Use Case: Standard Sensor Hub
  *     - after a change request interval/setDelay command from the host, create a new sensor descriptor with
- *       the updated sensor data rate and pass it OSP_Algorithms_ReplaceSensor()
+ *       the updated sensor data rate and pass it OSP_ReplaceSensor()
  *
  *  Use Case: Transformer Ultra Book
  *     - when the host detects a change in device configuration (Tablet Mode --> Laptop Mode) which could change
@@ -493,7 +493,7 @@ OSP_STATUS_t     OSP_Algorithms_RegisterSensor(SensorDescriptor_t *pSensorDescri
  *  \param pSensorDesc INPUT pointer to data which describes all the details of the new sensor and its
  *      current operating mode; e.g. sensor type, SI unit conversion factor
 */
-OSP_STATUS_t     OSP_Algorithms_ReplaceSensor(SensorDescriptor_t *pSensorDescriptor, SensorHandle_t *pSensorHandle);
+OSP_STATUS_t     OSP_ReplaceSensor(SensorDescriptor_t *pSensorDescriptor, SensorHandle_t *pSensorHandle);
 
 //! queues sensor data which will be processed by OSP_DoForegroundProcessing() and OSP_DoBackgroundProcessing()
 /*!
@@ -501,18 +501,18 @@ OSP_STATUS_t     OSP_Algorithms_ReplaceSensor(SensorDescriptor_t *pSensorDescrip
  *  queueing data for un-registered sensors (or as sensors that) 
  *  queue size defaults to 8, though is implementation dependent and available via SENSOR_FG_DATA_Q_SIZE
  *
- *  \param sensorHandle INPUT requires a valid handle as returned by OSP_Algorithms_RegisterSensor()
+ *  \param sensorHandle INPUT requires a valid handle as returned by OSP_RegisterSensor()
  *  \param data INPUT pointer to timestamped raw sensor data
  *
  *  \return status. Will always be OSP_STATUS_OK. If there is no room in the queue,
  *   The last data will be overwritten and a warning will be triggered if you subscribe to RESULT_WARNING
 */
-OSP_STATUS_t     OSP_Algorithms_SetData(SensorHandle_t SensorHandle, TriAxisSensorRawData_t *data);
+OSP_STATUS_t     OSP_SetData(SensorHandle_t SensorHandle, TriAxisSensorRawData_t *data);
 
 
 //! triggers computation for primary algorithms  e.g ROTATION_VECTOR
 /*!
- *  Separating OSP_Algorithms_DoForegroundProcessing and OSP_Algorithms_DoBackgroundProcessing calls allows for computation to happen in different thread contexts
+ *  Separating OSP_DoForegroundProcessing and OSP_DoBackgroundProcessing calls allows for computation to happen in different thread contexts
  *  - Call at least as often as your fastest registered result output rate
  *  - Call from a medium priority task to ensure computation happens in a reasonable time
  *  
@@ -522,12 +522,12 @@ OSP_STATUS_t     OSP_Algorithms_SetData(SensorHandle_t SensorHandle, TriAxisSens
  *
  *  \return status as specified in OSP_Types.h
 */
-OSP_STATUS_t     OSP_Algorithms_DoForegroundProcessing(void);
+OSP_STATUS_t     OSP_DoForegroundProcessing(void);
 
 
 //! triggers computation for less time critical background algorithms, e.g. sensor calibration
 /*!
- *  Separating OSP_Algorithms_DoForegroundProcessing and OSP_Algorithms_DoBackgroundProcessing calls allows for computation to happen in different thread contexts
+ *  Separating OSP_DoForegroundProcessing and OSP_DoBackgroundProcessing calls allows for computation to happen in different thread contexts
  *  - Call at least as often as your slowest registered sensor input
  *  - Call from the lowest priority task to ensure that more time critical functions can happen.
  *
@@ -536,7 +536,7 @@ OSP_STATUS_t     OSP_Algorithms_DoForegroundProcessing(void);
  *
  *  \return status as specified in OSP_Types.h
  */
-OSP_STATUS_t     OSP_Algorithms_DoBackgroundProcessing(void);
+OSP_STATUS_t     OSP_DoBackgroundProcessing(void);
 
 //! call for each Open-Sensor-Platform result (STEP_COUNT, ROTATION_VECTOR, etc) you want computed and output
 /*!
@@ -591,7 +591,7 @@ OSP_STATUS_t     OSP_UnsubscribeResult(FusionResultHandle_t ResultHandle);
  *      Note, if not subscribed to a calibrated result for this sensor, return will always be OSP_STATUS_IDLE.
  *      If data has exceeded the change sensitivity, will return OSP_STATUS_OK. All other errors apply.
  */
-OSP_STATUS_t     OSP_Algorithms_GetCalibratedSensor(SensorHandle_t SensorHandle, int16_t *data);
+OSP_STATUS_t     OSP_GetCalibratedSensor(SensorHandle_t SensorHandle, int16_t *data);
 
 
 
@@ -602,14 +602,14 @@ OSP_STATUS_t     OSP_Algorithms_GetCalibratedSensor(SensorHandle_t SensorHandle,
  *
  *  \return status as specified in OSP_Types.h
  */
-OSP_STATUS_t     OSP_Algorithms_GetVersion(const OSP_Library_Version_t **ppVersionStruct);
+OSP_STATUS_t     OSP_GetVersion(const OSP_Library_Version_t **ppVersionStruct);
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // OSP_ALGORITHMSAPI_H__
+#endif // OSP_API_H__
 
 /*--------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
