@@ -21,7 +21,7 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
-#include "FM_DataTypes.h"
+#include "OSP_DataTypes.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,38 +51,38 @@ extern "C" {
  *
  */
 
-/* fm_float_t to fixed point */
-#define TOFIX(x)  ((NT)(((fm_float_t)x) * (fm_float_t)(1UL << QFIXEDPOINT) ))
+/* Float to fixed point */
+#define TOFIX(x)  ((NT)(((osp_float_t)x) * (osp_float_t)(1UL << QFIXEDPOINT) ))
 
-/* fm_float_t to fixed point precise */
-#define CONST_PRECISE(x) ((NTPRECISE)(((fm_float_t)x) * (fm_float_t)(1UL << QFIXEDPOINTPRECISE) ))
-#define TOFIX_PRECISE(x) ((NTPRECISE)(((fm_float_t)x) * (fm_float_t)(1UL << QFIXEDPOINTPRECISE) ))
+/* Float to fixed point precise */
+#define CONST_PRECISE(x) ((NTPRECISE)(((osp_float_t)x) * (osp_float_t)(1UL << QFIXEDPOINTPRECISE) ))
+#define TOFIX_PRECISE(x) ((NTPRECISE)(((osp_float_t)x) * (osp_float_t)(1UL << QFIXEDPOINTPRECISE) ))
 
 
-/* fm_float_t to fixed point time */
-#define TOFIX_TIME(x) ((NTTIME)(((fm_dbl_t)x) * (fm_dbl_t)(1UL << QFIXEDPOINTTIME)))
+/* Float to fixed point time */
+#define TOFIX_TIME(x) ((NTTIME)(((osp_dbl_t)x) * (osp_dbl_t)(1UL << QFIXEDPOINTTIME)))
 
 /* Conversion from float to time coefficient, valid range is between 0 and 0.999999 */
-#define TOFIX_TIMECOEFFICIENT(x) ((uint32_t)(((fm_dbl_t)x) * (fm_dbl_t)(4294967296.0) ))
+#define TOFIX_TIMECOEFFICIENT(x) ((uint32_t)(((osp_dbl_t)x) * (osp_dbl_t)(4294967296.0) ))
 
-/*fm_float_t to fixed point extended */
-#define CONST_EXTENDED(x) ((NTEXTENDED)(((fm_float_t)x) * (fm_float_t)(1UL << QFIXEDPOINTEXTENDED) ))
-#define TOFIX_EXTENDED(x) ((NTEXTENDED)(((fm_float_t)x) * (fm_float_t)(1UL << QFIXEDPOINTEXTENDED) ))
+/* Float to fixed point extended */
+#define CONST_EXTENDED(x) ((NTEXTENDED)(((osp_float_t)x) * (osp_float_t)(1UL << QFIXEDPOINTEXTENDED) ))
+#define TOFIX_EXTENDED(x) ((NTEXTENDED)(((osp_float_t)x) * (osp_float_t)(1UL << QFIXEDPOINTEXTENDED) ))
 
 /*fixed point number of arbitrary q to a floating point number  */
-#define TOFLT_CUSTOM(x,q) ((fm_float_t)(x) / (fm_float_t)(1UL << (q)))
+#define TOFLT_CUSTOM(x,q) ((osp_float_t)(x) / (osp_float_t)(1UL << (q)))
 
 /* to floating point from fixed point */
-#define TOFLT(x) ((fm_float_t)(x) / (fm_float_t)(1 << QFIXEDPOINT))
+#define TOFLT(x) ((osp_float_t)(x) / (osp_float_t)(1 << QFIXEDPOINT))
 
 /* to floating point from fixed point precise */
-#define TOFLT_PRECISE(x) ((fm_float_t)(x) / (fm_float_t)(1UL << QFIXEDPOINTPRECISE))
+#define TOFLT_PRECISE(x) ((osp_float_t)(x) / (osp_float_t)(1UL << QFIXEDPOINTPRECISE))
 
 /* to floating point from fixed point time */
-#define TOFLT_TIME(x) ((fm_dbl_t)(x) / (fm_dbl_t)(1UL << QFIXEDPOINTTIME))
+#define TOFLT_TIME(x) ((osp_dbl_t)(x) / (osp_dbl_t)(1UL << QFIXEDPOINTTIME))
 
 /*to floating point from fixed point extended */
-#define TOFLT_EXTENDED(x) ((fm_float_t)(x) / (fm_float_t)(1UL << QFIXEDPOINTEXTENDED))
+#define TOFLT_EXTENDED(x) ((osp_float_t)(x) / (osp_float_t)(1UL << QFIXEDPOINTEXTENDED))
 
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S

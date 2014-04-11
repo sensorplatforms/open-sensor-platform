@@ -20,11 +20,11 @@
 \*-------------------------------------------------------------------------------------------------*/
 #include <string.h>
 #include <assert.h>
-#include "FM_DataTypes.h"
+#include "OSP_DataTypes.h"
 #include "Names.h"
 #include "DebugLog.h"
-#include "FmConfiguration.h"
-#include "FreeMotion_RemoteProcedureCalls.h" //For Status codes -- FIXME!
+#include "OspConfiguration.h"
+#include "OSP_RemoteProcedureCalls.h" //For Status codes -- FIXME!
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -101,14 +101,14 @@ public:
  *          Helper routine for getting configuration parameter
  *
  ***************************************************************************************************/
-const unsigned short SPI::FmConfiguration::getSizeFromName( const char* const shortName){
+const unsigned short SPI::OspConfiguration::getSizeFromName( const char* const shortName){
     static bool initialized = false;
     static std::map<std::string, unsigned short> _typeToSize;
     if (!initialized){
 
-        _typeToSize[ Names::RAW_ACCELEROMETER ] = sizeof(double) + sizeof(fm_float_t)*3;
-        _typeToSize[ Names::RAW_MAGNETOMETER ] = sizeof(double) + sizeof(fm_float_t)*3;
-        _typeToSize[ Names::RAW_GYROSCOPE ] = sizeof(double) + sizeof(fm_float_t)*3;
+        _typeToSize[ Names::RAW_ACCELEROMETER ] = sizeof(double) + sizeof(osp_float_t)*3;
+        _typeToSize[ Names::RAW_MAGNETOMETER ] = sizeof(double) + sizeof(osp_float_t)*3;
+        _typeToSize[ Names::RAW_GYROSCOPE ] = sizeof(double) + sizeof(osp_float_t)*3;
         initialized = true;
     }
     const std::string type = getNamedConfigItem(shortName, SENSOR_TYPE);
@@ -125,7 +125,7 @@ const unsigned short SPI::FmConfiguration::getSizeFromName( const char* const sh
  *          Helper routine for getting configuration parameter
  *
  ***************************************************************************************************/
-const int SPI::FmConfiguration::getDimensionFromName( const char* const shortName){
+const int SPI::OspConfiguration::getDimensionFromName( const char* const shortName){
     static bool initialized = false;
     static std::map<std::string, int> _typeToDimension;
     if (!initialized){
@@ -147,7 +147,7 @@ const int SPI::FmConfiguration::getDimensionFromName( const char* const shortNam
  *          Helper routine for getting configuration parameter
  *
  ***************************************************************************************************/
-const ESensorType SPI::FmConfiguration::getTypeFromName( const char* const shortName ){
+const ESensorType SPI::OspConfiguration::getTypeFromName( const char* const shortName ){
     static bool initialized = false;
     static std::map<std::string, ESensorType> _nameToSensorType;
     if (!initialized){
@@ -170,7 +170,7 @@ const ESensorType SPI::FmConfiguration::getTypeFromName( const char* const short
  *          Init routine
  *
  ***************************************************************************************************/
-SPI::FmConfiguration::Init::Init(){
+SPI::OspConfiguration::Init::Init(){
 }
 
 
@@ -180,7 +180,7 @@ SPI::FmConfiguration::Init::Init(){
  *
  ***************************************************************************************************/
 const char* const
-SPI::FmConfiguration::getConfigItem( const char* const name ){
+SPI::OspConfiguration::getConfigItem( const char* const name ){
     if (name == NULL){
         LOG_Err("Attempt to get config item for null name");
     } else if( configItemsString.find(std::string(name)) != configItemsString.end()){
@@ -198,7 +198,7 @@ SPI::FmConfiguration::getConfigItem( const char* const name ){
  *
  ***************************************************************************************************/
 std::vector<const char* >
-SPI::FmConfiguration::getConfigItemsMultiple( const char* const name ){
+SPI::OspConfiguration::getConfigItemsMultiple( const char* const name ){
     std::vector< const char*  > retval;
     if (name == NULL){
         LOG_Err("Attempt to get config item for null name");
@@ -222,7 +222,7 @@ SPI::FmConfiguration::getConfigItemsMultiple( const char* const name ){
  *
  ***************************************************************************************************/
 const float *
-SPI::FmConfiguration::getConfigItemFloat( const char* const name ,  unsigned int* size ){
+SPI::OspConfiguration::getConfigItemFloat( const char* const name ,  unsigned int* size ){
     if (name == NULL){
         if(size) *size = 0;
         return NULL;
@@ -244,7 +244,7 @@ SPI::FmConfiguration::getConfigItemFloat( const char* const name ,  unsigned int
  *
  ***************************************************************************************************/
 int
-SPI::FmConfiguration::getConfigItemIntV(
+SPI::OspConfiguration::getConfigItemIntV(
         const char* const name,
         const int defaultValue,
         int* status){
@@ -275,7 +275,7 @@ SPI::FmConfiguration::getConfigItemIntV(
  *
  ***************************************************************************************************/
 const int *
-SPI::FmConfiguration::getConfigItemInt(
+SPI::OspConfiguration::getConfigItemInt(
         const char* const name,
         unsigned int* size ){
     if (name == NULL){
@@ -298,7 +298,7 @@ SPI::FmConfiguration::getConfigItemInt(
  *
  ***************************************************************************************************/
 int
-SPI::FmConfiguration::setConfigItem(
+SPI::OspConfiguration::setConfigItem(
         const char* const name,
         const char* const value,
         const bool allowMultiple,
@@ -346,7 +346,7 @@ SPI::FmConfiguration::setConfigItem(
  *
  ***************************************************************************************************/
 int
-SPI::FmConfiguration::setConfigItemFloat(
+SPI::OspConfiguration::setConfigItemFloat(
         const char* const name,
         const float* const value,
         const unsigned int size,
@@ -380,7 +380,7 @@ SPI::FmConfiguration::setConfigItemFloat(
  *
  ***************************************************************************************************/
 void
-SPI::FmConfiguration::clear(const bool final){
+SPI::OspConfiguration::clear(const bool final){
     typedef std::map<std::string,  std::pair< const float *,  unsigned int> >::iterator it_type;
     for(it_type iterator = configItemsFloat.begin(); iterator != configItemsFloat.end(); iterator++) {
         delete[] (*iterator).second.first;
@@ -414,7 +414,7 @@ SPI::FmConfiguration::clear(const bool final){
  *
  ***************************************************************************************************/
 int
-SPI::FmConfiguration::setConfigItemInt(
+SPI::OspConfiguration::setConfigItemInt(
         const char* const name,
         const int* const value,
         const unsigned int size,
@@ -447,16 +447,16 @@ SPI::FmConfiguration::setConfigItemInt(
  *
  ***************************************************************************************************/
 void
-SPI::FmConfiguration::establishAsynchronousSensor(
+SPI::OspConfiguration::establishAsynchronousSensor(
         const char* name,
         const char* protocol,
         const char* type){
     float conversion[1] = {1.0f};
-    assert(FMConfig::setConfigItem( "sensor", name, true)==0);
-    FMConfig::setConfigItem( FMConfig::keyFrom( name, SENSOR_PROTOCOL).c_str(), protocol);
-    FMConfig::setConfigItemFloat( FMConfig::keyFrom( name,SENSOR_CONVERSION).c_str(),conversion,1);
-    FMConfig::setConfigItem(
-                FMConfig::keyFrom( name, FMConfig::SENSOR_TYPE).c_str(),
+    assert(OSPConfig::setConfigItem( "sensor", name, true)==0);
+    OSPConfig::setConfigItem( OSPConfig::keyFrom( name, SENSOR_PROTOCOL).c_str(), protocol);
+    OSPConfig::setConfigItemFloat( OSPConfig::keyFrom( name,SENSOR_CONVERSION).c_str(),conversion,1);
+    OSPConfig::setConfigItem(
+                OSPConfig::keyFrom( name, OSPConfig::SENSOR_TYPE).c_str(),
                 type);
 }
 
@@ -467,7 +467,7 @@ SPI::FmConfiguration::establishAsynchronousSensor(
  *
  ***************************************************************************************************/
 void
-SPI::FmConfiguration::establishCartesianSensor(
+SPI::OspConfiguration::establishCartesianSensor(
         const char* name,
         const char* protocol,
         const char* type,
@@ -478,24 +478,24 @@ SPI::FmConfiguration::establishCartesianSensor(
         const float * const shake){
     float conversion[3] = {1.0f, 1.0f, 1.0f};
     int swap[3] = {0,1,2};
-    assert(FMConfig::setConfigItem( "sensor", name, true)==0);
-    FMConfig::setConfigItem( FMConfig::keyFrom( name,SENSOR_PROTOCOL).c_str(), protocol);
-    FMConfig::setConfigItemFloat( FMConfig::keyFrom( name, SENSOR_NOISE).c_str(), noise ,3);
-    FMConfig::setConfigItemFloat( FMConfig::keyFrom( name,SENSOR_RATE).c_str(), &period, 1);
+    assert(OSPConfig::setConfigItem( "sensor", name, true)==0);
+    OSPConfig::setConfigItem( OSPConfig::keyFrom( name,SENSOR_PROTOCOL).c_str(), protocol);
+    OSPConfig::setConfigItemFloat( OSPConfig::keyFrom( name, SENSOR_NOISE).c_str(), noise ,3);
+    OSPConfig::setConfigItemFloat( OSPConfig::keyFrom( name,SENSOR_RATE).c_str(), &period, 1);
     if ( bias ){
-        FMConfig::setConfigItemFloat( FMConfig::keyFrom( name,SENSOR_BIAS_STABILITY).c_str(),bias,3);
+        OSPConfig::setConfigItemFloat( OSPConfig::keyFrom( name,SENSOR_BIAS_STABILITY).c_str(),bias,3);
     }
-    FMConfig::setConfigItemFloat( FMConfig::keyFrom( name, SENSOR_CONVERSION).c_str(),conversion,3);
+    OSPConfig::setConfigItemFloat( OSPConfig::keyFrom( name, SENSOR_CONVERSION).c_str(),conversion,3);
     if( nonlinear){
-        FMConfig::setConfigItemFloat( FMConfig::keyFrom( name, SENSOR_NON_LINEAR).c_str(),nonlinear,12);
+        OSPConfig::setConfigItemFloat( OSPConfig::keyFrom( name, SENSOR_NON_LINEAR).c_str(),nonlinear,12);
     }
     if (shake){
-        FMConfig::setConfigItemFloat( FMConfig::keyFrom( name, SENSOR_SHAKE).c_str(),shake,3);
+        OSPConfig::setConfigItemFloat( OSPConfig::keyFrom( name, SENSOR_SHAKE).c_str(),shake,3);
     }
 
-    FMConfig::setConfigItemInt( FMConfig::keyFrom( name, SENSOR_SWAP).c_str(),swap,3);
-    FMConfig::setConfigItem(
-                FMConfig::keyFrom( name, FMConfig::SENSOR_TYPE).c_str(),
+    OSPConfig::setConfigItemInt( OSPConfig::keyFrom( name, SENSOR_SWAP).c_str(),swap,3);
+    OSPConfig::setConfigItem(
+                OSPConfig::keyFrom( name, OSPConfig::SENSOR_TYPE).c_str(),
                 type);
 }
 
@@ -506,11 +506,11 @@ SPI::FmConfiguration::establishCartesianSensor(
  *
  ***************************************************************************************************/
 void
-SPI::FmConfiguration::establishDefaultConfig(const char* const protocol){
+SPI::OspConfiguration::establishDefaultConfig(const char* const protocol){
     int tick_us = 24;
 
-    setConfigItem(FMConfig::PROTOCOL_RELAY_DRIVER, "sensor_relay_kernel");
-    setConfigItemInt(FMConfig::PROTOCOL_RELAY_TICK_USEC, &tick_us, 1);
+    setConfigItem(OSPConfig::PROTOCOL_RELAY_DRIVER, "sensor_relay_kernel");
+    setConfigItemInt(OSPConfig::PROTOCOL_RELAY_TICK_USEC, &tick_us, 1);
     /* MAG */
     {
         const float noise[3] = {
@@ -529,15 +529,15 @@ SPI::FmConfiguration::establishDefaultConfig(const char* const protocol){
                     period,
                     noise,
                     bias);
-        FMConfig::setConfigItem(
-                    FMConfig::keyFrom("mag1", SENSOR_INPUT_NAME).c_str(),
+        OSPConfig::setConfigItem(
+                    OSPConfig::keyFrom("mag1", SENSOR_INPUT_NAME).c_str(),
                     Names::RAW_MAGNETOMETER );
-        FMConfig::setConfigItemFloat(
-                    FMConfig::keyFrom("mag1", SENSOR_CONVERSION).c_str(),
+        OSPConfig::setConfigItemFloat(
+                    OSPConfig::keyFrom("mag1", SENSOR_CONVERSION).c_str(),
                     conversion,
                     3,
                     true);
-        FMConfig::setConfigItemInt( "mag1.swap",swap,3);
+        OSPConfig::setConfigItemInt( "mag1.swap",swap,3);
     }
 
 
@@ -559,15 +559,15 @@ SPI::FmConfiguration::establishDefaultConfig(const char* const protocol){
                     period,
                     noise,
                     bias);
-        FMConfig::setConfigItem(
-                    FMConfig::keyFrom("acc1", SENSOR_INPUT_NAME).c_str(),
+        OSPConfig::setConfigItem(
+                    OSPConfig::keyFrom("acc1", SENSOR_INPUT_NAME).c_str(),
                     Names::RAW_ACCELEROMETER );
-        FMConfig::setConfigItemFloat(
-                    FMConfig::keyFrom("acc1", SENSOR_CONVERSION).c_str(),
+        OSPConfig::setConfigItemFloat(
+                    OSPConfig::keyFrom("acc1", SENSOR_CONVERSION).c_str(),
                     conversion,
                     3,
                     true);
-        FMConfig::setConfigItemInt( "acc1.swap",swap,3);
+        OSPConfig::setConfigItemInt( "acc1.swap",swap,3);
     }
 
     /* GYRO */
@@ -588,15 +588,15 @@ SPI::FmConfiguration::establishDefaultConfig(const char* const protocol){
                     period,
                     noise,
                     bias);
-        FMConfig::setConfigItem(
-                    FMConfig::keyFrom("gyr1", SENSOR_INPUT_NAME).c_str(),
+        OSPConfig::setConfigItem(
+                    OSPConfig::keyFrom("gyr1", SENSOR_INPUT_NAME).c_str(),
                     Names::RAW_GYROSCOPE );
-        FMConfig::setConfigItemFloat(
-                    FMConfig::keyFrom("gyr1", SENSOR_CONVERSION).c_str(),
+        OSPConfig::setConfigItemFloat(
+                    OSPConfig::keyFrom("gyr1", SENSOR_CONVERSION).c_str(),
                     conversion,
                     3,
                     true);
-        FMConfig::setConfigItemInt( "gyr1.swap",swap,3);
+        OSPConfig::setConfigItemInt( "gyr1.swap",swap,3);
     }
 }
 
@@ -607,7 +607,7 @@ SPI::FmConfiguration::establishDefaultConfig(const char* const protocol){
  *
  ***************************************************************************************************/
 int
-SPI::FmConfiguration::dump( const char* const filename ){
+SPI::OspConfiguration::dump( const char* const filename ){
     FILE* f = ::fopen( filename, "w");
     if (!f){
         LOG_Err("Unable to open file '%s'",filename);
@@ -700,10 +700,10 @@ SPI::FmConfiguration::dump( const char* const filename ){
 
 
 extern "C++"{
-std::map<std::string, std::vector<const char*> > SPI::FmConfiguration::configItemsString;
-std::map<std::string, std::pair< const float*, unsigned int>  > SPI::FmConfiguration::configItemsFloat;
-std::map<std::string, std::pair< const int *,  unsigned int>  > SPI::FmConfiguration::configItemsInt;
-SPI::FmConfiguration::Init SPI::FmConfiguration::initializer;
+std::map<std::string, std::vector<const char*> > SPI::OspConfiguration::configItemsString;
+std::map<std::string, std::pair< const float*, unsigned int>  > SPI::OspConfiguration::configItemsFloat;
+std::map<std::string, std::pair< const int *,  unsigned int>  > SPI::OspConfiguration::configItemsInt;
+SPI::OspConfiguration::Init SPI::OspConfiguration::initializer;
 }
 
 /*-------------------------------------------------------------------------------------------------*\

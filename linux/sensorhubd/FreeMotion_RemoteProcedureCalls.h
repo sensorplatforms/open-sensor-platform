@@ -15,8 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef FREEMOTION_RPC_H
-#define FREEMOTION_RPC_H
+#ifndef OSP_RPC_H
+#define OSP_RPC_H
 
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
@@ -67,11 +67,11 @@ typedef struct {
         float   f;
         int32_t i;
     } data[3];
-} FMRPC_ThreeAxisData_t;
+} OSPD_ThreeAxisData_t;
 
 typedef int OSP_STATUS_t;
 
-typedef void (*FMRPC_ResultDataCallback_t)(uint32_t sensorType, void* data);
+typedef void (*OSPD_ResultDataCallback_t)(uint32_t sensorType, void* data);
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
@@ -84,14 +84,14 @@ typedef void (*FMRPC_ResultDataCallback_t)(uint32_t sensorType, void* data);
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-OSP_STATUS_t FMRPC_Initialize(void);
-OSP_STATUS_t FMRPC_GetVersion(char* versionString, int bufSize);
-OSP_STATUS_t FMRPC_SubscribeResult(uint32_t sensorType, FMRPC_ResultDataCallback_t dataReadyCallback );
-OSP_STATUS_t FMRPC_UnsubscribeResult(uint32_t sensorType);
-OSP_STATUS_t FMRPC_Deinitialize(void);
+OSP_STATUS_t OSPD_Initialize(void);
+OSP_STATUS_t OSPD_GetVersion(char* versionString, int bufSize);
+OSP_STATUS_t OSPD_SubscribeResult(uint32_t sensorType, OSPD_ResultDataCallback_t dataReadyCallback );
+OSP_STATUS_t OSPD_UnsubscribeResult(uint32_t sensorType);
+OSP_STATUS_t OSPD_Deinitialize(void);
 
 
-#endif /* FREEMOTION_RPC_H */
+#endif /* OSP_RPC_H */
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/

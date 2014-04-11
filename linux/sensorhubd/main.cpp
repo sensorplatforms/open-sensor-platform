@@ -36,7 +36,7 @@
 
 #include "DebugLog.h"
 #include "VirtualSensorDeviceManager.h"
-#include "FreeMotion_RemoteProcedureCalls.h"
+#include "OSP_RemoteProcedureCalls.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
@@ -46,9 +46,9 @@
  |    P R I V A T E   C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
 #define MAX_NUM_FDS(x,y)                ((x) > (y) ? (x) : (y))
-#define ACCEL_UINPUT_NAME               "fm-accelerometer"
-#define GYRO_UINPUT_NAME                "fm-gyroscope"
-#define MAG_UINPUT_NAME                 "fm-magnetometer"
+#define ACCEL_UINPUT_NAME               "osp-accelerometer"
+#define GYRO_UINPUT_NAME                "osp-gyroscope"
+#define MAG_UINPUT_NAME                 "osp-magnetometer"
 
 #define TWENTY_MS_IN_US                 (20000)
 #define ENABLE_PIPE_NAME_TEMPLATE       "/data/misc/osp-%s-enable"
@@ -80,7 +80,7 @@ static int _evdevFds[SENSORHUBD_RESULT_INDEX_COUNT] ={-1};
 static int _enablePipeFds[SENSORHUBD_RESULT_INDEX_COUNT] ={-1};
 static const char* _sensorNames[SENSORHUBD_RESULT_INDEX_COUNT] = {
     "accel", "mag", "gyro", /*"sig-motion", "step-count"*/};
-static uint32_t _fmResultCodes[SENSORHUBD_RESULT_INDEX_COUNT]= {
+static uint32_t _ospResultCodes[SENSORHUBD_RESULT_INDEX_COUNT]= {
     SENSOR_TYPE_ACCELEROMETER,
     SENSOR_TYPE_MAGNETIC_FIELD,
     SENSOR_TYPE_GYROSCOPE,
@@ -153,12 +153,12 @@ static void _parseAndHandleEnable(int sensorIndex, char* buffer, ssize_t numByte
 
     if ('0' == buffer[0]) {
         LOG_Info("UNsubscribe to sensorcode %d\n", (int)sensorIndex);
-        OSP_STATUS_t status= FMRPC_UnsubscribeResult(_fmResultCodes[sensorIndex]);
+        OSP_STATUS_t status= OSPD_UnsubscribeResult(_ospResultCodes[sensorIndex]);
         _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing from result\n");
 
     } else if ('1' == buffer[0]) {
         LOG_Info("SUBSCRIBE to sensorcode %d\n", (int)sensorIndex);
-        OSP_STATUS_t status= FMRPC_SubscribeResult(_fmResultCodes[sensorIndex], _onTriAxisSensorResultDataUpdate);
+        OSP_STATUS_t status= OSPD_SubscribeResult(_ospResultCodes[sensorIndex], _onTriAxisSensorResultDataUpdate);
         _logErrorIf(status != OSP_STATUS_OK, "error subscribing to result\n");
 
     } else {
@@ -205,7 +205,7 @@ static void _initializeNamedPipes()
  ***************************************************************************************************/
 static void _onTriAxisSensorResultDataUpdate(uint32_t sensorType, void* pData)
 {
-    FMRPC_ThreeAxisData_t* pSensorData= (FMRPC_ThreeAxisData_t*)pData;
+    OSPD_ThreeAxisData_t* pSensorData= (OSPD_ThreeAxisData_t*)pData;
     int32_t uinputCompatibleDataFormat[3];
 
 
@@ -278,19 +278,19 @@ static void _subscribeToAllResults()
     OSP_STATUS_t status;
     LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
 
-    status = FMRPC_SubscribeResult(SENSOR_TYPE_ACCELEROMETER, _onTriAxisSensorResultDataUpdate);
+    status = OSPD_SubscribeResult(SENSOR_TYPE_ACCELEROMETER, _onTriAxisSensorResultDataUpdate);
     _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_UNCALIBRATED_ACCELEROMETER");
 
-    status = FMRPC_SubscribeResult(SENSOR_TYPE_MAGNETIC_FIELD, _onTriAxisSensorResultDataUpdate);
+    status = OSPD_SubscribeResult(SENSOR_TYPE_MAGNETIC_FIELD, _onTriAxisSensorResultDataUpdate);
     _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_UNCALIBRATED_ACCELEROMETER");
 
-    status = FMRPC_SubscribeResult(SENSOR_TYPE_GYROSCOPE, _onTriAxisSensorResultDataUpdate);
+    status = OSPD_SubscribeResult(SENSOR_TYPE_GYROSCOPE, _onTriAxisSensorResultDataUpdate);
     _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_UNCALIBRATED_GYRO");
 
-    //    status = FMRPC_SubscribeResult(SENSOR_TYPE_SIGNIFICANT_MOTION, _onTriAxisSensorResultDataUpdate);
+    //    status = OSPD_SubscribeResult(SENSOR_TYPE_SIGNIFICANT_MOTION, _onTriAxisSensorResultDataUpdate);
     //    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_SIGNIFICANT_MOTION");
 
-    //    status = FMRPC_SubscribeResult(SENSOR_TYPE_STEP_COUNTER, _onTriAxisSensorResultDataUpdate);
+    //    status = OSPD_SubscribeResult(SENSOR_TYPE_STEP_COUNTER, _onTriAxisSensorResultDataUpdate);
     //    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_STEP_COUNTER");
 
 }
@@ -314,17 +314,17 @@ static void _initialize()
     //_evdevFds[SENSORHUBD_SIG_MOTION_INDEX]= _pVsDevMgr->createSensor("osp-significant-motion", "sigm0",  INT_MIN, INT_MAX);
     //_evdevFds[SENSORHUBD_STEP_COUNTER_INDEX]= _pVsDevMgr->createSensor("osp-step-counter", "stc0",  INT_MIN, INT_MAX);
 
-    //Initialize freeMotion
+    //Initialize OSP Daemon
     LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
-    status= FMRPC_Initialize();
+    status= OSPD_Initialize();
 
     LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
-    _fatalErrorIf(status!= OSP_STATUS_OK, status, "Failed on FreeMotion RPC Initialization!");
+    _fatalErrorIf(status!= OSP_STATUS_OK, status, "Failed on OSP Daemon Initialization!");
 
-    //print out the FreeMotion version
+    //print out the daemon version
     //char versionString[255];
-    //FMRPC_GetVersion(versionString, 255);
-    //LOG_Info("freeMotion version %s\n", versionString);
+    //OSPD_GetVersion(versionString, 255);
+    //LOG_Info("OSP Daemon version %s\n", versionString);
 
     _initializeNamedPipes();
 
@@ -343,19 +343,19 @@ static void _stopAllResults()
 {
     LOGT("%s\r\n", __FUNCTION__);
 
-    OSP_STATUS_t status= FMRPC_UnsubscribeResult(SENSOR_TYPE_ACCELEROMETER);
+    OSP_STATUS_t status= OSPD_UnsubscribeResult(SENSOR_TYPE_ACCELEROMETER);
     _logErrorIf(status != OSP_STATUS_OK, "error Unsubscribing to RESULT_UNCALIBRATED_ACCELEROMETER");
 
-    status= FMRPC_UnsubscribeResult(SENSOR_TYPE_MAGNETIC_FIELD);
+    status= OSPD_UnsubscribeResult(SENSOR_TYPE_MAGNETIC_FIELD);
     _logErrorIf(status != OSP_STATUS_OK, "error Unsubscribing to RESULT_UNCALIBRATED_MAGNETOMETER");
 
-    status= FMRPC_UnsubscribeResult(SENSOR_TYPE_GYROSCOPE);
+    status= OSPD_UnsubscribeResult(SENSOR_TYPE_GYROSCOPE);
     _logErrorIf(status != OSP_STATUS_OK, "error Unsubscribing to RESULT_UNCALIBRATED_GYRO");
 
-    status= FMRPC_UnsubscribeResult(SENSOR_TYPE_SIGNIFICANT_MOTION);
+    status= OSPD_UnsubscribeResult(SENSOR_TYPE_SIGNIFICANT_MOTION);
     _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to RESULT_SIGNIFICANT_MOTION");
 
-    status= FMRPC_UnsubscribeResult(SENSOR_TYPE_STEP_COUNTER);
+    status= OSPD_UnsubscribeResult(SENSOR_TYPE_STEP_COUNTER);
     _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to RESULT_STEP_COUNTER");
 }
 
@@ -370,7 +370,7 @@ static void _deinitialize()
 
     _stopAllResults();
 
-    FMRPC_Deinitialize();
+    OSPD_Deinitialize();
 }
 
 

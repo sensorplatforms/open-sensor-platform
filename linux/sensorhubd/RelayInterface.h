@@ -22,7 +22,7 @@
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
 #include <string>
-#include "FM_DataTypes.h"
+#include "OSP_DataTypes.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
@@ -57,7 +57,7 @@ typedef struct {
     int32_t     disableValue;  //Value that disables the device (typically 0)
     int32_t     fd;
     int32_t     repubFd;
-    fm_float_t  conversion[3];
+    osp_float_t  conversion[3];
     int         swap[3];
 } DeviceConfig_t;
 

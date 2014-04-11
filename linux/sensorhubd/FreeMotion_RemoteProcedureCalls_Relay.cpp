@@ -18,7 +18,7 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
-#include "FreeMotion_RemoteProcedureCalls.h"
+#include "OSP_RemoteProcedureCalls.h"
 #include <fcntl.h>
 #include <errno.h>
 #include <cstring>
@@ -29,7 +29,7 @@
 #include <assert.h>
 #include "RelayInterface.h"
 #include "DebugLog.h"
-#include "FmConfiguration.h"
+#include "OspConfiguration.h"
 #include "sensor_relay.h"
 
 extern "C" {
@@ -77,7 +77,7 @@ static const char* const sensornames[MAX_NUM_SENSORS_TO_HANDLE] = {
 static pthread_t _relayThread;
 static volatile bool _relayThreadActive = false;
 
-static FMRPC_ResultDataCallback_t _resultReadyCallbacks[COUNT_OF_SENSOR_TYPES] = {0};
+static OSPD_ResultDataCallback_t _resultReadyCallbacks[COUNT_OF_SENSOR_TYPES] = {0};
 
 
 /*-------------------------------------------------------------------------------------------------*\
@@ -85,7 +85,7 @@ static FMRPC_ResultDataCallback_t _resultReadyCallbacks[COUNT_OF_SENSOR_TYPES] =
 \*-------------------------------------------------------------------------------------------------*/
 static int32_t InitializeRelayInput( void );
 static void *_processRelayInput(void *pData);
-static void _relayReadAndProcessSensorData(int fd, FMRPC_ResultDataCallback_t dataCallbacks[]);
+static void _relayReadAndProcessSensorData(int fd, OSPD_ResultDataCallback_t dataCallbacks[]);
 static void ProcessInputEventsRelay(void);
 
 /*-------------------------------------------------------------------------------------------------*\
@@ -97,7 +97,7 @@ static void ProcessInputEventsRelay(void);
  *          Parse the sensor data and invoke result callbacks
  *
  ***************************************************************************************************/
-static void _sensorDataPublish(uint32_t sensorIndex, FMRPC_ThreeAxisData_t *pSensData)
+static void _sensorDataPublish(uint32_t sensorIndex, OSPD_ThreeAxisData_t *pSensData)
 {
     int32_t sensorType = -1;
 
@@ -156,16 +156,19 @@ int32_t _doAxisSwap(int32_t eventCode, int32_t sensorIndex, const int swap[3])
     case ABS_Z:
         zeroIndexedDeviceAxis = eventCode - ABS_X;
         break;
+
     case ABS_RX:
     case ABS_RY:
     case ABS_RZ:
         zeroIndexedDeviceAxis = eventCode - ABS_RX;
         break;
+
     case ABS_GAS:   //used as code for light sensor
     case ABS_DISTANCE:  //used as code for prox sensor
     case ABS_PRESSURE:  // used for Barometer
         zeroIndexedDeviceAxis = 0;
         break;
+
     default:
         result = -1;
         break;
@@ -179,8 +182,8 @@ int32_t _doAxisSwap(int32_t eventCode, int32_t sensorIndex, const int swap[3])
         }
 #if 0
         else {
-            FM_ASSERT( zeroIndexedDeviceAxis >= 0, "Quaternion Axis index out of bounds!"); //should never happen
-            FM_ASSERT( zeroIndexedDeviceAxis < 4, "Quaternion Axis index out of bounds!"); //should never happen
+            assert( zeroIndexedDeviceAxis >= 0, "Quaternion Axis index out of bounds!"); //should never happen
+            assert( zeroIndexedDeviceAxis < 4, "Quaternion Axis index out of bounds!"); //should never happen
             result = zeroIndexedDeviceAxis; // no need for Axis conversion
         }
 #endif
@@ -205,13 +208,13 @@ static int32_t Initialize( void )
     const int *swap;
     unsigned int swaplen;
     unsigned int convlen;
-    const fm_float_t * conv;
+    const osp_float_t * conv;
 
     for (int index = 0; index < MAX_NUM_SENSORS_TO_HANDLE; ++index){
-        const char* const drivername = FMConfig::getNamedConfigItem(
+        const char* const drivername = OSPConfig::getNamedConfigItem(
                     sensornames[index],
-                    FMConfig::SENSOR_DRIVER_NAME);
-        auto sensorlist = FMConfig::getConfigItemsMultiple("sensor");
+                    OSPConfig::SENSOR_DRIVER_NAME);
+        auto sensorlist = OSPConfig::getConfigItemsMultiple("sensor");
         if(drivername && strlen(drivername)){
             _deviceConfig[index].uinputName =  drivername;
         } else {
@@ -224,8 +227,8 @@ static int32_t Initialize( void )
         }
 
 
-        swap = FMConfig::getNamedConfigItemInt(
-                    sensornames[index], FMConfig::SENSOR_SWAP, &swaplen);
+        swap = OSPConfig::getNamedConfigItemInt(
+                    sensornames[index], OSPConfig::SENSOR_SWAP, &swaplen);
         if (!swap){
             for (unsigned int j = 0; j < 3; ++j){
                 _deviceConfig[index].swap[j] = j;
@@ -240,8 +243,8 @@ static int32_t Initialize( void )
             assert(swaplen == 3);
         }
 
-        conv = FMConfig::getNamedConfigItemFloat(
-                    sensornames[index], FMConfig::SENSOR_CONVERSION, &convlen);
+        conv = OSPConfig::getNamedConfigItemFloat(
+                    sensornames[index], OSPConfig::SENSOR_CONVERSION, &convlen);
         if (!conv){
             for (unsigned int j = 0; j < 3; ++j){
                 _deviceConfig[index].conversion[j] = 1.0f;
@@ -261,7 +264,7 @@ static int32_t Initialize( void )
         }
     }
 
-    temp = FMConfig::getConfigItem(FMConfig::PROTOCOL_RELAY_DRIVER);
+    temp = OSPConfig::getConfigItem(OSPConfig::PROTOCOL_RELAY_DRIVER);
     _deviceRelayInputName = temp? temp : "";
 
     if (!_deviceRelayInputName.empty()) {
@@ -272,8 +275,8 @@ static int32_t Initialize( void )
     }
 
     /* Initialize the micro-second per tick value */
-    _relayTickUsec = FMConfig::getConfigItemIntV(
-                FMConfig::PROTOCOL_RELAY_TICK_USEC,
+    _relayTickUsec = OSPConfig::getConfigItemIntV(
+                OSPConfig::PROTOCOL_RELAY_TICK_USEC,
                 1,
                 NULL);
     LOG_Info("Relay Ticks per us: %d", _relayTickUsec);
@@ -289,8 +292,8 @@ static int32_t Initialize( void )
  ***************************************************************************************************/
 static int32_t InitializeRelayInput( void )
 {
-    fm_char_t devname[256];
-    fm_char_t *sysfs = NULL;
+    osp_char_t devname[256];
+    osp_char_t *sysfs = NULL;
     unsigned int cpu;
 
     memset(devname, 0, sizeof(devname));
@@ -314,18 +317,18 @@ static int32_t InitializeRelayInput( void )
 
     for (unsigned char i = 0; i < MAX_NUM_SENSORS_TO_HANDLE; ++i) {
         if (!_deviceConfig[i].uinputName.empty()) {
-            if (FMConfig::getNamedConfigItem(sensornames[i],
-                                             FMConfig::SENSOR_ENABLE_PATH)) {
-                _deviceConfig[i].enableValue = FMConfig::getNamedConfigItemIntV
+            if (OSPConfig::getNamedConfigItem(sensornames[i],
+                                             OSPConfig::SENSOR_ENABLE_PATH)) {
+                _deviceConfig[i].enableValue = OSPConfig::getNamedConfigItemIntV
                         ( sensornames[i],
-                          FMConfig::SENSOR_ENABLE_VALUE,
+                          OSPConfig::SENSOR_ENABLE_VALUE,
                           1);
-                _deviceConfig[i].disableValue =  FMConfig::getNamedConfigItemIntV( sensornames[i],
-                                                                                   FMConfig::SENSOR_DISABLE_VALUE, 1);
+                _deviceConfig[i].disableValue =  OSPConfig::getNamedConfigItemIntV( sensornames[i],
+                                                                                   OSPConfig::SENSOR_DISABLE_VALUE, 1);
                 if(asprintf(&sysfs, "/sys/class/sensor_relay/%s/%s",
                             _deviceConfig[i].uinputName.c_str(),
-                            FMConfig::getNamedConfigItem(sensornames[i],
-                                                         FMConfig::SENSOR_ENABLE_PATH))< 0) {
+                            OSPConfig::getNamedConfigItem(sensornames[i],
+                                                         OSPConfig::SENSOR_ENABLE_PATH))< 0) {
                     LOG_Err("asprintf call failed!");
                 } else {
                     LOG_Info("Sysfs Enable Path: %s, %d, %d", sysfs, _deviceConfig[i].enableValue,
@@ -334,12 +337,12 @@ static int32_t InitializeRelayInput( void )
                     free(sysfs);
                 }
             }
-            if (FMConfig::getNamedConfigItem( sensornames[i],
-                                              FMConfig::SENSOR_DELAY_PATH)) {
+            if (OSPConfig::getNamedConfigItem( sensornames[i],
+                                              OSPConfig::SENSOR_DELAY_PATH)) {
                 if(asprintf(&sysfs, "/sys/class/sensor_relay/%s/%s",
                             _deviceConfig[i].uinputName.c_str(),
-                            FMConfig::getNamedConfigItem( sensornames[i],
-                                                          FMConfig::SENSOR_DELAY_PATH)) < 0) {
+                            OSPConfig::getNamedConfigItem( sensornames[i],
+                                                          OSPConfig::SENSOR_DELAY_PATH)) < 0) {
                     LOG_Err("asprintf call failed!");
                 } else {
                     LOG_Info("Sysfs Delay Path: %s", sysfs);
@@ -449,7 +452,7 @@ static void *_processRelayInput(void *pData)
  *          Helper routine for reading and handling sensor data coming via RelayFS
  *
  ***************************************************************************************************/
-static void _relayReadAndProcessSensorData(int fd, FMRPC_ResultDataCallback_t dataCallbacks[])
+static void _relayReadAndProcessSensorData(int fd, OSPD_ResultDataCallback_t dataCallbacks[])
 {
     fd_set readFdSet;
     fd_set excFdSet;
@@ -614,7 +617,7 @@ static void ProcessInputEventsRelay(void)
             }
 
             /* Axis unit conversions & result callbacks */
-            FMRPC_ThreeAxisData_t floatSensorData;
+            OSPD_ThreeAxisData_t floatSensorData;
             uint64_t timeTicks = sensorNode->sensorData.TimeStamp;
             int64_t timeNsec = (int64_t)(_relayTickUsec * timeTicks * 1000);
 
@@ -782,11 +785,11 @@ static void ProcessInputEventsRelay(void)
 \*-------------------------------------------------------------------------------------------------*/
 
 /****************************************************************************************************
- * @fn      FMRPC_Initialize
+ * @fn      OSPD_Initialize
  *          Initialize remote procedure call for the daemon
  *
  ***************************************************************************************************/
-OSP_STATUS_t FMRPC_Initialize(void) {
+OSP_STATUS_t OSPD_Initialize(void) {
     OSP_STATUS_t result = OSP_STATUS_OK;
     //int tick_us = 24;
     LOGT("%s\r\n", __FUNCTION__);
@@ -797,12 +800,12 @@ OSP_STATUS_t FMRPC_Initialize(void) {
     _deviceConfig[GYRO_INDEX].uinputName.assign("");
 
     /* Setup default configuration for testing */
-    //FMConfig::setConfigItem(FMConfig::PROTOCOL_RELAY_DRIVER, "sensor_relay_kernel");
-    //FMConfig::setConfigItemInt(FMConfig::PROTOCOL_RELAY_TICK_USEC, &tick_us, 1);
-    FMConfig::establishDefaultConfig("relay");
+    //OSPConfig::setConfigItem(OSPConfig::PROTOCOL_RELAY_DRIVER, "sensor_relay_kernel");
+    //OSPConfig::setConfigItemInt(OSPConfig::PROTOCOL_RELAY_TICK_USEC, &tick_us, 1);
+    OSPConfig::establishDefaultConfig("relay");
 
     /* Dump config for debug */
-    FMConfig::dump("/data/tmp/config-dump.txt");
+    OSPConfig::dump("/data/tmp/config-dump.txt");
 
     result = Initialize();
     if (result != OSP_STATUS_OK) {
@@ -816,11 +819,11 @@ OSP_STATUS_t FMRPC_Initialize(void) {
 }
 
 /****************************************************************************************************
- * @fn      FMRPC_GetVersion
+ * @fn      OSPD_GetVersion
  *          Helper routine for getting daemon version information
  *
  ***************************************************************************************************/
-OSP_STATUS_t FMRPC_GetVersion(char* versionString, int bufSize) {
+OSP_STATUS_t OSPD_GetVersion(char* versionString, int bufSize) {
     OSP_STATUS_t result = OSP_STATUS_OK;
 
     LOGT("%s\r\n", __FUNCTION__);
@@ -829,11 +832,11 @@ OSP_STATUS_t FMRPC_GetVersion(char* versionString, int bufSize) {
 }
 
 /****************************************************************************************************
- * @fn      FMRPC_SubscribeResult
+ * @fn      OSPD_SubscribeResult
  *          Enables subscription for results
  *
  ***************************************************************************************************/
-OSP_STATUS_t FMRPC_SubscribeResult(uint32_t sensorType, FMRPC_ResultDataCallback_t dataReadyCallback ) {
+OSP_STATUS_t OSPD_SubscribeResult(uint32_t sensorType, OSPD_ResultDataCallback_t dataReadyCallback ) {
     OSP_STATUS_t result = OSP_STATUS_OK;
 
     LOGT("%s\r\n", __FUNCTION__);
@@ -844,11 +847,11 @@ OSP_STATUS_t FMRPC_SubscribeResult(uint32_t sensorType, FMRPC_ResultDataCallback
 }
 
 /****************************************************************************************************
- * @fn      FMRPC_UnsubscribeResult
+ * @fn      OSPD_UnsubscribeResult
  *          Unsubscribe from sensor results
  *
  ***************************************************************************************************/
-OSP_STATUS_t FMRPC_UnsubscribeResult(uint32_t sensorType) {
+OSP_STATUS_t OSPD_UnsubscribeResult(uint32_t sensorType) {
     OSP_STATUS_t result = OSP_STATUS_OK;
 
     LOGT("%s\r\n", __FUNCTION__);
@@ -860,11 +863,11 @@ OSP_STATUS_t FMRPC_UnsubscribeResult(uint32_t sensorType) {
 
 
 /****************************************************************************************************
- * @fn      FMRPC_Deinitialize
+ * @fn      OSPD_Deinitialize
  *          Tear down RPC interface function
  *
  ***************************************************************************************************/
-OSP_STATUS_t FMRPC_Deinitialize(void) {
+OSP_STATUS_t OSPD_Deinitialize(void) {
     int threadStatus;
     OSP_STATUS_t result = OSP_STATUS_OK;
     LOGT("%s\r\n", __FUNCTION__);

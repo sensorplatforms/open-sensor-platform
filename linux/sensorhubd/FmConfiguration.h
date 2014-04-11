@@ -15,8 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _FM_CONFIGURATION__H
-#define _FM_CONFIGURATION__H
+#ifndef _OSP_CONFIGURATION__H
+#define _OSP_CONFIGURATION__H
 
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
@@ -29,8 +29,8 @@
  |    C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
 namespace {
-const fm_size_t DIMENSION_DYNAMIC = 0;
-const fm_size_t SIZE_DYNAMIC = 0;
+const osp_size_t DIMENSION_DYNAMIC = 0;
+const osp_size_t SIZE_DYNAMIC = 0;
 }
 
 /*-------------------------------------------------------------------------------------------------*\
@@ -52,11 +52,8 @@ namespace SPI{
 
 
 
-//fm_status_t processJsonHeader( FILE* file, std::string & inout_filename );
-
-class FileBasedConfigParser;
-class ConfigParser;
-class FreeMotion;
+//class FileBasedConfigParser;
+//class ConfigParser;
 
 /* The purpose of this class is to maintain a store of key/value
        pairs, constant throughout a run, that represent the configuration
@@ -64,7 +61,7 @@ class FreeMotion;
        Setter are private to prevent general setting of config items,
        and access is controlled through "friends".  Friends should only
        populate items once and only on initialization */
-class FmConfiguration{
+class OspConfiguration{
 public:
     typedef const char*  cstring;
 
@@ -229,7 +226,6 @@ public:
                                              const char* const protocol,
                                              const char* const type);
     static int dump( const char* const filename );
-    static int saveToJson( FILE* const f);
 
     static void establishDefaultConfig( const char* const protocol = "domain_socket");
     static const unsigned short getSizeFromName( const char* const shortName);
@@ -291,7 +287,7 @@ private:
 
 }
 
-typedef SPI::FmConfiguration FMConfig;
+typedef SPI::OspConfiguration OSPConfig;
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
@@ -305,7 +301,7 @@ typedef SPI::FmConfiguration FMConfig;
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 
-#endif //_FM_CONFIGURATION__H
+#endif //_OSP_CONFIGURATION__H
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/

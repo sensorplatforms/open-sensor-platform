@@ -15,8 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef FM_DATATYPES_H
-#define FM_DATATYPES_H
+#ifndef OSP_DATATYPES_H
+#define OSP_DATATYPES_H
 
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
@@ -40,21 +40,21 @@
  |    T Y P E   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 /* Other types that are not provided by stdint */
-typedef char            fm_char_t;
+typedef char            osp_char_t;
 /* Note that char cannot be replaced by int8_t or uint8_t as most compiler treats
    char, signed char and unsigned char as different because char itself maybe signed or unsigned */
-typedef unsigned char   fm_byte_t;
-typedef double          fm_dbl_t;
-typedef float           fm_float_t;
+typedef unsigned char   osp_byte_t;
+typedef double          osp_dbl_t;
+typedef float           osp_float_t;
 
 #ifdef __cplusplus
-  typedef bool          fm_bool_t;
+  typedef bool          osp_bool_t;
 #else
-  typedef char          fm_bool_t;
+  typedef char          osp_bool_t;
 #endif
 
-typedef unsigned short fm_size_t;
-typedef int fm_status_t;
+typedef unsigned short osp_size_t;
+typedef int osp_status_t;
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
@@ -69,7 +69,7 @@ typedef int fm_status_t;
 \*-------------------------------------------------------------------------------------------------*/
 
 
-#endif /* FM_DATATYPES_H */
+#endif /* OSP_DATATYPES_H */
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/
