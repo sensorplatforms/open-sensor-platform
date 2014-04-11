@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 /*! \file
- * Self contained illustrative example of a step counter using
+ *  \brief Self contained illustrative example of a step counter using
  * simulated sensor data. 
  *
  * As you will see in the code within main(), the procedural flow of OSP

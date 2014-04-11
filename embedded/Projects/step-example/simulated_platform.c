@@ -1,25 +1,23 @@
-/*****************************************************************************
- *                                                                           *
- *                       Sensor Platforms Inc.                               *
- *                   2860 Zanker Road, Suite 210                             *
- *                        San Jose, CA 95134                                 *
- *                                                                           *
- *****************************************************************************
- *                                                                           *
- *               Copyright (c) 2012 Sensor Platforms Inc.                    *
- *                       All Rights Reserved                                 *
- *                                                                           *
- *                   Proprietary and Confidential                            *
- *             Use only under license described in EULA.txt                  *
- *                                                                           *
- ****************************************************************************/
+/* Open Sensor Platform Project
+ * https://github.com/sensorplatforms/open-sensor-platform
+ *
+ * Copyright (C) 2013 Sensor Platforms Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 /*! \file                                                                    *
  *                                                                           *
- *  @author Sensor Platforms Inc: http://www.sensorplatforms.com             *
- *  @author        Support Email: support@sensorplatforms.com                *
- *                                                                           *
- *  \ingroup embedded
- *  \brief reads data from a compiled in dataset as if it came from sensors
+ *  \brief provides data from a compiled in dataset as if it came from sensors
  *
  * use this template for
  *   - Benchmarking
@@ -29,22 +27,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "FM_Types.h"
-#include "ExamplePlatformImplementation.h"
+#include "osp_api.h"
+#include "example_platform_interface.h"
 
-#define STEP_DATA
-#ifdef STEP_DATA
-# include "stepsAccel.dat"
-# include "stepsMag.dat"
-# include "stepsGyro.dat"
-#else
-# include "stillAccel.dat"
-# include "stillMag.dat"
-# include "stillGyro.dat"
-#endif
+#include "stepsAccel.dat"
+#include "stepsMag.dat"
+#include "stepsGyro.dat"
 
 //// Globals
-fm_char_t gShutdown= 0;
+char gShutdown= 0;
 
 uint32_t gCurrentTimestamp =0;
 TriAxisSensorRawData_t gCurrentAccelData = {0};
@@ -52,7 +43,9 @@ TriAxisSensorRawData_t gCurrentMagData = {0};
 TriAxisSensorRawData_t gCurrentGyroData = {0};
 
 
-void emptyFunction()
+//// Private
+
+static void emptyFunction()
 {
 
 }
@@ -60,17 +53,19 @@ void emptyFunction()
 static const SystemDescriptor_t _systemDescriptor=
 {
     TOFIX_TIMECOEFFICIENT(0.000001f),        // timestamp conversion factor = 1us / count
-    (FM_CriticalSectionCallback_t) emptyFunction,
-    (FM_CriticalSectionCallback_t) emptyFunction,
+    (OSP_CriticalSectionCallback_t) emptyFunction,
+    (OSP_CriticalSectionCallback_t) emptyFunction,
 };
 
-// nothing needed for this implementation
+//// Implementations
+
+// nothing special needed for this implementation
 void Platform_Initialize(void) {
 
 }
 
 // this simulation can just quit on errors
-void Platform_HandleErrorIf(fm_char_t isError, const fm_char_t* msg) {
+void Platform_HandleErrorIf(char isError, const char* msg) {
 
   if(isError) {
     PRINTF("**ERROR: %s\r\n", msg);
@@ -78,6 +73,7 @@ void Platform_HandleErrorIf(fm_char_t isError, const fm_char_t* msg) {
   }
 }
 
+// returns the sensor descriptors that go with the simulated data
 SensorDescriptor_t* Platform_GetSensorDescriptorByName(const char* sensorType) {
   if (strcmp(sensorType, "sim-xl")          == 0){
     return &SIMULATED_ACCEL_DESCRIPTOR;
@@ -94,6 +90,7 @@ SensorDescriptor_t* Platform_GetSensorDescriptorByName(const char* sensorType) {
   }    
 }
 
+// returns the system descriptor configured for this example
 const SystemDescriptor_t* Platform_GetSystemDescriptor() {
  
    return &_systemDescriptor;
@@ -115,7 +112,7 @@ uint32_t Platform_BlockOnNewSensorReadings() {
     gCurrentAccelData.Data[1]= SIMULATED_ACCEL_DATA[accelSampleIndex][1];
     gCurrentAccelData.Data[2]= SIMULATED_ACCEL_DATA[accelSampleIndex][2];
     gCurrentAccelData.TimeStamp= gCurrentTimestamp;
-    result|= 1<<FM_SENSOR_TYPE_ACCELEROMETER;
+    result|= 1<<OSP_SENSOR_TYPE_ACCELEROMETER;
 
     accelSampleIndex= ++accelSampleIndex % SIMULATED_ACCEL_NUM_SAMPLES;
   }
@@ -125,7 +122,7 @@ uint32_t Platform_BlockOnNewSensorReadings() {
     gCurrentMagData.Data[1]= SIMULATED_MAG_DATA[magSampleIndex][1];
     gCurrentMagData.Data[2]= SIMULATED_MAG_DATA[magSampleIndex][2];
     gCurrentMagData.TimeStamp= gCurrentTimestamp;
-    result|= 1<<FM_SENSOR_TYPE_MAGNETIC_FIELD;
+    result|= 1<<OSP_SENSOR_TYPE_MAGNETIC_FIELD;
     
     magSampleIndex= ++magSampleIndex % SIMULATED_MAG_NUM_SAMPLES;                                       
   }
@@ -135,7 +132,7 @@ uint32_t Platform_BlockOnNewSensorReadings() {
     gCurrentGyroData.Data[1]= SIMULATED_GYRO_DATA[gyroSampleIndex][1];
     gCurrentGyroData.Data[2]= SIMULATED_GYRO_DATA[gyroSampleIndex][2];   
     gCurrentGyroData.TimeStamp= gCurrentTimestamp;
-    result|= 1<<FM_SENSOR_TYPE_GYROSCOPE;
+    result|= 1<<OSP_SENSOR_TYPE_GYROSCOPE;
 
     ++gyroSampleIndex;
     if (gyroSampleIndex == SIMULATED_GYRO_NUM_SAMPLES) {
@@ -144,11 +141,9 @@ uint32_t Platform_BlockOnNewSensorReadings() {
     gyroSampleIndex= gyroSampleIndex % SIMULATED_GYRO_NUM_SAMPLES;    
   }
 
-
   // Kick the other indexes along
   gCurrentTimestamp+= TEN_MILLISECS_IN_MICROSECS;
   callCount++;
-
 
   return result;
 }

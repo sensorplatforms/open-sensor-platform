@@ -1,23 +1,23 @@
-/*****************************************************************************
- *                                                                           *
- *                       Sensor Platforms Inc.                               *
- *                   2860 Zanker Road, Suite 210                             *
- *                        San Jose, CA 95134                                 *
- *                                                                           *
- *****************************************************************************
- *                                                                           *
- *               Copyright (c) 2012 Sensor Platforms Inc.                    *
- *                       All Rights Reserved                                 *
- *                                                                           *
- *                   Proprietary and Confidential                            *
- *             Use only under license described in EULA.txt                  *
- *                                                                           *
- ****************************************************************************/
-/*! \file                                                                    *
- *                                                                           *
- *  @author Sensor Platforms Inc: http://www.sensorplatforms.com             *
- *  @author        Support Email: support@sensorplatforms.com                *
- *                                                                           *
+/* Open Sensor Platform Project
+ * https://github.com/sensorplatforms/open-sensor-platform
+ *
+ * Copyright (C) 2013 Sensor Platforms Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/*!
+ * \file  Simple platform abstraction for examples                                                                                                            *
+ *                                                                          
  ****************************************************************************/
 #ifndef EXAMPLEPLATFORMIMPLEMENTATION_H
 #define EXAMPLEPLATFORMIMPLEMENTATION_H
@@ -26,10 +26,10 @@
 
 #define PRINTF(fmt, ...)    printf(fmt, __VA_ARGS__)
 
-#include "FM_EmbeddedApi_FixedPoint.h"
+#include "osp_api.h"
 
 void Platform_Initialize(void);
-void Platform_HandleErrorIf(fm_char_t isError, const fm_char_t* msg);
+void Platform_HandleErrorIf(char isError, const char* msg);
 SensorDescriptor_t* Platform_GetSensorDescriptorByName(const char* sensorType);
 const SystemDescriptor_t* Platform_GetSystemDescriptor();
 uint32_t Platform_BlockOnNewSensorReadings();
