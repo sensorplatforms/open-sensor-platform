@@ -33,7 +33,7 @@ extern "C" {
  |    C O N S T A N T S   &   M A C R O S
 \*--------------------------------------------------------------------------*/
 
-/// flags to pass into result descriptors
+/// flags to pass into sensor descriptors
 #define OSP_NOTIFY_DEFAULT   (0)
 #define OSP_OVERRIDE_ONESHOT (0xFFFFFFFF)
 #define OSP_NO_FLAGS         (0)
@@ -43,33 +43,13 @@ extern "C" {
  |    T Y P E   D E F I N I T I O N S
 \*--------------------------------------------------------------------------*/
 
-
-// Input enums
-
-//! used to swap axes or conventions from sensor frame to body frame in a SensorDescriptor_t
-/*!
- *  this is most often used:
- *  - when the different sensors on a board were not physically aligned to the same coordinate system
- *  - to convert from a left-handed system magnetometer into a right-handed system
- */
-typedef enum {
-    AXIS_MAP_UNUSED = 0,
-    AXIS_MAP_POSITIVE_X = 1,
-    AXIS_MAP_NEGATIVE_X = 2,
-    AXIS_MAP_POSITIVE_Y = 3,
-    AXIS_MAP_NEGATIVE_Y = 4,
-    AXIS_MAP_POSITIVE_Z = 5,
-    AXIS_MAP_NEGATIVE_Z = 6,
-    AXIS_MAP_ENUM_COUNT
-} AxisMapType_t ;
-
-// Input or Output enums
-
-//! use to specify the kind of sensor input or result output when subscribing with a ResultRequestDescriptor_t
-/*! \sa ResultRequestDescriptor_t OSP_SubscribeResult
+//! use to specify the kind of sensor input or output 
+/*! 
+ * \sa OSP_RegisterInputSensor
+ * \sa OSP_SubscribeOutputSensor
  *
- *  Final units of results are defined by the host output convention.
- *  If a result type not supported, an error will be returned on registration attempt.
+ *  Final units of outputs are defined by the host output convention.
+ *  If a sensor type not is supported by the library implementation, an error will be returned on its usage
  */
 typedef enum {
     SENSOR_ACCELEROMETER                   =  0, //!< calibrated accelerometer data
@@ -111,13 +91,29 @@ typedef enum {
     SENSOR_ENUM_COUNT
 } SensorType_t ;
 
-// Output enums
+//! used to swap axes or conventions from sensor frame to body frame in a SensorDescriptor_t
+/*!
+ *  this is most often used:
+ *  - when the different sensors on a board were not physically aligned to the same coordinate system
+ *  - to convert from a left-handed system magnetometer into a right-handed system
+ */
+typedef enum {
+    AXIS_MAP_UNUSED = 0,
+    AXIS_MAP_POSITIVE_X = 1,
+    AXIS_MAP_NEGATIVE_X = 2,
+    AXIS_MAP_POSITIVE_Y = 3,
+    AXIS_MAP_NEGATIVE_Y = 4,
+    AXIS_MAP_POSITIVE_Z = 5,
+    AXIS_MAP_NEGATIVE_Z = 6,
+    AXIS_MAP_ENUM_COUNT
+} AxisMapType_t ;
 
-//! use to specify the type and units of sensor result outputs
+
+//! use to specify the type and units of sensor outputs
 /*!
  *  e.g When choosing FORMAT_WIN8 the ORIENTATION output will be as requested for INCLINOMETER: three int32 values in tenths of a degree
  *
- * \sa ResultRequestDescriptor_t OSP_SubscribeResult
+ * \sa SensorDescriptor_t OSP_SubscribeOutputSensor
  */
 typedef enum {
     DATA_CONVENTION_ANDROID = 0,
@@ -126,10 +122,10 @@ typedef enum {
 } SensorDataConvention_t ;
 
 //! handle type returned by OSP_RegisterSensor() or OSP_ReplaceSensor() necessary when calling OSP_SetForegroundData() or OSP_SetBackgroundData()
-typedef void* SensorHandle_t;
+typedef void* InputSensorHandle_t;
 
-//! handle type returned by OSP_SubscribeResult() or OSP_UnsubscribeResult()
-typedef void* ResultHandle_t;
+//! handle type returned by OSP_SubscribeOutputSensor() or OSP_UnsubscribeOutputSensor()
+typedef void* OutputSensorHandle_t;
 
 //! data passed back via OSP_SensorControlCallback_t to tell the sensor driver to change the operation of its physical sensors
 typedef enum {
@@ -142,7 +138,7 @@ typedef enum {
     SENSOR_CONTROL_ENUM_COUNT
 } SensorControlCommand_t;
 
-//! how enable/disable/setDelay type commands and data arepassed back to the sensor driver
+//! how enable/disable/setDelay type commands and data are passed back to the sensor driver
 typedef struct  {
     SensorHandle_t Handle;                      //!< handle that was returned from OSP_RegisterSensor()
     uint16_t Command;                           //!< command to sensor (power on/off, change rate, etc...)
@@ -155,9 +151,9 @@ typedef struct  {
 typedef struct {
     NTTIME TimeStamp;                  //!< Time in seconds
     NT *Probability;                   //!< Probability vector.  index into this with the appropriate GestureType_t enum
-} GestureEventResultData_t;
+} GestureEventOutputData_t;
 
-//! Use these enums as indices into the probability vector of a GestureEventResultData_t in a GESTURE_EVENT result callback
+//! Use these enums as indices into the probability vector of a GestureEventOutputData_t in a GESTURE_EVENT result callback
 typedef enum {
     GESTURE_TAP = 0,
     GESTURE_DOUBLE_TAP = 1,
@@ -172,9 +168,9 @@ typedef enum {
 typedef struct {
     NTTIME TimeStamp;                           //!< Time in seconds
     NT *Probability;                            //!< Probability vector. index into this with the appropriate Context*Type_t enum
-} ContextResultData_t;
+} ContextOutputData_t;
 
-//! Use these enums as indices into the probability vector of a ContextResultData_t in a CONTEXT_DEVICE_MOTION result callback
+//! Use these enums as indices into the probability vector of a ContextOutputData_t in a CONTEXT_DEVICE_MOTION result callback
 typedef enum {
     CONTEXT_MOTION_STILL = 0,
     CONTEXT_MOTION_ACCELERATING = 1,
@@ -186,7 +182,7 @@ typedef enum {
     CONTEXT_MOTION_ENUM_COUNT
 } ContextMotionType_t;
 
-//! Use these enums as indices into the probability vector of a ContextResultData_t in a CONTEXT_POSTURE result callback
+//! Use these enums as indices into the probability vector of a ContextOutputData_t in a CONTEXT_POSTURE result callback
 typedef enum {
     CONTEXT_POSTURE_WALKING = 0,
     CONTEXT_POSTURE_STANDING = 1,
@@ -196,7 +192,7 @@ typedef enum {
     CONTEXT_POSTURE_ENUM_COUNT
 } ContextPostureType_t;
 
-//! Use these enums as indices into the probability vector of a ContextResultData_t in a CONTEXT_CARRY result callback
+//! Use these enums as indices into the probability vector of a ContextOutputData_t in a CONTEXT_CARRY result callback
 typedef enum {
     CONTEXT_CARRY_IN_POCKET = 0,
     CONTEXT_CARRY_IN_HAND = 1,
@@ -206,7 +202,7 @@ typedef enum {
     CONTEXT_CARRY_ENUM_COUNT
 } ContextCarryType_t;
 
-//! Use these enums as indices into the probability vector of a ContextResultData_t in a CONTEXT_TRANSPORT result callback
+//! Use these enums as indices into the probability vector of a ContextOutputData_t in a CONTEXT_TRANSPORT result callback
 typedef enum {
     CONTEXT_TRANSPORT_VEHICLE = 0,
     CONTEXT_TRANSPORT_CAR = 1,
@@ -223,7 +219,7 @@ typedef enum {
 } ContextTransportType_t;
 
 
-//! Use these enums as indices into the probability vector of a ContextResultData_t in a STEP result callback
+//! Use these enums as indices into the probability vector of a ContextOutputData_t in a STEP result callback
 typedef enum {
     CONTEXT_STEP = 0,                           //!< only one kind of step now
     CONTEXT_STEP_ENUM_COUNT
@@ -233,7 +229,7 @@ typedef enum {
 //! detailed step data: time started, time it stopped, step length etc
 typedef struct {
     StepData_t step;
-} OSP_StepResultData_t;
+} OSP_StepOutputData_t;
 
 //! describes the window of "interesting data" returned by RESULT_CONTEXT_CHANGE_DETECTOR 
 typedef struct {
@@ -246,7 +242,7 @@ typedef struct {
     NTPRECISE X;                                 //!< X axis 32Q24 fixed point data
     NTPRECISE Y;                                 //!< Y axis 32Q24 fixed point data
     NTPRECISE Z;                                 //!< Z axis 32Q24 fixed point data
-} Android_CalibratedAccelResultData_t;
+} Android_CalibratedAccelOutputData_t;
 
 //! calibrated magnetometer in uT  +Y axis points out the top edge of the device
 typedef struct {
@@ -254,7 +250,7 @@ typedef struct {
     NTEXTENDED X;                                 //!< X axis 32Q12 fixed point data
     NTEXTENDED Y;                                 //!< Y axis 32Q12 fixed point data
     NTEXTENDED Z;                                 //!< Z axis 32Q12 fixed point data
-} Android_CalibratedMagResultData_t;
+} Android_CalibratedMagOutputData_t;
 
 //! calibrated rotation rate in rad/s right handed +Y axis points out the top edge of the device
 typedef struct {
@@ -262,7 +258,7 @@ typedef struct {
     NTPRECISE X;                                 //!< X axis 32Q24 fixed point data
     NTPRECISE Y;                                 //!< Y axis 32Q24 fixed point data
     NTPRECISE Z;                                 //!< Z axis 32Q24 fixed point data
-} Android_CalibratedGyroResultData_t;
+} Android_CalibratedGyroOutputData_t;
 
 
 //! uncalibrated rotation rate in rad/s right handed +Y axis points out the top edge of the device
@@ -274,7 +270,7 @@ typedef struct {
     NTPRECISE X_drift_offset;      //!< 32Q24 fixed point data representing rad/sec.
     NTPRECISE Y_drift_offset;      //!< 32Q24 fixed point data representing rad/sec.
     NTPRECISE Z_drift_offset;      //!< 32Q24 fixed point data representing rad/sec.
-} Android_UncalibratedGyroResultData_t;
+} Android_UncalibratedGyroOutputData_t;
 
 //! uncalibrated magnetometer in uT  +Y axis points out the top edge of the device
 typedef struct {
@@ -285,7 +281,7 @@ typedef struct {
     NTEXTENDED X_hardIron_offset;   //!< 32Q12 fixed point data representing uT   
     NTEXTENDED Y_hardIron_offset;   //!< 32Q12 fixed point data representing uT
     NTEXTENDED Z_hardIron_offset;   //!< 32Q12 fixed point data representing uT
-} Android_UncalibratedMagnetometerResultData_t;
+} Android_UncalibratedMagnetometerOutputData_t;
 
 //! uncalibrated acceleration in m/s^2. note positive Z when flat on table.
 typedef struct {
@@ -296,25 +292,25 @@ typedef struct {
     NTPRECISE X_drift_offset;      //!< 32Q24 fixed point data representing rad/sec.
     NTPRECISE Y_drift_offset;      //!< 32Q24 fixed point data representing rad/sec.
     NTPRECISE Z_drift_offset;      //!< 32Q24 fixed point data representing rad/sec.
-} Android_UncalibratedAccelResultData_t;
+} Android_UncalibratedAccelOutputData_t;
 
 //! time at the start of a motion which is likely to lead to a change in position
 typedef struct {
     NTTIME TimeStamp;                     //!< Time in seconds
     OSP_bool_t significantMotionDetected;  //!< always set to true when this result fires
-} Android_SignificantMotionResultData_t;
+} Android_SignificantMotionOutputData_t;
 
 //! indicates when each step is taken
 typedef struct {
     NTTIME TimeStamp;               //!< Time in seconds
     OSP_bool_t StepDetected;         //!< always set to true, indicating a step was taken
-} Android_StepDetectorResultData_t;
+} Android_StepDetectorOutputData_t;
 
 //! Android style step counter, but note that the host driver must bookkeep between sensorhub power on/off to meet android requirment 
 typedef struct {
     NTTIME TimeStamp;         // timestamp
     uint32_t StepCount;       //!< steps since power on of the sensorhub (this is an important distinction from the full android requirement!)
-} Android_StepCounterResultData_t;
+} Android_StepCounterOutputData_t;
 
 //! positive, normalized quaternion used for the various flavors of ROTATION_VECTOR
 typedef struct {
@@ -323,7 +319,7 @@ typedef struct {
     NT Y;                                         //!< Y component of normalized quaternion in 16Q12 fixed point
     NT Z;                                         //!< Z component of normalized quaternion in 16Q12 fixed point
     NT W;                                         //!< W component of normalized quaternion in 16Q12 fixed point
-} Android_RotationVectorResultData_t;
+} Android_RotationVectorOutputData_t;
 
 
 //! callback type used when the library needs to do an atomic operation
@@ -356,18 +352,18 @@ typedef struct  {
  *  \param CalData      INPUT array of bytes
  *  \param TimeStamp    INPUT timestamp of when this calibration was calculated
  */
-typedef void  (* OSP_WriteCalDataCallback_t)(SensorHandle_t SensorHandle, void * CalData, NTTIME TimeStamp);
+typedef void  (* OSP_WriteCalDataCallback_t)(InputSensorHandle_t SensorHandle, void * CalData, NTTIME TimeStamp);
 
 //! called by the algorithms to notify the sensor hub that there is a new data item ready
 /*!
  *  cast the pData to the expected result type (e.g. )  If you have a general callback handler use the 
- *  ResultHandle to lookup what result type this should be cast to.
+ *  OutputHandle to lookup what result type this should be cast to.
  *
  * \warning the data pointed to by pData is only guaranteed to be valid during the lifetime of this callback
- * \param ResultHandle a handle returned from OSP_SubscribeResult()
+ * \param OutputHandle a handle returned from OSP_SubscribeOutputSensor()
  * \param pData the computed value you are interested in.  Cast as appropriate for each result, e.g. TriAxisData for CALIBRATED_GYRO_DATA,
  */
-typedef void  (* OSP_ResultReadyCallback_t)(ResultHandle_t ResultHandle, void* pData);
+typedef void  (* OSP_OutputReadyCallback_t)(OutputSensorHandle_t OutputHandle, void* pData);
 
 //!
 typedef uint16_t (* OSP_SensorControlCallback_t)(SensorControl_t* SensorControlCommand);
@@ -398,10 +394,10 @@ typedef struct  {
     NTEXTENDED MinValue;                        //!< min value possible after conversion
     NTPRECISE Noise[3];                         //!< sensor noise based on Power Spectral Density in conversion units per sqrt(Hz)
     void * pCalibrationData;                    //!< a per sensor calibration data structure (can be NULL if not needed)
-    OSP_ResultReadyCallback_t pOptionalResultReadyCallback; //!<  called only when a new output result is ready (usually NULL for input sensors)
+    OSP_OutputReadyCallback_t pOptionalOutputReadyCallback; //!<  called only when a new output result is ready (usually NULL for input sensors)
     OSP_WriteCalDataCallback_t pOptionalWriteDataCallback; //!<  called when calibration data is ready to write to NVM (NULL if not used)
     OSP_SensorControlCallback_t pOptionalSensorControlCallback; //!< Optional callback (NULL if not used) to request sensor control (on/off, low rate, etc...)
-    NTPRECISE NotifyThresholds[16];             //!<  0= unused; otherwise used to do Win8 style significance, or trigger only on a subset of a context category's values
+    NTEXTENDED OutputDataRatesHz[4];            //!< for output sensor: desired output data rate in element 0; for input sensor: low to high list rates this sensor can operate at: e.g. 5Hz, 50Hz, 100Hz, 200Hz
     char* SensorName;                           //!< short human readable description, Null terminated
     uint32_t VendorId;                          //!< sensor vendor ID, as assigned by OSP
     uint32_t ProdId;                            //!< sensor product ID, as defined by each vendor
@@ -457,12 +453,15 @@ typedef struct  {
 OSP_STATUS_t     OSP_Initialize(const SystemDescriptor_t* pSystemDesc);
 
 
-//! Call at startup for each sensor in the system
+//! Call at startup for each physical sensor in the system that will feed data into OSP
 /*!
  *  Tells the Open-Sensor-Platform Library what kind of sensor inputs it has to work with so its Resource Manager
  *  can choose the most appropriate algorithms to execute.
  *
- *  If you need to change a sensors operating mode at runtime see OSP_ReplaceSensor().
+ *  In a standard sensorhub use case input sensors are registered once
+ *  In a convertable tablet use case where a sensor's physical location changes, this will be called as the physical placement changes
+ *
+ *  \note it is not necessary to register/unregister input sensors when the host requests a change in output data rate.  
  *
  *  \warning the caller must preserve the data pointed to by pSensorDescriptor after this call
  *
@@ -472,28 +471,20 @@ OSP_STATUS_t     OSP_Initialize(const SystemDescriptor_t* pSystemDesc);
  *
  *  \return status as specified in OSP_Types.h
 */
-OSP_STATUS_t     OSP_RegisterSensor(SensorDescriptor_t *pSensorDescriptor, SensorHandle_t *pReturnedHandle);
+OSP_STATUS_t     OSP_RegisterInputSensor(SensorDescriptor_t *pSensorDescriptor, InputSensorHandle_t *pReturnedHandle);
 
-
-//! use to change a sensors operating mode (output rate, position, etc...)
+//! Call to remove an sensor from OSP's known set of inputs
 /*!
- *  Tells the Open-Sensor-Platform Library to use this sensor instead of the previously registered sensor of the same type
+ *  In a standard sensorhub use case input sensors are registered once this API is not needed
+ *  In a convertable tablet use case where a sensor's physical location changes, this will be called as the physical placement changes
  *
- *  Use Case: Standard Sensor Hub
- *     - after a change request interval/setDelay command from the host, create a new sensor descriptor with
- *       the updated sensor data rate and pass it OSP_ReplaceSensor()
+ *  \note it is not necessary to register/unregister input sensors when the host requests a change in output data rate.  
  *
- *  Use Case: Transformer Ultra Book
- *     - when the host detects a change in device configuration (Tablet Mode --> Laptop Mode) which could change
- *       sensor position (e.g. sensors in screen have been rotated 180 degrees) or sensor
- *       environment (e.g. screen now interferes with magnetometer)
- *
- *  \warning the caller must preserve the data pointed to by pSensorDescriptor after this call
- *
- *  \param pSensorDesc INPUT pointer to data which describes all the details of the new sensor and its
- *      current operating mode; e.g. sensor type, SI unit conversion factor
-*/
-OSP_STATUS_t     OSP_ReplaceSensor(SensorDescriptor_t *pSensorDescriptor, SensorHandle_t *pSensorHandle);
+ *  \param handle INPUT a handle to the input sensor you want to unregister
+ *  \return status as specified in OSP_Types.h
+ */
+OSP_STATUS_t     OSP_UnregisterInputSensor(InputSensorHandle_t handle);
+
 
 //! queues sensor data which will be processed by OSP_DoForegroundProcessing() and OSP_DoBackgroundProcessing()
 /*!
@@ -507,7 +498,7 @@ OSP_STATUS_t     OSP_ReplaceSensor(SensorDescriptor_t *pSensorDescriptor, Sensor
  *  \return status. Will always be OSP_STATUS_OK. If there is no room in the queue,
  *   The last data will be overwritten and a warning will be triggered if you subscribe to RESULT_WARNING
 */
-OSP_STATUS_t     OSP_SetData(SensorHandle_t SensorHandle, TriAxisSensorRawData_t *data);
+OSP_STATUS_t     OSP_SetData(InputSensorHandle_t SensorHandle, TriAxisSensorRawData_t *data);
 
 
 //! triggers computation for primary algorithms  e.g ROTATION_VECTOR
@@ -541,26 +532,27 @@ OSP_STATUS_t     OSP_DoBackgroundProcessing(void);
 //! call for each Open-Sensor-Platform result (STEP_COUNT, ROTATION_VECTOR, etc) you want computed and output
 /*!
  *  Use Case: Standard Sensor Hub
- *     - after each enable command from the host, create a new result descriptor with
- *       the desired result type and output data rate and pass it to OSP_SubscribeResult()
+ *     - after each enable or setDelay command from the host, create a new descriptor with
+ *       the desired result type and output data rate and pass it to OSP_SubscribeOutputSensor()
+ *     
  *
- *  Use Case: Sensor augmented GPS + Win8 Sensor Hub
+ *  Use Case: Sensor augmented GPS + Android Sensor Hub
  *     - as GPS requires it, create result descriptors requesting RESULT_UNCALIBRATED_ACCELEROMETER, 
  *       RESULT_UNCALIBRATED_MAGNETOMETER, RESULT_UNCALIBRATED_GYROSCOPE
- *     - as Win8 requests come in, create result descriptors per a standard Sensor Hub
+ *     - as host requests come in, create result descriptors per a standard Sensor Hub
  *     - be sure callbacks handle the WIN_ formated results differently than the SPI_UNCALIBRATED_ results
  *       as they have different units, orientations, and numeric formats
  *
  *
- *  \sa OSP_UnsubscribeResult
+ *  \sa OSP_UnsubscribeOutputSensor
  *
- *  \param ResultRequestDescriptor_t INPUT pointer to data which describes the details of how the fusion should be
+ *  \param OutputRequestDescriptor_t INPUT pointer to data which describes the details of how the fusion should be
  *         computed: e.g output rate, sensors to use, etc.
- *  \param FusionResultHandle_t OUTPUT a handle to be used for OSP_UnsubscribeResult()
+ *  \param OutputSensorHandle_t OUTPUT a handle to be used for OSP_UnsubscribeOutputSensor()
  *
  *  \return status as specified in OSP_Types.h. OSP_UNSUPPORTED_FEATURE for results that aren't available or licensed
  */
-OSP_STATUS_t     OSP_SubscribeResult(ResultRequestDescriptor_t *pResultDescriptor, FusionResultHandle_t *pResultHandle);
+OSP_STATUS_t     OSP_SubscribeOutputSensor(SensorDescriptor_t *pSensorDescriptor, OutputSensorHandle_t *pOutputHandle);
 
 
 //! stops the chain of computation for a registered result
@@ -568,32 +560,14 @@ OSP_STATUS_t     OSP_SubscribeResult(ResultRequestDescriptor_t *pResultDescripto
  *  Use Case: Standard Sensor Hub
  *      - assume you are currently subscribed to ROTATION_VECTOR at 100Hz
  *      - a change request interval from the host for ROTATION_VECTOR at 50Hz
- *      - call OSP_UnsubscribeResult with the current result handle
- *      - modify the descriptor with the 50Hz output data rate and pass it to OSP_SubscribeResult()
+ *      - call OSP_UnsubscribeOutputSensor with the current result handle
+ *      - modify the descriptor with the 50Hz output data rate and pass it to OSP_SubscribeOutputSensor()
  *
- *  \param ResultHandle INPUT FusionResultHandle_t that was received from OSP_SubscribeResult()
+ *  \param OutputHandle INPUT OutputSensorHandle_t that was received from OSP_SubscribeOutputSensor()
  *
  *  \return status as specified in OSP_Types.h
  */
-OSP_STATUS_t     OSP_UnsubscribeResult(FusionResultHandle_t ResultHandle);
-
-//! Use to get calibrated sensor data in cases where desired output rate is not an even multiple of input rate.
-/*!
- *  the current calibrated data for the requested sensor
- *
- *  \param sensorHandle INPUT requires a valid handle as returned by OSP_RegisterSensor()
- *  \param data OUTPUT pointer to calibrated sensor data
- *
- *
- *  \return status as OSP_STATUS_IDLE if data has not exceeded the change sensitivity since the last
- *      calibrated result callback value for this sensor, or the last time that OSP_GetCalibratedSensor returned OSP_STATUS_OK.
- *      i.e. notification change is calculated from the last time we notified that a sensitivity change occurred.
- *      Note, if not subscribed to a calibrated result for this sensor, return will always be OSP_STATUS_IDLE.
- *      If data has exceeded the change sensitivity, will return OSP_STATUS_OK. All other errors apply.
- */
-OSP_STATUS_t     OSP_GetCalibratedSensor(SensorHandle_t SensorHandle, int16_t *data);
-
-
+OSP_STATUS_t     OSP_UnsubscribeOutputSensor(OutputSensorHandle_t OutputHandle);
 
 //! provides version number and version string of the library implementation
 /*!

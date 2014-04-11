@@ -26,11 +26,6 @@
   \image latex osp_android_framework.png
   \image latex osp_hub_framework.png
 
-With respect to terminology, remember that everything coming in is considered a 
-<b>Sensor</b>, everything going out is a <b>Result</b>.
-<br>
-
-
 <h2> API Reference</h2>
 <a href="osp-api_8h.html#func-members">Functions</a>
 <br>
@@ -40,50 +35,30 @@ With respect to terminology, remember that everything coming in is considered a
 
 <h2>High Level Usage Overview</h2>
 At boot time:
-  - read sensor calibration data from non-volatile memory
+  - get sensor calibration data from non-volatile memory or the host
   - call OSP_Initialize()
-  - let the Library know about what sensors are on the system by filling in a SensorDescriptor_t and calling OSP_RegisterSensor() for each sensor
-  - configure what sensor fusion products to compute by filling in a ResultRequestDescriptor_t and call OSP_SubscribeResult() for each ResultType_t desired
+  - let the Library know about what sensors are on the system by filling in a SensorDescriptor_t and calling OSP_RegisterInputSensor() for each sensor
 
 During steady state operation:
   - queue data from sensor ISRs by calling OSP_SetData()
-  - execute primary fusion computation by calling OSP_DoForegroundProcessing() at least twice as fast as your expected output rate 
-  - execute calibration computation by calling OSP_DoBackgroundProcessing() at least one tenth as fast as your expected output rate
+  - execute primary fusion computation by calling OSP_DoForegroundProcessing() at least twice as fast as your max expected output rate 
+  - execute calibration computation by calling OSP_DoBackgroundProcessing() at least as fast as your min expected output rate
+  - as enable commands come from the host construct an appropriate SensorDescriptor_t and call OSP_SubscribeOutputSensor() to start receiving data callbacks
+  - as disable commands come from the host call OSP_UnsubscribeOutputSensor()
+  - as setDelay commands come from the host do an appropriate OSP_UnsubscribeOutputSensor(), update the OutputDataRate, then call OSP_SubscribeOutputSensor()
 
 Data will be returned via callbacks:
-  - Sensor fusion will call your callbacks with result data (Device Orientation Rotation Vector, Calibrated Magnetometer Data, etc)
-  - ResourceManager will provide recommendations for enabling/disabling/rate changing sensor drivers
+  - Sensor fusion will call your callbacks with output sensor data (Device Orientation Rotation Vector, Calibrated Magnetometer Data, etc)
+  - ResourceManager will provide callbacks for enabling/disabling/rate changing input sensor drivers
   - Errors and warnings are also available via callbacks
-  - When sensor calibration callbacks fire, store the calibration parameters to non-volatile memory
+  - When sensor calibration callbacks fire, store the calibration parameters to non-volatile memory locally or on the host
 
 
 <h2>Examples</h2>
-<h3> Context Example </h3>
-Similar to the orientation example but uses Android HAL 1.0 specific results. Uses simulated data, and can be used as a benchmark
-
-<a href="example_2androidHalExample_8c-example.html">example/androidHalExample.c</a>
-
-<h3> Context Example </h3>
-Simplified context example demonstrating Posture and Step Counting. Uses simulated data, and can be used as a benchmark
-
-<a href="example_2contextExample_8c-example.html">example/contextExample.c</a>
-
-<h3> Orientation Example </h3>
-Simplified example demonstrating device orientation.  Uses simulated data, and can be used as a benchmark
+<h3> Step Example </h3>
+Simplified example demonstrating step counting.  Uses simulated data, and can be used as a benchmark
 
 <a href="example_2orientationExample_8c-example.html">example/orientationExample.c</a>
 
 
 */
-/*!
- * \example example/contextExample.c
-Simplified context example which demonstrates Posture and Step Counting. Uses simulated data, and can be used as a benchmark
-
- * \example example/orientationExample.c
-Simplified example demonstrating device orientation.  Uses simulated data, and can be used as a benchmark
-
- * \example example/androidHalExample.c
-Similar to the orientation example but uses Android HAL 1.0 specific results. Uses simulated data, and can be used as a benchmark
-
- *
- */
