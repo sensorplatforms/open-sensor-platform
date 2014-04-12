@@ -62,3 +62,9 @@ Simplified example demonstrating step counting.  Uses simulated data, and can be
 
 
 */
+/*!
+ * \example main.c
+ * Simplified example demonstrating step counting.  Uses simulated data, and can be used as a benchmark
+ *
+ *
+ */
