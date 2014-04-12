@@ -19,8 +19,10 @@
 /*!
   \mainpage
 
- This documentation describes the Open-Sensor-Platform project
- for a resource constrained Sensor Hub or Smart Sensor devices. 
+ This documentation describes the Open-Sensor-Platform (OSP) project
+ for a resource constrained Sensor Hub or Smart Sensor device. The
+ following figure shows the aspects of OSP provided in Android and in an
+ embedded core.
 
   \image html osp_framework.png
   \image latex osp_android_framework.png
@@ -58,7 +60,7 @@ Data will be returned via callbacks:
 <h3> Step Example </h3>
 Simplified example demonstrating step counting.  Uses simulated data, and can be used as a benchmark
 
-<a href="example_2orientationExample_8c-example.html">example/orientationExample.c</a>
+<a href="main_8c-example.html">step-example</a>
 
 
 */

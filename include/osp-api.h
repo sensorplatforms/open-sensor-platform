@@ -462,7 +462,7 @@ OSP_STATUS_t     OSP_Initialize(const SystemDescriptor_t* pSystemDesc);
  *
  *  \warning the caller must preserve the data pointed to by pSensorDescriptor after this call
  *
- *  \param pSensorDesc INPUT pointer to data which describes all the details of this sensor and its
+ *  \param pSensorDescriptor INPUT pointer to data which describes all the details of this sensor and its
  *      current operating mode; e.g. sensor type, SI unit conversion factor
  *  \param pReturnedHandle OUTPUT a handle to use when feeding data in via OSP_SetData()
  *
@@ -495,7 +495,7 @@ OSP_STATUS_t     OSP_UnregisterInputSensor(InputSensorHandle_t handle);
  *  \return status. Will always be OSP_STATUS_OK. If there is no room in the queue,
  *   The last data will be overwritten and a warning will be triggered if you subscribe to RESULT_WARNING
 */
-OSP_STATUS_t     OSP_SetData(InputSensorHandle_t SensorHandle, TriAxisSensorRawData_t *data);
+OSP_STATUS_t     OSP_SetData(InputSensorHandle_t sensorHandle, TriAxisSensorRawData_t *data);
 
 
 //! triggers computation for primary algorithms  e.g ROTATION_VECTOR
@@ -543,9 +543,9 @@ OSP_STATUS_t     OSP_DoBackgroundProcessing(void);
  *
  *  \sa OSP_UnsubscribeOutputSensor
  *
- *  \param OutputRequestDescriptor_t INPUT pointer to data which describes the details of how the fusion should be
+ *  \param pSensorDescriptor INPUT pointer to data which describes the details of how the fusion should be
  *         computed: e.g output rate, sensors to use, etc.
- *  \param OutputSensorHandle_t OUTPUT a handle to be used for OSP_UnsubscribeOutputSensor()
+ *  \param pOutputHandle OUTPUT a handle to be used for OSP_UnsubscribeOutputSensor()
  *
  *  \return status as specified in OSP_Types.h. OSP_UNSUPPORTED_FEATURE for results that aren't available or licensed
  */
@@ -573,7 +573,7 @@ OSP_STATUS_t     OSP_UnsubscribeOutputSensor(OutputSensorHandle_t OutputHandle);
  *
  *  \return status as specified in OSP_Types.h
  */
-OSP_STATUS_t     OSP_GetVersion(const OSP_Library_Version_t **ppVersionStruct);
+OSP_STATUS_t     OSP_GetVersion(const OSP_Library_Version_t **pVersionStruct);
 
 
 #ifdef __cplusplus
