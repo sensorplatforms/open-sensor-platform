@@ -27,12 +27,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "osp_api.h"
+#include "osp-api.h"
 #include "example_platform_interface.h"
 
-#include "stepsAccel.dat"
-#include "stepsMag.dat"
-#include "stepsGyro.dat"
+#include "steps_accel.dat"
+#include "steps_mag.dat"
+#include "steps_gyro.dat"
 
 //// Globals
 char gShutdown= 0;

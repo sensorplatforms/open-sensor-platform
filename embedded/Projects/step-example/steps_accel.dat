@@ -34,7 +34,7 @@
   \note for informational purposes the timestamp, raw values in android units, and calibrated values appear in comments
 
 */
-#include "osp_api.h"
+#include "osp-api.h"
 
 // used for switching between simulate data sets 
 # define SIMULATED_ACCEL_DATA         g_mpu6050AccelData
@@ -49,7 +49,7 @@
 
 SensorDescriptor_t  g_mpu6050AccelDescriptor =
 {
-    SENSOR_TYPE_ACCELEROMETER,
+    SENSOR_ACCELEROMETER,
     SENSOR_DATA_SIGNED_TWO_COMP,
     0xffff,                             // 16 bits of raw data are significant
     AXIS_MAP_POSITIVE_X,AXIS_MAP_POSITIVE_Y,AXIS_MAP_POSITIVE_Z,  // X,Y,Z  sensor orientation

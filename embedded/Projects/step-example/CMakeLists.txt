@@ -32,8 +32,7 @@ project(step-example)
 ##
 set (PUBLIC_INCLUDE_DIRS
   ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}/..
-  ${CMAKE_CURRENT_SOURCE_DIR}/../..
+  ${CMAKE_CURRENT_SOURCE_DIR}/../../../include
 )
 include_directories(${PUBLIC_INCLUDE_DIRS})
 

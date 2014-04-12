@@ -26,7 +26,7 @@
 
 #define PRINTF(fmt, ...)    printf(fmt, __VA_ARGS__)
 
-#include "osp_api.h"
+#include "osp-api.h"
 
 void Platform_Initialize(void);
 void Platform_HandleErrorIf(char isError, const char* msg);

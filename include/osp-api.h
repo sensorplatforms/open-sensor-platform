@@ -25,19 +25,20 @@ extern "C" {
 /*--------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*--------------------------------------------------------------------------*/
-#include "Types.h"
-#include "Common.h"
-#include "FixedPointTypes.h"
+#include "osp-types.h"
+#include "osp-fixedpoint-types.h"
 
 /*--------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
 \*--------------------------------------------------------------------------*/
 
 /// flags to pass into sensor descriptors
-#define OSP_NOTIFY_DEFAULT   (0)
-#define OSP_OVERRIDE_ONESHOT (0xFFFFFFFF)
-#define OSP_NO_FLAGS         (0)
-#define OSP_NO_OPTIONAL_DATA ((void*)NULL)
+#define OSP_NO_SENSOR_CONTROL_CALLBACK (NULL)
+#define OSP_NO_NVM_WRITE_CALLBACK      (NULL)
+#define OSP_32BIT_DATA          (0xFFFFFFFF)
+#define OSP_NO_OPTIONAL_DATA    ((void*)NULL)
+#define OSP_NO_FLAGS            (0)
+#define OSP_FLAGS_INPUT_SENSOR  (1 << 0)
 
 /*--------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
@@ -109,19 +110,22 @@ typedef enum {
 } AxisMapType_t ;
 
 
-//! use to specify the type and units of sensor outputs
+//! use to specify the type and units of sensor data
 /*!
+ *  e.g. for an input sensor usually you use  DATA_CONVENTION_RAW and pass in conversion info via InputSensorSpecificData_t
  *  e.g When choosing FORMAT_WIN8 the ORIENTATION output will be as requested for INCLINOMETER: three int32 values in tenths of a degree
  *
- * \sa SensorDescriptor_t OSP_SubscribeOutputSensor
+ *
+ * \sa SensorDescriptor_t
  */
 typedef enum {
-    DATA_CONVENTION_ANDROID = 0,
-    DATA_CONVENTION_WIN8    = 1,
+    DATA_CONVENTION_RAW     = 0,
+    DATA_CONVENTION_ANDROID = 1,
+    DATA_CONVENTION_WIN8    = 2,
     RESULT_FORMAT_ENUM_COUNT
 } SensorDataConvention_t ;
 
-//! handle type returned by OSP_RegisterSensor() or OSP_ReplaceSensor() necessary when calling OSP_SetForegroundData() or OSP_SetBackgroundData()
+//! handle type returned by OSP_RegisterInputSensor() necessary when calling OSP_SetForegroundData() or OSP_SetBackgroundData()
 typedef void* InputSensorHandle_t;
 
 //! handle type returned by OSP_SubscribeOutputSensor() or OSP_UnsubscribeOutputSensor()
@@ -140,7 +144,7 @@ typedef enum {
 
 //! how enable/disable/setDelay type commands and data are passed back to the sensor driver
 typedef struct  {
-    SensorHandle_t Handle;                      //!< handle that was returned from OSP_RegisterSensor()
+    InputSensorHandle_t Handle;                      //!< handle that was returned from OSP_RegisterSensor()
     uint16_t Command;                           //!< command to sensor (power on/off, change rate, etc...)
     int32_t Data;                               //!< as need and appropriate for each command: e.g. high pass frequency in Hz
 } SensorControl_t;
@@ -226,16 +230,6 @@ typedef enum {
 } ContextStepType_t;
 
 
-//! detailed step data: time started, time it stopped, step length etc
-typedef struct {
-    StepData_t step;
-} OSP_StepOutputData_t;
-
-//! describes the window of "interesting data" returned by RESULT_CONTEXT_CHANGE_DETECTOR 
-typedef struct {
-    Segment_t segment;             //!< Detected segment
-} ContextChangeDetectorData_t;
-
 //! calibrated acceleration in m/s^2. note positive Z when flat on table.
 typedef struct {
     NTTIME TimeStamp;                             //!< Time in seconds
@@ -297,13 +291,13 @@ typedef struct {
 //! time at the start of a motion which is likely to lead to a change in position
 typedef struct {
     NTTIME TimeStamp;                     //!< Time in seconds
-    OSP_bool_t significantMotionDetected;  //!< always set to true when this result fires
+    Bool significantMotionDetected;  //!< always set to true when this result fires
 } Android_SignificantMotionOutputData_t;
 
 //! indicates when each step is taken
 typedef struct {
     NTTIME TimeStamp;               //!< Time in seconds
-    OSP_bool_t StepDetected;         //!< always set to true, indicating a step was taken
+    Bool StepDetected;         //!< always set to true, indicating a step was taken
 } Android_StepDetectorOutputData_t;
 
 //! Android style step counter, but note that the host driver must bookkeep between sensorhub power on/off to meet android requirment 
@@ -385,29 +379,32 @@ typedef uint16_t (* OSP_SensorControlCallback_t)(SensorControl_t* SensorControlC
 
 typedef struct  {
     SensorType_t SensorType;                    //!< accelerometer, gyro, etc
-    SensorDataConvention_t DataConvention;      //!< Android, Win8, etc,...
+    SensorDataConvention_t DataConvention;      //!< none, Android, Win8, etc,...
+    OSP_OutputReadyCallback_t pOutputReadyCallback; //!<  called only when a new output result is ready (usually NULL for input sensors)
+    OSP_WriteCalDataCallback_t pOptionalWriteCalDataCallback; //!<  called when calibration data is ready to write to NVM (NULL if not used)
+    OSP_SensorControlCallback_t pOptionalSensorControlCallback; //!< Optional callback (NULL if not used) to request sensor control (on/off, low rate, etc...)
+    NTEXTENDED OutputDataRatesHz[4];            //!< for output sensor: desired output data rate in element 0; for input sensor: low to high list rates this sensor can operate at: e.g. 5Hz, 50Hz, 100Hz, 200Hz
+    uint16_t Flags;                             //!< defined on a per sensor type basis
+    void* ptrSensorSpecificData;                //!< used in conjunction with Flags
+} SensorDescriptor_t;
+
+//! detailed data describing an input sensor, passed throu ptrSensorSpecificData in a SensorDescriptor_t
+typedef struct {
     uint32_t DataWidthMask;                     //!< how much of the data word that is sent significant
     AxisMapType_t AxisMapping[3];               //!< swap or flip axes as necessary before conversion
     int32_t ConversionOffset[3];                //!< offset of incoming data before data is scaled
-    NTPRECISE ConversionScale[3];               //!< conversion from raw to dimensionful units based on data convention e.g. 9.81/1024,  200dps/count
+    NTPRECISE ConversionScale[3];               //!< conversion from raw to dimensional units based on data convention e.g. 9.81/1024,  200dps/count
     NTEXTENDED MaxValue;                        //!< max value possible after conversion
     NTEXTENDED MinValue;                        //!< min value possible after conversion
     NTPRECISE Noise[3];                         //!< sensor noise based on Power Spectral Density in conversion units per sqrt(Hz)
     void * pCalibrationData;                    //!< a per sensor calibration data structure (can be NULL if not needed)
-    OSP_OutputReadyCallback_t pOptionalOutputReadyCallback; //!<  called only when a new output result is ready (usually NULL for input sensors)
-    OSP_WriteCalDataCallback_t pOptionalWriteDataCallback; //!<  called when calibration data is ready to write to NVM (NULL if not used)
-    OSP_SensorControlCallback_t pOptionalSensorControlCallback; //!< Optional callback (NULL if not used) to request sensor control (on/off, low rate, etc...)
-    NTEXTENDED OutputDataRatesHz[4];            //!< for output sensor: desired output data rate in element 0; for input sensor: low to high list rates this sensor can operate at: e.g. 5Hz, 50Hz, 100Hz, 200Hz
     char* SensorName;                           //!< short human readable description, Null terminated
     uint32_t VendorId;                          //!< sensor vendor ID, as assigned by OSP
     uint32_t ProdId;                            //!< sensor product ID, as defined by each vendor
     uint32_t Version;                           //!< sensor version, as defined by each vendor
     uint32_t PlatformId;                        //!< platform ID, as defined by each vendor
     NTPRECISE xyzPositionFromPlatformOrigin[3]; //!< in meters (NTPRECISE gives us sub-micron resolution)
-    uint16_t Flags;                             //!< defined on a per sensor type basis
-    void* ptrSensorSpecificData;                //!< used in conjunction with Flags
-} SensorDescriptor_t;
-
+} InputSensorSpecificData_t;
 
 //! use to send raw sensor data from a driver into this API
 /*!

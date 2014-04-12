@@ -43,6 +43,15 @@ typedef double              DBL;
 typedef float               FLT;
 typedef unsigned char       Bool;
 
+typedef signed char OSP_char_t;
+
+typedef int OSP_STATUS_t;
+#define OSP_STATUS_OK 0
+#define OSP_STATUS_IDLE 1
+#define OSP_STATUS_ERROR -1
+
+
+
 
 #endif /* TYPES_H */
 /*-------------------------------------------------------------------------------------------------*\

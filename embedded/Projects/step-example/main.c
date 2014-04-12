@@ -20,74 +20,50 @@
  * simulated sensor data. 
  *
  * As you will see in the code within main(), the procedural flow of OSP
- * is rather simple.  The details of configuring the SensorDescriptor_t and 
- * ResultRequestDescriptor_t are where the complexity lies, and they are 
- * implemented in the Platform module.
+ * is rather simple.  The details of configuring the SensorDescriptor_t
+ * where the complexity lies. Input sensor descriptors are packaged along
+ * with the simulated data. Output sensor descriptors are in this file.
  *
  * While primarily a simplified example to demonstrate the basics of using
  * OSP, it can be used as rough benchmark as well.  The default 
  * ExamplePlatformImplementation is for a standard GCC toolchain against
- * simulated (canned) data. Reimplement ExamplePlatform for
+ * simulated (canned) data. Reimplement ExamplePlatformInterface for
  * your device and compile with switch EXCLUDE_CANNED_DATA to get a 
  * better idea of resource  requirements for your platform.
  *
  * The code activates all resuls at startup. A good exercise for the reader
  * would be to modify this so the step counter is activated when there is a
- * significant amount of movement, outputs the step count as it updates,
- * then deactivates step counting when the device is sufficiently still again.
+ * significant motion event, outputs the step count as it updates,
+ * then deactivates step counting when significant stillness is detected.
  *
  ****************************************************************************/
 #include <stddef.h>
 
-#include "osp_api.h"
+#include "osp-api.h"
 #include "example_platform_interface.h"
 
 //// Constants
-#define NTP_OUTPUT_RATE_50HZ_IN_SECONDS    TOFIX_PRECISE(0.2f)
+#define NTP_OUTPUT_RATE_50HZ    TOFIX_EXTENDED(50.0f)
 
 //// Function Prototypes
 static void waitForNewDataToFeedOSP(void);
-static int32_t significantMotionResultCallback(FusionResultHandle_t resultHandle, 
-                                          Android_SignificantMotionResultData_t* pResult);
-static int32_t significantStillnessResultCallback(FusionResultHandle_t resultHandle, 
-                                          Android_SignificantMotionResultData_t* pResult);
-static int32_t stepCounterResultCallback(FusionResultHandle_t resultHandle,
-                                          Android_StepCounterResultData_t* pResult);
-static int32_t sensorResultCallback(FusionResultHandle_t resultHandle,
-                                                     Android_CalibratedAccelResultData_t* pResult);
+static int32_t stepCounterOutputCallback(OutputSensorHandle_t outputHandle,
+                                          Android_StepCounterOutputData_t* pOutput);
 
 //// Static data
-static SensorHandle_t sXlHandle;
-static SensorHandle_t sGyroHandle;
-static SensorHandle_t sMagHandle;
+static InputSensorHandle_t sXlHandle;
+static InputSensorHandle_t sGyroHandle;
+static InputSensorHandle_t sMagHandle;
 
-static  FusionResultHandle_t significantMotionHandle;
-static  FusionResultHandle_t significantStillnessHandle;
-static  FusionResultHandle_t stepDetectorHandle;
-static  FusionResultHandle_t stepCounterHandle;
+static  OutputSensorHandle_t stepCounterHandle;
 
-  ResultRequestDescriptor_t  significantMotionRequest= {RESULT_SIGNIFICANT_MOTION, 
-                                                   (OSP_ResultReadyCallback_t)significantMotionResultCallback,
-                                                   RESULT_FORMAT_ANDROID,
-                                                   OSP_NOTIFY_DEFAULT,    // use OSP_OVERRIDE_ONESHOT if you want this to act like most other results
-                                                   TOFIX_PRECISE(0.70f), // threshold for motion
-                                                   CONST_PRECISE(5.0f),  // number of events needed to signify motion
-                                                   OSP_NO_FLAGS, OSP_NO_OPTIONAL_DATA};
-
-  ResultRequestDescriptor_t  significantStillnessRequest= {RESULT_SIGNIFICANT_STILLNESS, 
-                                                   (OSP_ResultReadyCallback_t)significantStillnessResultCallback,
-                                                   RESULT_FORMAT_ANDROID,
-                                                   OSP_OVERRIDE_ONESHOT,    // use OSP_OVERRIDE_ONESHOT if you want this to act like most other results
-                                                   CONST_PRECISE(.7f),   // threshold for stillness 
-                                                   CONST_PRECISE(25.0f), // number of events needed to enter stillness
-                                                   OSP_NO_FLAGS, OSP_NO_OPTIONAL_DATA};
-
-  ResultRequestDescriptor_t  stepCounterRequest= {RESULT_STEP_COUNTER,
-                                                   (OSP_ResultReadyCallback_t)stepCounterResultCallback,
-                                                   RESULT_FORMAT_ANDROID,
-                                                   OSP_NOTIFY_DEFAULT,
-                                                   5, OSP_NOTIFY_DEFAULT,
-                                                   OSP_NO_FLAGS, OSP_NO_OPTIONAL_DATA};
+SensorDescriptor_t  stepCounterRequest= {SENSOR_STEP_COUNTER,
+                                                DATA_CONVENTION_ANDROID,
+                                                (OSP_OutputReadyCallback_t)stepCounterOutputCallback,
+                                                 OSP_NO_NVM_WRITE_CALLBACK,
+                                                 OSP_NO_SENSOR_CONTROL_CALLBACK,
+                                                 OSP_NO_FLAGS,
+                                                 OSP_NO_OPTIONAL_DATA};
 
 
 //// Global data from Platform file
@@ -99,12 +75,11 @@ extern TriAxisSensorRawData_t gCurrentGyroData;
 //// Main
 int main(int32_t argc, OSP_char_t** argv) {
   int status;
-  const OSP_Version_t* version;
+  const OSP_Library_Version_t* version;
 
 
   OSP_GetVersion(&version);
-  PRINTF("OSP Example with OSP version: %s\n", 
-         version->VersionString);
+  PRINTF("OSP Example with OSP version: %s\n", version->VersionString);
 
   // initialize your hardware 
   Platform_Initialize();
@@ -119,15 +94,11 @@ int main(int32_t argc, OSP_char_t** argv) {
   status|= OSP_RegisterSensor(Platform_GetSensorDescriptorByName("sim-gyro"), &sGyroHandle);
   Platform_HandleErrorIf( status != OSP_STATUS_OK, "could not initialize required sensors");
 
-  // request rotationVector output at 50Hz                                            
-  Platform_HandleErrorIf((OSP_SubscribeResult(&significantMotionRequest, &significantMotionHandle) != OSP_STATUS_OK),
-                         "OSP doesn't know how to provide RESULT_SIGNIFICANT_MOTION!");
-  Platform_HandleErrorIf((OSP_SubscribeResult(&significantStillnessRequest, &significantStillnessHandle) != OSP_STATUS_OK),
-                         "OSP doesn't know how to provide RESULT_SIGNIFICANT_STILLNESS!");
-  Platform_HandleErrorIf((OSP_SubscribeResult(&stepCounterRequest, &stepCounterHandle) != OSP_STATUS_OK),
-                         "OSP doesn't know how to provide RESULT_STEP_DETECTOR");
+  // request step counter output
+  Platform_HandleErrorIf((OSP_SubscribeOutput(&stepCounterRequest, &stepCounterHandle) != OSP_STATUS_OK),
+                         "OSP doesn't know how to provide SENSOR_STEP_COUNTER");
 
-  // steady state behavior will have OSP computing orientation based on inputs you feed it
+  // steady state behavior will have OSP computing based on input sensor data you feed it
   while(!gShutdown) {
  
     // new data is usually fed straight from driver ISRs in an actual sensor hub 
@@ -136,47 +107,29 @@ int main(int32_t argc, OSP_char_t** argv) {
     // foreground and background processing are usually kicked off from timers in an actual sensor hub 
     while (OSP_DoForegroundProcessing() != OSP_STATUS_IDLE)
       ; //keep doing foreground computation until its finished
+
     while(OSP_DoBackgroundProcessing() != OSP_STATUS_IDLE)
       ; //similarly with background compute. Note that it's safe to call background processing more often than needed    
   }
 
   //Unsubscribe is important to see the last remaining data in the step counter
-  OSP_UnsubscribeResult(stepCounterHandle);
+  OSP_UnsubscribeOutput(stepCounterHandle);
 }
 
-static int32_t stepCounterResultCallback(FusionResultHandle_t resultHandle,
-                                          Android_StepCounterResultData_t* pResult) {
+static int32_t stepCounterOutputCallback(OutputSensorHandle_t OutputHandle,
+                                          Android_StepCounterOutputData_t* pOutput) {
 
-    PRINTF("{STC, %+03.2f, %d,0,}\r\n", TOFLT_TIME(pResult->TimeStamp),
-                                        pResult->StepCount);
+    PRINTF("{STC, %+03.2f, %d,0,}\r\n", TOFLT_TIME(pOutput->TimeStamp),
+                                        pOutput->StepCount);
 
     return 0;
 }
 
 
-static int32_t significantMotionResultCallback(FusionResultHandle_t resultHandle, Android_SignificantMotionResultData_t* pResult) {
-
-  PRINTF("{SM, %+03.2f, 1.0,0,}\r\n", TOFLT_TIME(pResult->TimeStamp));
-
-  return 0;
-}
-
-static int32_t significantStillnessResultCallback(FusionResultHandle_t resultHandle, Android_SignificantMotionResultData_t* pResult) {
-
-  PRINTF("{SS, %+03.2f, 1.0,0,}\r\n", TOFLT_TIME(pResult->TimeStamp));
-
-  return 0;
-}
-
-static int32_t sensorResultCallback(FusionResultHandle_t resultHandle, Android_CalibratedAccelResultData_t* pResult) {
-
-  return 0;
-}
-
 static void waitForNewDataToFeedOSP(void) {
-  const uint32_t XL_DATA_MASK = 1<<OSP_SENSOR_TYPE_ACCELEROMETER;
-  const uint32_t MAG_DATA_MASK = 1<<OSP_SENSOR_TYPE_MAGNETIC_FIELD;
-  const uint32_t GYRO_DATA_MASK = 1<<OSP_SENSOR_TYPE_GYROSCOPE;
+  const uint32_t XL_DATA_MASK = 1<<SENSOR_ACCELEROMETER;
+  const uint32_t MAG_DATA_MASK = 1<<SENSOR_MAGNETIC_FIELD;
+  const uint32_t GYRO_DATA_MASK = 1<<SENSOR_GYROSCOPE;
   int status = OSP_STATUS_OK;
 
   int32_t dataAvailable = Platform_BlockOnNewSensorReadings();
