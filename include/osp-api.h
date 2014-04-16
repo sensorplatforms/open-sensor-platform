@@ -308,11 +308,12 @@ typedef struct {
 
 //! positive, normalized quaternion used for the various flavors of ROTATION_VECTOR
 typedef struct {
-    NTTIME TimeStamp;                             //!< Time in seconds
-    NT X;                                         //!< X component of normalized quaternion in 16Q12 fixed point
-    NT Y;                                         //!< Y component of normalized quaternion in 16Q12 fixed point
-    NT Z;                                         //!< Z component of normalized quaternion in 16Q12 fixed point
-    NT W;                                         //!< W component of normalized quaternion in 16Q12 fixed point
+    NTTIME TimeStamp;                     //!< Time in seconds
+    NTPRECISE X;                          //!< X component of normalized quaternion in 32Q24 fixed point
+    NTPRECISE Y;                          //!< Y component of normalized quaternion in 32Q24 fixed point
+    NTPRECISE Z;                          //!< Z component of normalized quaternion in 32Q24 fixed point
+    NTPRECISE W;                          //!< W component of normalized quaternion in 32Q24 fixed point
+    NTPRECISE ErrorEst;                   //!< estimated heading Accuracy in radians in 32Q24 fixed point (-1 if unavailable)
 } Android_RotationVectorOutputData_t;
 
 
