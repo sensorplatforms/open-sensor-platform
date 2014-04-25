@@ -31,7 +31,7 @@
  * your device and compile with switch EXCLUDE_CANNED_DATA to get a 
  * better idea of resource  requirements for your platform.
  *
- * The code activates all resuls at startup. A good exercise for the reader
+ * The code activates all results at startup. A good exercise for the reader
  * would be to modify this so the step counter is activated when there is a
  * significant motion event, outputs the step count as it updates,
  * then deactivates step counting when significant stillness is detected.
@@ -55,7 +55,7 @@ static InputSensorHandle_t sXlHandle;
 static InputSensorHandle_t sGyroHandle;
 static InputSensorHandle_t sMagHandle;
 
-static  OutputSensorHandle_t stepCounterHandle;
+static OutputSensorHandle_t stepCounterHandle;
 
 SensorDescriptor_t  stepCounterRequest= {SENSOR_STEP_COUNTER,
                                                 DATA_CONVENTION_ANDROID,
@@ -105,7 +105,7 @@ int main(int32_t argc, OSP_char_t** argv) {
     waitForNewDataToFeedOSP();
 
     // foreground and background processing are usually kicked off from timers in an actual sensor hub 
-    while (OSP_DoForegroundProcessing() != OSP_STATUS_IDLE)
+    while(OSP_DoForegroundProcessing() != OSP_STATUS_IDLE)
       ; //keep doing foreground computation until its finished
 
     while(OSP_DoBackgroundProcessing() != OSP_STATUS_IDLE)

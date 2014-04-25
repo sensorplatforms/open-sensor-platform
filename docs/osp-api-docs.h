@@ -17,11 +17,11 @@
  */
 
 /*!
-  \mainpage
+  \mainpage Overview
 
  This documentation describes the Open-Sensor-Platform (OSP) project
  for a resource constrained Sensor Hub or Smart Sensor device. The
- following figure shows the aspects of OSP provided in Android and in an
+ following figures show the aspects of OSP provided in Android and in an
  embedded core.
 
   \image html osp_framework.png

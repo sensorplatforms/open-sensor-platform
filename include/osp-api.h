@@ -81,14 +81,13 @@ typedef enum {
     SENSOR_CONTEXT_CHANGE_DETECTOR         = 25, //!< low compute trigger for seeing if context may have changed
     SENSOR_STEP_SEGMENT_DETECTOR           = 26, //!< low compute trigger for analyzing if step may have occured
     SENSOR_GESTURE_EVENT                   = 27, //!< gesture event such as a double-tap or shake
-    SENSOR_NEED_CALIBRATION                = 28, //!< boolean indication that the user should perform a calibration sequence
-    SENSOR_MESSAGE                         = 29, //!< warnings from the library: e.g. excessive timestamp jitter
-    SENSOR_RGB_LIGHT                       = 30, //!< RGB light data
-    SENSOR_UV_LIGHT                        = 31, //!< UV light data
-    SENSOR_HEART_RATE                      = 32, //!< heart-rate data
-    SENSOR_BLOOD_OXYGEN_LEVEL              = 33, //!< blood-oxygen level data
-    SENSOR_SKIN_HYDRATION_LEVEL            = 34, //!< skin-hydration level data
-    SENSOR_BREATHALYZER                    = 35, //!< breathalyzer data
+    SENSOR_MESSAGE                         = 28, //!< warnings from the library: e.g. excessive timestamp jitter, need calibration
+    SENSOR_RGB_LIGHT                       = 29, //!< RGB light data
+    SENSOR_UV_LIGHT                        = 30, //!< UV light data
+    SENSOR_HEART_RATE                      = 31, //!< heart-rate data
+    SENSOR_BLOOD_OXYGEN_LEVEL              = 32, //!< blood-oxygen level data
+    SENSOR_SKIN_HYDRATION_LEVEL            = 33, //!< skin-hydration level data
+    SENSOR_BREATHALYZER                    = 34, //!< breathalyzer data
     SENSOR_ENUM_COUNT
 } SensorType_t ;
 
@@ -165,7 +164,6 @@ typedef enum {
     GESTURE_ENUM_COUNT
 } GestureType_t;
 
-
 // Context results
 
 //! Used for all context results in conjunction with the enums ContextMotionType_t, ContextPostureType_t, ContextCarryType_t
@@ -219,45 +217,65 @@ typedef enum {
     CONTEXT_TRANSPORT_UP_ESCALATOR = 8,
     CONTEXT_TRANSPORT_DOWN_ESCALATOR = 9,
     CONTEXT_TRANSPORT_MOVING_WALKWAY = 10,
+    CONTEXT_TRANSPORT_ON_BIKE = 11,
     CONTEXT_TRANSPORT_ENUM_COUNT
 } ContextTransportType_t;
 
-
 //! Use these enums as indices into the probability vector of a ContextOutputData_t in a STEP result callback
 typedef enum {
-    CONTEXT_STEP = 0,                           //!< only one kind of step now
+    CONTEXT_STEP = 0,              //!< only one kind of step now
     CONTEXT_STEP_ENUM_COUNT
 } ContextStepType_t;
 
-
-//! calibrated acceleration in m/s^2. note positive Z when flat on table.
+//! calibrated acceleration in m/s^2. Note positive Z when flat on table.
 typedef struct {
-    NTTIME TimeStamp;                             //!< Time in seconds
-    NTPRECISE X;                                 //!< X axis 32Q24 fixed point data
-    NTPRECISE Y;                                 //!< Y axis 32Q24 fixed point data
-    NTPRECISE Z;                                 //!< Z axis 32Q24 fixed point data
+    NTTIME TimeStamp;              //!< Time in seconds
+    NTPRECISE X;                   //!< X axis 32Q24 fixed point data
+    NTPRECISE Y;                   //!< Y axis 32Q24 fixed point data
+    NTPRECISE Z;                   //!< Z axis 32Q24 fixed point data
 } Android_CalibratedAccelOutputData_t;
 
-//! calibrated magnetometer in uT  +Y axis points out the top edge of the device
+//! calibrated magnetometer in uT.  Note positive Y when top edge points towards magnetic North.
 typedef struct {
-    NTTIME TimeStamp;                             //!< Time in seconds
-    NTEXTENDED X;                                 //!< X axis 32Q12 fixed point data
-    NTEXTENDED Y;                                 //!< Y axis 32Q12 fixed point data
-    NTEXTENDED Z;                                 //!< Z axis 32Q12 fixed point data
+    NTTIME TimeStamp;              //!< Time in seconds
+    NTEXTENDED X;                  //!< X axis 32Q12 fixed point data
+    NTEXTENDED Y;                  //!< Y axis 32Q12 fixed point data
+    NTEXTENDED Z;                  //!< Z axis 32Q12 fixed point data
 } Android_CalibratedMagOutputData_t;
 
-//! calibrated rotation rate in rad/s right handed +Y axis points out the top edge of the device
+//! calibrated rotation rate in rad/s.  Note positive Z when spin counter-clockwise on the table (right handed).
 typedef struct {
-    NTTIME TimeStamp;                             //!< Time in seconds
-    NTPRECISE X;                                 //!< X axis 32Q24 fixed point data
-    NTPRECISE Y;                                 //!< Y axis 32Q24 fixed point data
-    NTPRECISE Z;                                 //!< Z axis 32Q24 fixed point data
+    NTTIME TimeStamp;              //!< Time in seconds
+    NTPRECISE X;                   //!< X axis 32Q24 fixed point data
+    NTPRECISE Y;                   //!< Y axis 32Q24 fixed point data
+    NTPRECISE Z;                   //!< Z axis 32Q24 fixed point data
 } Android_CalibratedGyroOutputData_t;
 
-
-//! uncalibrated rotation rate in rad/s right handed +Y axis points out the top edge of the device
+//! uncalibrated acceleration in m/s^2. note positive Z when flat on table.
 typedef struct {
-    NTTIME TimeStamp;               //!< Time in seconds
+    NTTIME TimeStamp;              //!< Time in seconds
+    NTPRECISE X;                   //!< 32Q24 fixed point data representing rad/sec.
+    NTPRECISE Y;                   //!< 32Q24 fixed point data representing rad/sec.
+    NTPRECISE Z;                   //!< 32Q24 fixed point data representing rad/sec.
+    NTPRECISE X_offset;            //!< 32Q24 fixed point data representing rad/sec.
+    NTPRECISE Y_offset;            //!< 32Q24 fixed point data representing rad/sec.
+    NTPRECISE Z_offset;            //!< 32Q24 fixed point data representing rad/sec.
+} Android_UncalibratedAccelOutputData_t;
+
+//! uncalibrated magnetometer in uT.  Note positive Y when top edge points towards magnetic North.
+typedef struct {
+    NTTIME TimeStamp;              //!< Time in seconds
+    NTEXTENDED X;                  //!< 32Q12 fixed point data representing uT.
+    NTEXTENDED Y;                  //!< 32Q12 fixed point data representing uT. 
+    NTEXTENDED Z;                  //!< 32Q12 fixed point data representing uT. 
+    NTEXTENDED X_hardIron_offset;  //!< 32Q12 fixed point data representing uT   
+    NTEXTENDED Y_hardIron_offset;  //!< 32Q12 fixed point data representing uT
+    NTEXTENDED Z_hardIron_offset;  //!< 32Q12 fixed point data representing uT
+} Android_UncalibratedMagnetometerOutputData_t;
+
+//! uncalibrated rotation rate in rad/s.  Note positive Z when spin counter-clockwise on the table (right handed).
+typedef struct {
+    NTTIME TimeStamp;              //!< Time in seconds
     NTPRECISE X;                   //!< 32Q24 fixed point data representing rad/sec.
     NTPRECISE Y;                   //!< 32Q24 fixed point data representing rad/sec.
     NTPRECISE Z;                   //!< 32Q24 fixed point data representing rad/sec.
@@ -266,54 +284,32 @@ typedef struct {
     NTPRECISE Z_drift_offset;      //!< 32Q24 fixed point data representing rad/sec.
 } Android_UncalibratedGyroOutputData_t;
 
-//! uncalibrated magnetometer in uT  +Y axis points out the top edge of the device
-typedef struct {
-    NTTIME TimeStamp;               //!< Time in seconds
-    NTEXTENDED X;                   //!< 32Q12 fixed point data representing uT.
-    NTEXTENDED Y;                   //!< 32Q12 fixed point data representing uT. 
-    NTEXTENDED Z;                   //!< 32Q12 fixed point data representing uT. 
-    NTEXTENDED X_hardIron_offset;   //!< 32Q12 fixed point data representing uT   
-    NTEXTENDED Y_hardIron_offset;   //!< 32Q12 fixed point data representing uT
-    NTEXTENDED Z_hardIron_offset;   //!< 32Q12 fixed point data representing uT
-} Android_UncalibratedMagnetometerOutputData_t;
-
-//! uncalibrated acceleration in m/s^2. note positive Z when flat on table.
-typedef struct {
-    NTTIME TimeStamp;               //!< Time in seconds
-    NTPRECISE X;                   //!< 32Q24 fixed point data representing rad/sec.
-    NTPRECISE Y;                   //!< 32Q24 fixed point data representing rad/sec.
-    NTPRECISE Z;                   //!< 32Q24 fixed point data representing rad/sec.
-    NTPRECISE X_drift_offset;      //!< 32Q24 fixed point data representing rad/sec.
-    NTPRECISE Y_drift_offset;      //!< 32Q24 fixed point data representing rad/sec.
-    NTPRECISE Z_drift_offset;      //!< 32Q24 fixed point data representing rad/sec.
-} Android_UncalibratedAccelOutputData_t;
-
 //! time at the start of a motion which is likely to lead to a change in position
 typedef struct {
-    NTTIME TimeStamp;                     //!< Time in seconds
-    Bool significantMotionDetected;  //!< always set to true when this result fires
+    NTTIME TimeStamp;              //!< Time in seconds
+    Bool significantMotionDetected;//!< always set to true when this result fires
 } Android_SignificantMotionOutputData_t;
 
 //! indicates when each step is taken
 typedef struct {
-    NTTIME TimeStamp;               //!< Time in seconds
-    Bool StepDetected;         //!< always set to true, indicating a step was taken
+    NTTIME TimeStamp;              //!< Time in seconds
+    Bool StepDetected;             //!< always set to true, indicating a step was taken
 } Android_StepDetectorOutputData_t;
 
 //! Android style step counter, but note that the host driver must bookkeep between sensorhub power on/off to meet android requirment 
 typedef struct {
-    NTTIME TimeStamp;         // timestamp
-    uint32_t StepCount;       //!< steps since power on of the sensorhub (this is an important distinction from the full android requirement!)
+    NTTIME TimeStamp;              // timestamp
+    uint32_t StepCount;            //!< steps since power on of the sensorhub (this is an important distinction from the full android requirement!)
 } Android_StepCounterOutputData_t;
 
 //! positive, normalized quaternion used for the various flavors of ROTATION_VECTOR
 typedef struct {
-    NTTIME TimeStamp;                     //!< Time in seconds
-    NTPRECISE X;                          //!< X component of normalized quaternion in 32Q24 fixed point
-    NTPRECISE Y;                          //!< Y component of normalized quaternion in 32Q24 fixed point
-    NTPRECISE Z;                          //!< Z component of normalized quaternion in 32Q24 fixed point
-    NTPRECISE W;                          //!< W component of normalized quaternion in 32Q24 fixed point
-    NTPRECISE ErrorEst;                   //!< estimated heading Accuracy in radians in 32Q24 fixed point (-1 if unavailable)
+    NTTIME TimeStamp;              //!< Time in seconds
+    NTPRECISE X;                   //!< X component of normalized quaternion in 32Q24 fixed point
+    NTPRECISE Y;                   //!< Y component of normalized quaternion in 32Q24 fixed point
+    NTPRECISE Z;                   //!< Z component of normalized quaternion in 32Q24 fixed point
+    NTPRECISE W;                   //!< W component of normalized quaternion in 32Q24 fixed point
+    NTPRECISE ErrorEst;            //!< estimated heading Accuracy in radians in 32Q24 fixed point (-1 if unavailable)
 } Android_RotationVectorOutputData_t;
 
 
@@ -333,7 +329,7 @@ typedef void (*OSP_CriticalSectionCallback_t)(void);
  *
  */
 typedef struct  {
-    TIMECOEFFICIENT TstampConversionToSeconds;  //!< 1 count = this many seconds
+    TIMECOEFFICIENT TstampConversionToSeconds;   //!< 1 count = this many seconds
     OSP_CriticalSectionCallback_t EnterCritical; //!< callback for entering a critical section of code (i.e. no task switch), NULL if not implemented
     OSP_CriticalSectionCallback_t ExitCritical;  //!< callback for exiting a critical section of code (i.e. task switch ok now), NULL if not implemented
 } SystemDescriptor_t;
@@ -351,7 +347,7 @@ typedef void  (* OSP_WriteCalDataCallback_t)(InputSensorHandle_t SensorHandle, v
 
 //! called by the algorithms to notify the sensor hub that there is a new data item ready
 /*!
- *  cast the pData to the expected result type (e.g. )  If you have a general callback handler use the 
+ *  Cast the pData to the expected result type (e.g. ).  If you have a general callback handler use the 
  *  OutputHandle to lookup what result type this should be cast to.
  *
  * \warning the data pointed to by pData is only guaranteed to be valid during the lifetime of this callback
@@ -366,16 +362,16 @@ typedef uint16_t (* OSP_SensorControlCallback_t)(SensorControl_t* SensorControlC
 
 //! describes either a physical or logical sensor and its configuration
 /*!
- * convert sensor data straight from the sensor into the system conventions of orientation and units
- * data is converted are applied in the order of AxisMapping, ConversionOffset, and ConversionScale
- * allows conversion from lhs sensor to rhs sensor hub system
- * must re-registrater sensors to change orientation
- * Sensor conversions convert native binary format into units dictated by DataConvention
+ * Convert sensor data straight from the sensor into the system conventions of orientation and units
+ * data is converted are applied in the order of AxisMapping, ConversionOffset, and ConversionScale.
+ * Allows conversion from lhs sensor to rhs sensor hub system.
+ * Must re-registrater sensors to change orientation.
+ * Sensor conversions convert native binary format into units dictated by DataConvention.
  * There is no callback for the library to read calibration. The sensor hub must read its calibration
-   from NVM before registering/re-registerating this sensor If there is no stored calibration data available,
+   from NVM before registering/re-registerating this sensor. If there is no stored calibration data available,
    pass a NULL.
   When the the Open-Sensor-Platform library has computed new calibration data, it will update the data structure and call
-  pOptionalWriteDataCallback(),if it is available, so that the sensor hub can store the updated calibration data to NVM.
+  pOptionalWriteDataCallback(), if it is available, so that the sensor hub can store the updated calibration data to NVM.
 */
 
 typedef struct  {
@@ -456,8 +452,8 @@ OSP_STATUS_t     OSP_Initialize(const SystemDescriptor_t* pSystemDesc);
  *  Tells the Open-Sensor-Platform Library what kind of sensor inputs it has to work with so its Resource Manager
  *  can choose the most appropriate algorithms to execute.
  *
- *  In a standard sensorhub use case input sensors are registered once
- *  In a convertable tablet use case where a sensor's physical location changes, this will be called as the physical placement changes
+ *  In a standard sensorhub use case input sensors are registered once.
+ *  In a convertable tablet use case where a sensor's physical location changes, this will be called as the physical placement changes.
  *
  *  \note it is not necessary to register/unregister input sensors when the host requests a change in output data rate.  
  *
@@ -473,8 +469,8 @@ OSP_STATUS_t     OSP_RegisterInputSensor(SensorDescriptor_t *pSensorDescriptor, 
 
 //! Call to remove an sensor from OSP's known set of inputs
 /*!
- *  In a standard sensorhub use case input sensors are registered once this API is not needed
- *  In a convertable tablet use case where a sensor's physical location changes, this will be called as the physical placement changes
+ *  In a standard sensorhub use case input sensors are registered once this API is not needed.
+ *  In a convertable tablet use case where a sensor's physical location changes, this will be called as the physical placement changes.
  *
  *  \note it is not necessary to register/unregister input sensors when the host requests a change in output data rate.  
  *
@@ -487,8 +483,8 @@ OSP_STATUS_t     OSP_UnregisterInputSensor(InputSensorHandle_t handle);
 //! queues sensor data which will be processed by OSP_DoForegroundProcessing() and OSP_DoBackgroundProcessing()
 /*!
  *
- *  queueing data for un-registered sensors (or as sensors that) 
- *  queue size defaults to 8, though is implementation dependent and available via SENSOR_FG_DATA_Q_SIZE
+ *  Queueing data for un-registered sensors (or as sensors that). 
+ *  Queue size defaults to 8, though is implementation dependent and available via SENSOR_FG_DATA_Q_SIZE.
  *
  *  \param sensorHandle INPUT requires a valid handle as returned by OSP_RegisterSensor()
  *  \param data INPUT pointer to timestamped raw sensor data
