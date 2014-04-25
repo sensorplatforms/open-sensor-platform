@@ -143,7 +143,7 @@ typedef enum {
 
 //! how enable/disable/setDelay type commands and data are passed back to the sensor driver
 typedef struct  {
-    InputSensorHandle_t Handle;                      //!< handle that was returned from OSP_RegisterSensor()
+    InputSensorHandle_t Handle;                 //!< handle that was returned from OSP_RegisterInputSensor()
     uint16_t Command;                           //!< command to sensor (power on/off, change rate, etc...)
     int32_t Data;                               //!< as need and appropriate for each command: e.g. high pass frequency in Hz
 } SensorControl_t;
@@ -486,7 +486,7 @@ OSP_STATUS_t     OSP_UnregisterInputSensor(InputSensorHandle_t handle);
  *  Queueing data for un-registered sensors (or as sensors that). 
  *  Queue size defaults to 8, though is implementation dependent and available via SENSOR_FG_DATA_Q_SIZE.
  *
- *  \param sensorHandle INPUT requires a valid handle as returned by OSP_RegisterSensor()
+ *  \param sensorHandle INPUT requires a valid handle as returned by OSP_RegisterInputSensor()
  *  \param data INPUT pointer to timestamped raw sensor data
  *
  *  \return status. Will always be OSP_STATUS_OK. If there is no room in the queue,
