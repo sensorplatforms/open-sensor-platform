@@ -15,47 +15,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef VIRTUALSENSORDEVICEMANAGER_H
-#define VIRTUALSENSORDEVICEMANAGER_H
+#ifndef OSP_DATATYPES_H
+#define OSP_DATATYPES_H
 
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
+/* We shall use STDINT types such as uint32_t, int8_t, etc. for integer types in all of our code. */
 #include <stdint.h>
-#include <vector>
-#include <linux/input.h>
-
 
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
+#ifndef TRUE
+# define TRUE 1
+#endif
+
+#ifndef FALSE
+# define FALSE (!TRUE)
+#endif
+
 
 /*-------------------------------------------------------------------------------------------------*\
- |    T Y P E / C L A S S   D E F I N I T I O N S
+ |    T Y P E   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-//! manages the lifecycle of virtual sensor device file descriptors
-class VirtualSensorDeviceManager
-{
-public:
-    VirtualSensorDeviceManager( const int sleepus = 10000);
-    ~VirtualSensorDeviceManager();
+/* Other types that are not provided by stdint */
+typedef char            osp_char_t;
+/* Note that char cannot be replaced by int8_t or uint8_t as most compiler treats
+   char, signed char and unsigned char as different because char itself maybe signed or unsigned */
+typedef unsigned char   osp_byte_t;
+typedef double          osp_dbl_t;
+typedef float           osp_float_t;
 
-    int createSensor(const char* name, const char* physname, int absMin =-2048,
-                     int absMax =2047);
-    void publish(int deviceFd, input_event data);
-    void publish(int deviceFd, int* data,
-                 const unsigned int* const timeInMillis = 0);
-    void publish(int deviceFd, const int32_t data[],
-                 const int64_t time64, int numAxis=3);
+#ifdef __cplusplus
+  typedef bool          osp_bool_t;
+#else
+  typedef char          osp_bool_t;
+#endif
 
-protected:
-
-    void fatalErrorIf(bool condition, int code, const char* msg);
-
-private:
-    std::vector<int> _deviceFds;
-    const int _sleepus;
-};
+typedef unsigned short osp_size_t;
+typedef int osp_status_t;
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
@@ -69,7 +68,8 @@ private:
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 
-#endif // VIRTUALSENSORDEVICEMANAGER_H
+
+#endif /* OSP_DATATYPES_H */
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/

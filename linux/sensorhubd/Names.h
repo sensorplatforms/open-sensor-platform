@@ -15,16 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef VIRTUALSENSORDEVICEMANAGER_H
-#define VIRTUALSENSORDEVICEMANAGER_H
+#ifndef _NAMES_H_
+#define _NAMES_H_
 
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
-#include <stdint.h>
-#include <vector>
-#include <linux/input.h>
-
+#include <string>
+#include "osp_datatypes.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
@@ -33,28 +31,21 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E / C L A S S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-//! manages the lifecycle of virtual sensor device file descriptors
-class VirtualSensorDeviceManager
-{
+class Names {
 public:
-    VirtualSensorDeviceManager( const int sleepus = 10000);
-    ~VirtualSensorDeviceManager();
+    typedef  const char* NameString;
 
-    int createSensor(const char* name, const char* physname, int absMin =-2048,
-                     int absMax =2047);
-    void publish(int deviceFd, input_event data);
-    void publish(int deviceFd, int* data,
-                 const unsigned int* const timeInMillis = 0);
-    void publish(int deviceFd, const int32_t data[],
-                 const int64_t time64, int numAxis=3);
+    // Linux Input Manager Input Event Types
+    static constexpr NameString INPUT_EVENT_TIMESTAMP = "EVENT_TIMESTAMP";
+    static constexpr NameString INPUT_EVENT_EMBEDDED_32_BIT_TIMESTAMP = "EMBEDDED_32_BIT_TIMESTAMP";
+    static constexpr NameString INPUT_EVENT_EMBEDDED_64_BIT_TIMESTAMP = "EMBEDDED_64_BIT_TIMESTAMP";
 
-protected:
 
-    void fatalErrorIf(bool condition, int code, const char* msg);
+    static constexpr NameString SYSTEM_EVENT = "SYSTEM_EVENT";
+    static constexpr NameString RAW_ACCELEROMETER = "RAW_ACCELEROMETER";
+    static constexpr NameString RAW_MAGNETOMETER = "RAW_MAGNETOMETER";
+    static constexpr NameString RAW_GYROSCOPE = "RAW_GYROSCOPE";
 
-private:
-    std::vector<int> _deviceFds;
-    const int _sleepus;
 };
 
 /*-------------------------------------------------------------------------------------------------*\
@@ -69,7 +60,7 @@ private:
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 
-#endif // VIRTUALSENSORDEVICEMANAGER_H
+#endif // _NAMES_H_
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/
