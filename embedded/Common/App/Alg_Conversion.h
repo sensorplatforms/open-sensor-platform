@@ -21,9 +21,8 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
-#include "Types.h"
 #include "Common.h"
-#include "FixedPointTypes.h"
+#include "osp-fixedpoint-types.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
@@ -233,7 +232,7 @@ __inline static uint32_t mult_uint16_uint16(uint16_t a, uint16_t b)
 }
 
 int32_t ConvertSensorData(SensorDescriptor_t *pSenDesc, TriAxisSensorRawData_t *pRawData, SPI_3AxisResult_t *pResult);
-fm_bool_t GetTimeFromCounter(NTTIME * pTime,TIMECOEFFICIENT counterToTimeConversionFactor,uint32_t counterHigh, uint32_t counterLow);
+Bool GetTimeFromCounter(NTTIME * pTime,TIMECOEFFICIENT counterToTimeConversionFactor,uint32_t counterHigh, uint32_t counterLow);
 
 
 

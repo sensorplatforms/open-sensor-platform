@@ -15,57 +15,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#if !defined (OSP_TYPES_H)
-#define   OSP_TYPES_H
+#if !defined (ASF_TYPES_H)
+#define   ASF_TYPES_H
 
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
-#include <stdint.h> /* Try to use std int types in the application code */
+#include <stdint.h>
+#include "RTL.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
-#define OSP_STATUS_OK       0
-#define OSP_STATUS_IDLE     1
-#define OSP_STATUS_ERROR    -1
-
-#define NULLP               ((void *) 0)
-#ifndef true
-# define true               (1 == 1)
-#endif
-#ifndef false
-# define false              (!true)
-#endif
-
-#ifndef TRUE
-# define TRUE 1
-#endif
-
-#ifndef FALSE
-# define FALSE (!TRUE)
-#endif
 
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-/* Standard typedefs */
-typedef double              DBL;
-typedef float               FLT;
+/*
+ * Task Handle type. This type is OS-dependent.
+ */
+typedef struct AsfTaskHandleTag {
+    OS_TID   handle;
+    void     *pStack;
+    uint16_t stkSize;
+} AsfTaskHandle;
 
-typedef signed char         OSP_char_t;
-/* Note that char cannot be replaced by int8_t or uint8_t as most compiler treats
-   char, signed char and unsigned char as different because char itself maybe signed or unsigned */
+/*
+ * Semaphore ID type. This type is OS-dependent.
+ */
+typedef OS_SEM* AsfSemIdType;
 
-typedef int                 OSP_STATUS_t;
+/*
+ * Timer ID type. This type is OS-dependent.
+ */
+typedef OS_ID TimerId;
 
-#ifdef __cplusplus
-  typedef bool              Bool;
-#else
-  typedef unsigned char     Bool;
-#endif
 
-#endif /* OSP_TYPES_H */
+/*-------------------------------------------------------------------------------------------------*\
+ |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+
+#endif /* ASF_TYPES_H */
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/

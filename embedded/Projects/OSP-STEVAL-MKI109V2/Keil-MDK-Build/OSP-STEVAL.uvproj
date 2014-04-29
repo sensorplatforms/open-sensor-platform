@@ -361,7 +361,7 @@
               <MiscControls></MiscControls>
               <Define>ANDROID_DEMO,HSE_VALUE=16000000,USE_STDPERIPH_DRIVER,STM32F10X_HD,DEBUG_BUILD,DEBUG_OUTPUT,STEVAL_MKI109V2,UART_DMA_ENABLE,ASF_PROFILING,ON_DEMAND_PROFILING</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\Common\App;..\..\..\Common\ASF;..\Sources\App;..\Sources\Config;..\Sources\BoardSupport;..\..\..\Common\Modules\Sensor-Drivers;..\..\..\Common\Modules\Bus-drivers;..\..\..\..\external\MCU\STM32F1-CM3\CSLib;..\..\..\..\external\MCU\STM32F1-CM3\CSLib\inc;..\..\..\..\external\RTOS\RTX\inc;..\..\..\..\external\MCU\CMSIS\Device\ST\STM32F10x\Include;..\..\..\..\external\RTOS\RTX\CM</IncludePath>
+              <IncludePath>..\..\..\..\include;..\..\..\Common\App;..\..\..\Common\ASF;..\Sources\App;..\Sources\Config;..\Sources\BoardSupport;..\..\..\Common\Modules\Sensor-Drivers;..\..\..\Common\Modules\Bus-drivers;..\..\..\..\external\MCU\STM32F1-CM3\CSLib;..\..\..\..\external\MCU\STM32F1-CM3\CSLib\inc;..\..\..\..\external\RTOS\RTX\inc;..\..\..\..\external\MCU\CMSIS\Device\ST\STM32F10x\Include;..\..\..\..\external\RTOS\RTX\CM</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>

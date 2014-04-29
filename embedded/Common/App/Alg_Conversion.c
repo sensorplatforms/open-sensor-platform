@@ -150,7 +150,7 @@ static NTEXTENDED ScaleSensorData(int32_t Data, SensorDataType_t Format, uint32_
  *          Helper routine for time conversion
  *
  ***************************************************************************************************/
-fm_bool_t GetTimeFromCounter(NTTIME * pTime,TIMECOEFFICIENT counterToTimeConversionFactor,uint32_t counterHigh, uint32_t counterLow)
+Bool GetTimeFromCounter(NTTIME * pTime,TIMECOEFFICIENT counterToTimeConversionFactor,uint32_t counterHigh, uint32_t counterLow)
 {
     NTTIME ret = 0;
     uint32_t high1,low1;
