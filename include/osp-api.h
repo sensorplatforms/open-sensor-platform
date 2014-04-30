@@ -22,27 +22,26 @@
 extern "C" {
 #endif
 
-/*--------------------------------------------------------------------------*\
+/*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
-\*--------------------------------------------------------------------------*/
+\*-------------------------------------------------------------------------------------------------*/
 #include "osp-types.h"
 #include "osp-fixedpoint-types.h"
 
-/*--------------------------------------------------------------------------*\
+/*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
-\*--------------------------------------------------------------------------*/
-
+\*-------------------------------------------------------------------------------------------------*/
 /// flags to pass into sensor descriptors
-#define OSP_NO_SENSOR_CONTROL_CALLBACK (NULL)
-#define OSP_NO_NVM_WRITE_CALLBACK      (NULL)
-#define OSP_32BIT_DATA          (0xFFFFFFFF)
-#define OSP_NO_OPTIONAL_DATA    ((void*)NULL)
-#define OSP_NO_FLAGS            (0)
-#define OSP_FLAGS_INPUT_SENSOR  (1 << 0)
+#define OSP_NO_SENSOR_CONTROL_CALLBACK  (NULL)
+#define OSP_NO_NVM_WRITE_CALLBACK       (NULL)
+#define OSP_32BIT_DATA                  (0xFFFFFFFFL)
+#define OSP_NO_OPTIONAL_DATA            ((void*)NULL)
+#define OSP_NO_FLAGS                    (0)
+#define OSP_FLAGS_INPUT_SENSOR          (1 << 0)
 
-/*--------------------------------------------------------------------------*\
+/*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
-\*--------------------------------------------------------------------------*/
+\*-------------------------------------------------------------------------------------------------*/
 
 //! use to specify the kind of sensor input or output 
 /*! 
@@ -150,7 +149,7 @@ typedef struct  {
 
 // Gesture results
 
-//! Used for all gesture results in conjuntion with the enum GestureType_t
+//! Used for all gesture results in conjunction with the enum GestureType_t
 typedef struct {
     NTTIME TimeStamp;                  //!< Time in seconds
     NT *Probability;                   //!< Probability vector.  index into this with the appropriate GestureType_t enum
@@ -296,7 +295,7 @@ typedef struct {
     Bool StepDetected;             //!< always set to true, indicating a step was taken
 } Android_StepDetectorOutputData_t;
 
-//! Android style step counter, but note that the host driver must bookkeep between sensorhub power on/off to meet android requirment 
+//! Android style step counter, but note that the host driver must bookkeep between sensorhub power on/off to meet android requirement 
 typedef struct {
     NTTIME TimeStamp;              // timestamp
     uint32_t StepCount;            //!< steps since power on of the sensorhub (this is an important distinction from the full android requirement!)
@@ -364,11 +363,11 @@ typedef uint16_t (* OSP_SensorControlCallback_t)(SensorControl_t* SensorControlC
 /*!
  * Convert sensor data straight from the sensor into the system conventions of orientation and units
  * data is converted are applied in the order of AxisMapping, ConversionOffset, and ConversionScale.
- * Allows conversion from lhs sensor to rhs sensor hub system.
- * Must re-registrater sensors to change orientation.
+ * Allows conversion from LHS sensor to RHS sensor hub system.
+ * Must re-register sensors to change orientation.
  * Sensor conversions convert native binary format into units dictated by DataConvention.
  * There is no callback for the library to read calibration. The sensor hub must read its calibration
-   from NVM before registering/re-registerating this sensor. If there is no stored calibration data available,
+   from NVM before registering/re-registering this sensor. If there is no stored calibration data available,
    pass a NULL.
   When the the Open-Sensor-Platform library has computed new calibration data, it will update the data structure and call
   pOptionalWriteDataCallback(), if it is available, so that the sensor hub can store the updated calibration data to NVM.
@@ -385,7 +384,7 @@ typedef struct  {
     void* ptrSensorSpecificData;                //!< used in conjunction with Flags
 } SensorDescriptor_t;
 
-//! detailed data describing an input sensor, passed throu ptrSensorSpecificData in a SensorDescriptor_t
+//! detailed data describing an input sensor, passed through ptrSensorSpecificData in a SensorDescriptor_t
 typedef struct {
     uint32_t DataWidthMask;                     //!< how much of the data word that is sent significant
     AxisMapType_t AxisMapping[3];               //!< swap or flip axes as necessary before conversion
@@ -408,8 +407,8 @@ typedef struct {
  *  \note even if you have single axis or 2 axis data this is the type to use
  */
 typedef struct  {
-    uint32_t TimeStamp;                         // raw time stamp
-    int32_t Data[3];                            // Raw sensor data
+    uint32_t TimeStamp;                         //!< Raw time stamp
+    int32_t Data[3];                            //!< Raw sensor data
 } TriAxisSensorRawData_t;
 
 
@@ -420,18 +419,17 @@ typedef struct  {
 } OSP_Library_Version_t;
 
 
-/*--------------------------------------------------------------------------*\
+/*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
-\*--------------------------------------------------------------------------*/
+\*-------------------------------------------------------------------------------------------------*/
 
-/*--------------------------------------------------------------------------*\
- |    P U B L I C   V A R I A B L E S
-\*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
 
-/*--------------------------------------------------------------------------*\
+/*-------------------------------------------------------------------------------------------------*\
  |    A P I   F U N C T I O N   D E C L A R A T I O N S
-\*--------------------------------------------------------------------------*/
-
+\*-------------------------------------------------------------------------------------------------*/
 
 //! Call immediately at startup to initialize the Open-Sensor-Platform Library and inform it of system characteristics
 /*!
@@ -453,7 +451,7 @@ OSP_STATUS_t     OSP_Initialize(const SystemDescriptor_t* pSystemDesc);
  *  can choose the most appropriate algorithms to execute.
  *
  *  In a standard sensorhub use case input sensors are registered once.
- *  In a convertable tablet use case where a sensor's physical location changes, this will be called as the physical placement changes.
+ *  In a convertible tablet use case where a sensor's physical location changes, this will be called as the physical placement changes.
  *
  *  \note it is not necessary to register/unregister input sensors when the host requests a change in output data rate.  
  *
@@ -470,7 +468,7 @@ OSP_STATUS_t     OSP_RegisterInputSensor(SensorDescriptor_t *pSensorDescriptor, 
 //! Call to remove an sensor from OSP's known set of inputs
 /*!
  *  In a standard sensorhub use case input sensors are registered once this API is not needed.
- *  In a convertable tablet use case where a sensor's physical location changes, this will be called as the physical placement changes.
+ *  In a convertible tablet use case where a sensor's physical location changes, this will be called as the physical placement changes.
  *
  *  \note it is not necessary to register/unregister input sensors when the host requests a change in output data rate.  
  *
@@ -483,7 +481,7 @@ OSP_STATUS_t     OSP_UnregisterInputSensor(InputSensorHandle_t handle);
 //! queues sensor data which will be processed by OSP_DoForegroundProcessing() and OSP_DoBackgroundProcessing()
 /*!
  *
- *  Queueing data for un-registered sensors (or as sensors that). 
+ *  Queuing data for un-registered sensors (or as sensors that). 
  *  Queue size defaults to 8, though is implementation dependent and available via SENSOR_FG_DATA_Q_SIZE.
  *
  *  \param sensorHandle INPUT requires a valid handle as returned by OSP_RegisterInputSensor()
@@ -501,7 +499,7 @@ OSP_STATUS_t     OSP_SetData(InputSensorHandle_t sensorHandle, TriAxisSensorRawD
  *  - Call at least as often as your fastest registered result output rate
  *  - Call from a medium priority task to ensure computation happens in a reasonable time
  *  
- *  Guideline: the forground task should not compute for more than 10ms on any platform
+ *  Guideline: the foreground task should not compute for more than 10ms on any platform
  *
  *  \note What algorithms get computed in the foreground versus the background are implementation dependent
  *
@@ -579,6 +577,6 @@ OSP_STATUS_t     OSP_GetVersion(const OSP_Library_Version_t **pVersionStruct);
 
 #endif // OSP_API_H__
 
-/*--------------------------------------------------------------------------*\
+/*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
-\*--------------------------------------------------------------------------*/
+\*-------------------------------------------------------------------------------------------------*/
