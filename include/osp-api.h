@@ -32,8 +32,9 @@ extern "C" {
  |    C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
 /// flags to pass into sensor descriptors
-#define OSP_NO_SENSOR_CONTROL_CALLBACK  (NULL)
-#define OSP_NO_NVM_WRITE_CALLBACK       (NULL)
+#define OSP_NO_SENSOR_CONTROL_CALLBACK  ((OSP_SensorControlCallback_t)NULL)
+#define OSP_NO_NVM_WRITE_CALLBACK       ((OSP_WriteCalDataCallback_t)NULL)
+#define OSP_NO_OUTPUT_READY_CALLBACK    ((OSP_OutputReadyCallback_t)NULL)
 #define OSP_32BIT_DATA                  (0xFFFFFFFFL)
 #define OSP_NO_OPTIONAL_DATA            ((void*)NULL)
 #define OSP_NO_FLAGS                    (0)
@@ -564,7 +565,7 @@ OSP_STATUS_t     OSP_UnsubscribeOutputSensor(OutputSensorHandle_t OutputHandle);
 //! provides version number and version string of the library implementation
 /*!
  *
- *  \param pVersionStruct INPUT pointer to a pointer to the version data.
+ *  \param pVersionStruct OUTPUT pointer to a pointer that will receive the version data.
  *
  *  \return status as specified in OSP_Types.h
  */
