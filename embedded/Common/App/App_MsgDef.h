@@ -49,6 +49,7 @@ ASF_MSG_DEF( MSG_CAL_EVT_NOTIFY,    MsgGeneric          msgCalEvtNotify     )
 ASF_MSG_DEF( MSG_SENSOR_DATA_RDY,   MsgSensorDataRdy    msgSensorDataRdy    )
 ASF_MSG_DEF( MSG_CD_SEGMENT_DATA,   MsgCDSegmentData    msgCDSegmentData    )
 ASF_MSG_DEF( MSG_HOST_READY,        MsgGeneric          msgHostReady        )
+ASF_MSG_DEF( MSG_TRIG_ALG_BG,       MsgNoData           msgTrigAlgBg        )
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
