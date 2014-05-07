@@ -15,8 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _NAMES_H_
-#define _NAMES_H_
+#ifndef _OSP_NAMES_H_
+#define _OSP_NAMES_H_
 
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
@@ -35,7 +35,6 @@ class Names {
 public:
     typedef  const char* NameString;
 
-    // Linux Input Manager Input Event Types
     static constexpr NameString INPUT_EVENT_TIMESTAMP = "EVENT_TIMESTAMP";
     static constexpr NameString INPUT_EVENT_EMBEDDED_32_BIT_TIMESTAMP = "EMBEDDED_32_BIT_TIMESTAMP";
     static constexpr NameString INPUT_EVENT_EMBEDDED_64_BIT_TIMESTAMP = "EMBEDDED_64_BIT_TIMESTAMP";
@@ -60,7 +59,7 @@ public:
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 
-#endif // _NAMES_H_
+#endif // _OSP_NAMES_H_
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/
