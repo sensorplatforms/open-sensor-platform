@@ -38,7 +38,7 @@ set(app_SOURCES
   osp_remoteprocedurecalls.h
   osp_remoteprocedurecalls_relay.cpp
   ospconfiguration.cpp
-  UinputUtils.c
+  uinpututils.c
 )
 
 add_executable(sensorhubd ${app_SOURCES})

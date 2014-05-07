@@ -1,3 +1,4 @@
+
 /* Open Sensor Platform Project
  * https://github.com/sensorplatforms/open-sensor-platform
  *
@@ -33,7 +34,7 @@
 #include "sensor_relay.h"
 
 extern "C" {
-#include "UinputUtils.h"
+#include "uinpututils.h"
 }
 
 /*-------------------------------------------------------------------------------------------------*\
