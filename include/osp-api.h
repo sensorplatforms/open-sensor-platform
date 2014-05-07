@@ -31,14 +31,30 @@ extern "C" {
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
+#define OSP_STATUS_DESCRIPTOR_INVALID   -2
+#define OSP_STATUS_ALREADY_REGISTERED   -3
+#define OSP_STATUS_NO_MORE_HANDLES      -4
+#define OSP_STATUS_NULL_POINTER         -5
+#define OSP_STATUS_CAL_NOT_VALID        -6
+#define OSP_STATUS_NOT_REGISTERED       -7
+#define OSP_STATUS_ALREADY_SUBSCRIBED   -8
+#define OSP_STATUS_UNKNOWN_REQUEST      -9
+#define OSP_STATUS_INVALID_HANDLE       -10
+#define OSP_STATUS_NOT_SUBSCRIBED       -11
+#define OSP_STATUS_QUEUE_FULL           -12
+
 /// flags to pass into sensor descriptors
 #define OSP_NO_SENSOR_CONTROL_CALLBACK  ((OSP_SensorControlCallback_t)NULL)
 #define OSP_NO_NVM_WRITE_CALLBACK       ((OSP_WriteCalDataCallback_t)NULL)
 #define OSP_NO_OUTPUT_READY_CALLBACK    ((OSP_OutputReadyCallback_t)NULL)
 #define OSP_32BIT_DATA                  (0xFFFFFFFFL)
 #define OSP_NO_OPTIONAL_DATA            ((void*)NULL)
+
+/* Flags defining sensor attributes */
 #define OSP_NO_FLAGS                    (0)
 #define OSP_FLAGS_INPUT_SENSOR          (1 << 0)
+#define OSP_FLAGS_UNCALIBRATED          (1 << 1)
+#define OSP_FLAGS_CALIBRATED            (1 << 2)
 
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
@@ -49,45 +65,43 @@ extern "C" {
  * \sa OSP_RegisterInputSensor
  * \sa OSP_SubscribeOutputSensor
  *
- *  Final units of outputs are defined by the host output convention.
+ *  Final units of input/outputs are defined by the sensor data convention field of the sensor descriptor.
+ *  Flags in the descriptor specify if sensor is calibrated/uncalibrated and/or used as input
  *  If a sensor type not is supported by the library implementation, an error will be returned on its usage
  */
 typedef enum {
-    SENSOR_ACCELEROMETER                   =  0, //!< calibrated accelerometer data
-    SENSOR_ACCELEROMETER_UNCALIBRATED      =  1, //!< uncalibrated accelerometer data
-    SENSOR_MAGNETIC_FIELD                  =  2, //!< calibrated magnetometer data
-    SENSOR_MAGNETIC_FIELD_UNCALIBRATED     =  3, //!< uncalibrated magnetometer data
-    SENSOR_GYROSCOPE                       =  4, //!< calibrated gyroscope data
-    SENSOR_GYROSCOPE_UNCALIBRATED          =  5, //!< uncalibrated gyroscope data
-    SENSOR_LIGHT                           =  6, //!< light data
-    SENSOR_PRESSURE                        =  7, //!< barometer pressure data
-    SENSOR_PROXIMITY                       =  8, //!< proximity data
-    SENSOR_RELATIVE_HUMIDITY               =  9, //!< relative humidity data
-    SENSOR_AMBIENT_TEMPERATURE             = 10, //!< ambient temperature data
-    SENSOR_GRAVITY                         = 11, //!< gravity part of acceleration in body frame 
-    SENSOR_LINEAR_ACCELERATION             = 12, //!< dynamic acceleration 
-    SENSOR_ORIENTATION                     = 13, //!< yaw, pitch, roll (also use this for Win8 Inclinometer)
-    SENSOR_AUG_REALITY_COMPASS             = 14, //!< heading which switches to aug-reality mode when camera towards horizon (Win8 compass)
-    SENSOR_ROTATION_VECTOR                 = 15, //!< accel+mag+gyro quaternion
-    SENSOR_GEOMAGNETIC_ROTATION_VECTOR     = 16, //!< accel+mag quaternion
-    SENSOR_GAME_ROTATION_VECTOR            = 17, //!< accel+gyro quaternion
-    SENSOR_VIRTUAL_GYROSCOPE               = 18, //!< virtual gyroscope data from accel+mag
-    SENSOR_STEP_DETECTOR                   = 19, //!< precise time a step occured
-    SENSOR_STEP_COUNTER                    = 20, //!< count of steps
-    SENSOR_CONTEXT_DEVICE_MOTION           = 21, //!< context of device relative to world frame
-    SENSOR_CONTEXT_CARRY                   = 22, //!< context of device relative to user
-    SENSOR_CONTEXT_POSTURE                 = 23, //!< context of user relative to world frame
-    SENSOR_CONTEXT_TRANSPORT               = 24, //!< context of environment relative to world frame
-    SENSOR_CONTEXT_CHANGE_DETECTOR         = 25, //!< low compute trigger for seeing if context may have changed
-    SENSOR_STEP_SEGMENT_DETECTOR           = 26, //!< low compute trigger for analyzing if step may have occured
-    SENSOR_GESTURE_EVENT                   = 27, //!< gesture event such as a double-tap or shake
-    SENSOR_MESSAGE                         = 28, //!< warnings from the library: e.g. excessive timestamp jitter, need calibration
-    SENSOR_RGB_LIGHT                       = 29, //!< RGB light data
-    SENSOR_UV_LIGHT                        = 30, //!< UV light data
-    SENSOR_HEART_RATE                      = 31, //!< heart-rate data
-    SENSOR_BLOOD_OXYGEN_LEVEL              = 32, //!< blood-oxygen level data
-    SENSOR_SKIN_HYDRATION_LEVEL            = 33, //!< skin-hydration level data
-    SENSOR_BREATHALYZER                    = 34, //!< breathalyzer data
+    SENSOR_ACCELEROMETER                   =  0, //!< accelerometer data
+    SENSOR_MAGNETIC_FIELD                  =  1, //!< magnetometer data
+    SENSOR_GYROSCOPE                       =  2, //!< gyroscope data
+    SENSOR_LIGHT                           =  3, //!< light data
+    SENSOR_PRESSURE                        =  4, //!< barometer pressure data
+    SENSOR_PROXIMITY                       =  5, //!< proximity data
+    SENSOR_RELATIVE_HUMIDITY               =  6, //!< relative humidity data
+    SENSOR_AMBIENT_TEMPERATURE             =  7, //!< ambient temperature data
+    SENSOR_GRAVITY                         =  8, //!< gravity part of acceleration in body frame 
+    SENSOR_LINEAR_ACCELERATION             =  9, //!< dynamic acceleration 
+    SENSOR_ORIENTATION                     = 10, //!< yaw, pitch, roll (also use this for Win8 Inclinometer)
+    SENSOR_AUG_REALITY_COMPASS             = 11, //!< heading which switches to aug-reality mode when camera towards horizon (Win8 compass)
+    SENSOR_ROTATION_VECTOR                 = 12, //!< accel+mag+gyro quaternion
+    SENSOR_GEOMAGNETIC_ROTATION_VECTOR     = 13, //!< accel+mag quaternion
+    SENSOR_GAME_ROTATION_VECTOR            = 14, //!< accel+gyro quaternion
+    SENSOR_VIRTUAL_GYROSCOPE               = 15, //!< virtual gyroscope data from accel+mag
+    SENSOR_STEP_DETECTOR                   = 16, //!< precise time a step occured
+    SENSOR_STEP_COUNTER                    = 17, //!< count of steps
+    SENSOR_CONTEXT_DEVICE_MOTION           = 18, //!< context of device relative to world frame
+    SENSOR_CONTEXT_CARRY                   = 19, //!< context of device relative to user
+    SENSOR_CONTEXT_POSTURE                 = 20, //!< context of user relative to world frame
+    SENSOR_CONTEXT_TRANSPORT               = 21, //!< context of environment relative to world frame
+    SENSOR_CONTEXT_CHANGE_DETECTOR         = 22, //!< low compute trigger for seeing if context may have changed
+    SENSOR_STEP_SEGMENT_DETECTOR           = 23, //!< low compute trigger for analyzing if step may have occured
+    SENSOR_GESTURE_EVENT                   = 24, //!< gesture event such as a double-tap or shake
+    SENSOR_MESSAGE                         = 25, //!< warnings from the library: e.g. excessive timestamp jitter, need calibration
+    SENSOR_RGB_LIGHT                       = 26, //!< RGB light data
+    SENSOR_UV_LIGHT                        = 27, //!< UV light data
+    SENSOR_HEART_RATE                      = 28, //!< heart-rate data
+    SENSOR_BLOOD_OXYGEN_LEVEL              = 29, //!< blood-oxygen level data
+    SENSOR_SKIN_HYDRATION_LEVEL            = 30, //!< skin-hydration level data
+    SENSOR_BREATHALYZER                    = 31, //!< breathalyzer data
     SENSOR_ENUM_COUNT
 } SensorType_t ;
 
@@ -98,7 +112,7 @@ typedef enum {
  *  - to convert from a left-handed system magnetometer into a right-handed system
  */
 typedef enum {
-    AXIS_MAP_UNUSED = 0,
+    AXIS_MAP_UNUSED     = 0,
     AXIS_MAP_POSITIVE_X = 1,
     AXIS_MAP_NEGATIVE_X = 2,
     AXIS_MAP_POSITIVE_Y = 3,
@@ -118,10 +132,10 @@ typedef enum {
  * \sa SensorDescriptor_t
  */
 typedef enum {
-    DATA_CONVENTION_RAW     = 0,
-    DATA_CONVENTION_ANDROID = 1,
-    DATA_CONVENTION_WIN8    = 2,
-    RESULT_FORMAT_ENUM_COUNT
+    DATA_CONVENTION_RAW     = 0,    //!< Sensor values are in raw counts (LSB units) as per datasheet
+    DATA_CONVENTION_ANDROID = 1,    //!< Sensor values are in Android defined units
+    DATA_CONVENTION_WIN8    = 2,    //!< Sensor values are in Windows-8 defined units
+    DATA_CONVENTION_ENUM_COUNT
 } SensorDataConvention_t ;
 
 //! handle type returned by OSP_RegisterInputSensor() necessary when calling OSP_SetForegroundData() or OSP_SetBackgroundData()
@@ -132,12 +146,12 @@ typedef void* OutputSensorHandle_t;
 
 //! data passed back via OSP_SensorControlCallback_t to tell the sensor driver to change the operation of its physical sensors
 typedef enum {
-    SENSOR_CONTROL_SENSOR_OFF = 0,              //!< turn off sensor
-    SENSOR_CONTROL_SENSOR_SLEEP = 1,            //!< put sensor in low power sleep mode w/ fast turn on
-    SENSOR_CONTROL_SENSOR_ON = 2,               //!< turn on sensor
+    SENSOR_CONTROL_SENSOR_OFF      = 0,         //!< turn off sensor
+    SENSOR_CONTROL_SENSOR_SLEEP    = 1,         //!< put sensor in low power sleep mode w/ fast turn on
+    SENSOR_CONTROL_SENSOR_ON       = 2,         //!< turn on sensor
     SENSOR_CONTROL_SET_SAMPLE_RATE = 3,         //!< sample sensor at new rate, Data = sample time in seconds, NTPRECISE
-    SENSOR_CONTROL_SET_LPF_FREQ = 4,            //!< set Low pass filter 3db cutoff frequency (in Hz) 0 = turn off filter
-    SENSOR_CONTROL_SET_HPF_FREQ = 5,            //!< set High pass filter 3db cutoff frequency (in Hz) 0 = turn off filter
+    SENSOR_CONTROL_SET_LPF_FREQ    = 4,         //!< set Low pass filter 3db cutoff frequency (in Hz) 0 = turn off filter
+    SENSOR_CONTROL_SET_HPF_FREQ    = 5,         //!< set High pass filter 3db cutoff frequency (in Hz) 0 = turn off filter
     SENSOR_CONTROL_ENUM_COUNT
 } SensorControlCommand_t;
 
@@ -158,9 +172,9 @@ typedef struct {
 
 //! Use these enums as indices into the probability vector of a GestureEventOutputData_t in a GESTURE_EVENT result callback
 typedef enum {
-    GESTURE_TAP = 0,
-    GESTURE_DOUBLE_TAP = 1,
-    GESTURE_SHAKE = 2,
+    GESTURE_TAP         = 0,
+    GESTURE_DOUBLE_TAP  = 1,
+    GESTURE_SHAKE       = 2,
     GESTURE_ENUM_COUNT
 } GestureType_t;
 
@@ -174,50 +188,50 @@ typedef struct {
 
 //! Use these enums as indices into the probability vector of a ContextOutputData_t in a CONTEXT_DEVICE_MOTION result callback
 typedef enum {
-    CONTEXT_MOTION_STILL = 0,
-    CONTEXT_MOTION_ACCELERATING = 1,
-    CONTEXT_MOTION_ROTATING = 2,
-    CONTEXT_MOTION_TRANSLATING = 3,
-    CONTEXT_MOTION_FREE_FALLING = 4,
-    CONTEXT_MOTION_SIGNIFICANT_MOTION = 5,    //!< significant motion (as specified by Android HAL 1.0)
+    CONTEXT_MOTION_STILL                 = 0,
+    CONTEXT_MOTION_ACCELERATING          = 1,
+    CONTEXT_MOTION_ROTATING              = 2,
+    CONTEXT_MOTION_TRANSLATING           = 3,
+    CONTEXT_MOTION_FREE_FALLING          = 4,
+    CONTEXT_MOTION_SIGNIFICANT_MOTION    = 5, //!< significant motion (as specified by Android HAL 1.0)
     CONTEXT_MOTION_SIGNIFICANT_STILLNESS = 6, //!< complement to significant motion
     CONTEXT_MOTION_ENUM_COUNT
 } ContextMotionType_t;
 
 //! Use these enums as indices into the probability vector of a ContextOutputData_t in a CONTEXT_POSTURE result callback
 typedef enum {
-    CONTEXT_POSTURE_WALKING = 0,
-    CONTEXT_POSTURE_STANDING = 1,
-    CONTEXT_POSTURE_SITTING = 2,
-    CONTEXT_POSTURE_JOGGING = 3,
-    CONTEXT_POSTURE_RUNNING = 4,
+    CONTEXT_POSTURE_WALKING     = 0,
+    CONTEXT_POSTURE_STANDING    = 1,
+    CONTEXT_POSTURE_SITTING     = 2,
+    CONTEXT_POSTURE_JOGGING     = 3,
+    CONTEXT_POSTURE_RUNNING     = 4,
     CONTEXT_POSTURE_ENUM_COUNT
 } ContextPostureType_t;
 
 //! Use these enums as indices into the probability vector of a ContextOutputData_t in a CONTEXT_CARRY result callback
 typedef enum {
-    CONTEXT_CARRY_IN_POCKET = 0,
-    CONTEXT_CARRY_IN_HAND = 1,
+    CONTEXT_CARRY_IN_POCKET     = 0,
+    CONTEXT_CARRY_IN_HAND       = 1,
     CONTEXT_CARRY_NOT_ON_PERSON = 2,
     CONTEXT_CARRY_IN_HAND_FRONT = 3,
-    CONTEXT_CARRY_IN_HAND_SIDE = 4,
+    CONTEXT_CARRY_IN_HAND_SIDE  = 4,
     CONTEXT_CARRY_ENUM_COUNT
 } ContextCarryType_t;
 
 //! Use these enums as indices into the probability vector of a ContextOutputData_t in a CONTEXT_TRANSPORT result callback
 typedef enum {
-    CONTEXT_TRANSPORT_VEHICLE = 0,
-    CONTEXT_TRANSPORT_CAR = 1,
-    CONTEXT_TRANSPORT_TRAIN = 2,
-    CONTEXT_TRANSPORT_AIRPLANE = 3,
-    CONTEXT_TRANSPORT_UP_STAIRS = 4,
-    CONTEXT_TRANSPORT_DOWN_STAIRS = 5,
-    CONTEXT_TRANSPORT_UP_ELEVATOR = 6,
-    CONTEXT_TRANSPORT_DOWN_ELEVATOR = 7,
-    CONTEXT_TRANSPORT_UP_ESCALATOR = 8,
+    CONTEXT_TRANSPORT_VEHICLE        = 0,
+    CONTEXT_TRANSPORT_CAR            = 1,
+    CONTEXT_TRANSPORT_TRAIN          = 2,
+    CONTEXT_TRANSPORT_AIRPLANE       = 3,
+    CONTEXT_TRANSPORT_UP_STAIRS      = 4,
+    CONTEXT_TRANSPORT_DOWN_STAIRS    = 5,
+    CONTEXT_TRANSPORT_UP_ELEVATOR    = 6,
+    CONTEXT_TRANSPORT_DOWN_ELEVATOR  = 7,
+    CONTEXT_TRANSPORT_UP_ESCALATOR   = 8,
     CONTEXT_TRANSPORT_DOWN_ESCALATOR = 9,
     CONTEXT_TRANSPORT_MOVING_WALKWAY = 10,
-    CONTEXT_TRANSPORT_ON_BIKE = 11,
+    CONTEXT_TRANSPORT_ON_BIKE        = 11,
     CONTEXT_TRANSPORT_ENUM_COUNT
 } ContextTransportType_t;
 
@@ -319,6 +333,10 @@ typedef struct {
  */
 typedef void (*OSP_CriticalSectionCallback_t)(void);
 
+//! Callback type used for controlling sensor operation (e.g. on/off/sleep control)
+typedef uint16_t (* OSP_SensorControlCallback_t)(SensorControl_t* SensorControlCommand);
+
+
 //! describes system wide settings
 /*!
  *  This cannot change after the call initialize.
@@ -332,6 +350,7 @@ typedef struct  {
     TIMECOEFFICIENT TstampConversionToSeconds;   //!< 1 count = this many seconds
     OSP_CriticalSectionCallback_t EnterCritical; //!< callback for entering a critical section of code (i.e. no task switch), NULL if not implemented
     OSP_CriticalSectionCallback_t ExitCritical;  //!< callback for exiting a critical section of code (i.e. task switch ok now), NULL if not implemented
+    OSP_SensorControlCallback_t SensorsControl;  //!< if setup, used to request control of multiple sensors at once
 } SystemDescriptor_t;
 
 
@@ -356,9 +375,6 @@ typedef void  (* OSP_WriteCalDataCallback_t)(InputSensorHandle_t SensorHandle, v
  */
 typedef void  (* OSP_OutputReadyCallback_t)(OutputSensorHandle_t OutputHandle, void* pData);
 
-//!
-typedef uint16_t (* OSP_SensorControlCallback_t)(SensorControl_t* SensorControlCommand);
-
 
 //! describes either a physical or logical sensor and its configuration
 /*!
@@ -382,10 +398,10 @@ typedef struct  {
     OSP_SensorControlCallback_t pOptionalSensorControlCallback; //!< Optional callback (NULL if not used) to request sensor control (on/off, low rate, etc...)
     NTEXTENDED OutputDataRatesHz[4];            //!< for output sensor: desired output data rate in element 0; for input sensor: low to high list rates this sensor can operate at: e.g. 5Hz, 50Hz, 100Hz, 200Hz
     uint16_t Flags;                             //!< defined on a per sensor type basis
-    void* ptrSensorSpecificData;                //!< used in conjunction with Flags
+    void* pSensorSpecificData;                  //!< used in conjunction with Flags
 } SensorDescriptor_t;
 
-//! detailed data describing an input sensor, passed through ptrSensorSpecificData in a SensorDescriptor_t
+//! detailed data describing an input sensor, passed through pSensorSpecificData in a SensorDescriptor_t
 typedef struct {
     uint32_t DataWidthMask;                     //!< how much of the data word that is sent significant
     AxisMapType_t AxisMapping[3];               //!< swap or flip axes as necessary before conversion
