@@ -11,10 +11,10 @@ project(sensorhubd)
 #
 # Include paths
 ##
-#include_directories()
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../include)
 
 #
-# Linker include pathso
+# Linker include paths
 ##
 #link_directories()
 
@@ -25,8 +25,6 @@ IF(CMAKE_BUILD_TYPE MATCHES Release)
 message(STATUS "building in Release mode")
 add_definitions(-DNDEBUG)
 ENDIF(CMAKE_BUILD_TYPE MATCHES Release)
-
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -fPIC -Wall -Werror -Wundef -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Wno-format-security -fno-delete-null-pointer-checks")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -fPIC -Wall -Werror")
 
