@@ -21,7 +21,7 @@
 #include "osp_remoteprocedurecalls.h"
 #include <cstring>
 #include <cstdlib>
-#include "DebugLog.h"
+#include "osp_debuglogging.h"
 
 
 

@@ -34,7 +34,7 @@
 #include <errno.h>
 #include <time.h>
 
-#include "DebugLog.h"
+#include "osp_debuglogging.h"
 #include "VirtualSensorDeviceManager.h"
 #include "osp_remoteprocedurecalls.h"
 

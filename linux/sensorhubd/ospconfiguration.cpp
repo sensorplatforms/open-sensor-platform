@@ -22,7 +22,7 @@
 #include <assert.h>
 #include "osp_datatypes.h"
 #include "Names.h"
-#include "DebugLog.h"
+#include "osp_debuglogging.h"
 #include "ospconfiguration.h"
 #include "osp_remoteprocedurecalls.h" //For Status codes -- FIXME!
 #include <sys/types.h>

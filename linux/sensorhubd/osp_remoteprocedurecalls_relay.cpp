@@ -28,7 +28,7 @@
 #include <linux/input.h>
 #include <assert.h>
 #include "osp_relayinterface.h"
-#include "DebugLog.h"
+#include "osp_debuglogging.h"
 #include "ospconfiguration.h"
 #include "sensor_relay.h"
 

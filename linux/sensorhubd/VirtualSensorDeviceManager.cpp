@@ -33,7 +33,7 @@
 #include "uinput.h" //this is our local one b/c android doesn't include all the #defines we want
 
 #include <errno.h>
-#include "DebugLog.h"
+#include "osp_debuglogging.h"
 #include "VirtualSensorDeviceManager.h"
 
 
