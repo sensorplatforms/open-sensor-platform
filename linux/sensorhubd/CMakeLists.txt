@@ -33,8 +33,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -fPIC -Wall -Werror")
 ##
 set(app_SOURCES
   main.cpp
-  VirtualSensorDeviceManager.h
-  VirtualSensorDeviceManager.cpp
+  virtualsensordevicemanager.h
+  virtualsensordevicemanager.cpp
   osp_remoteprocedurecalls.h
   osp_remoteprocedurecalls_relay.cpp
   ospconfiguration.cpp

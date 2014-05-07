@@ -35,7 +35,7 @@
 #include <time.h>
 
 #include "osp_debuglogging.h"
-#include "VirtualSensorDeviceManager.h"
+#include "virtualsensordevicemanager.h"
 #include "osp_remoteprocedurecalls.h"
 
 /*-------------------------------------------------------------------------------------------------*\

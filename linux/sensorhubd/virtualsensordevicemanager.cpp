@@ -34,7 +34,7 @@
 
 #include <errno.h>
 #include "osp_debuglogging.h"
-#include "VirtualSensorDeviceManager.h"
+#include "virtualsensordevicemanager.h"
 
 
 /*-------------------------------------------------------------------------------------------------*\
