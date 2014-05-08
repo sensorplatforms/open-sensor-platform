@@ -22,16 +22,12 @@
 #include "Acc_Common.h"
 #include "Mag_Common.h"
 #include "Gyro_Common.h"
-#include "Alg_Conversion.h"
+#include "osp-api.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-extern SensorDescriptor_t _AccSensDesc;
-extern SensorDescriptor_t _MagSensDesc;
-extern SensorDescriptor_t _GyroSensDesc;
 void WaitForHostSync( void );
-void PublishUncalibratedSensorData( SensorDescriptor_t *pSensDesc, MsgSensorData *pSensData );
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
@@ -127,7 +123,7 @@ static void SensorDataHandler( SensorType_t sensorId, uint32_t timeStamp )
 
     switch (sensorId)
     {
-    case SENSOR_TYPE_MAGNETIC_FIELD:
+    case SENSOR_MAGNETIC_FIELD:
         if ((sMagDecimateCount++ % MAG_DECIMATE_FACTOR) == 0 )
         {
             /* Read mag Data - reading would clear interrupt also */
@@ -146,7 +142,6 @@ static void SensorDataHandler( SensorType_t sensorId, uint32_t timeStamp )
             pMagSample->msg.msgMagData = magData;
             ASFSendMessage( ANDROID_COMM_TASK, pMagSample ); // No error check. We are OK to drop messages
 #endif
-            PublishUncalibratedSensorData( &_MagSensDesc, &magData );
         }
         else
         {
@@ -154,7 +149,7 @@ static void SensorDataHandler( SensorType_t sensorId, uint32_t timeStamp )
         }
         break;
 
-    case SENSOR_TYPE_GYROSCOPE:
+    case SENSOR_GYROSCOPE:
         if ((gyroSampleCount++ % GYRO_SAMPLE_DECIMATE) == 0)
         {
             /* Read Gyro Data - reading typically clears interrupt as well */
@@ -173,7 +168,6 @@ static void SensorDataHandler( SensorType_t sensorId, uint32_t timeStamp )
             pGyroSample->msg.msgGyroData = gyroData;
             ASFSendMessage( ANDROID_COMM_TASK, pGyroSample ); // No error check. We are OK to drop messages
 #endif
-            PublishUncalibratedSensorData( &_GyroSensDesc, &gyroData );
         }
         else
         {
@@ -181,7 +175,7 @@ static void SensorDataHandler( SensorType_t sensorId, uint32_t timeStamp )
         }
         break;
 
-    case SENSOR_TYPE_ACCELEROMETER:
+    case SENSOR_ACCELEROMETER:
 #if defined TRIGGERED_MAG_SAMPLING
         if (accSampleCount % MAG_TRIGGER_RATE_DECIMATE == 0)
         {
@@ -207,7 +201,6 @@ static void SensorDataHandler( SensorType_t sensorId, uint32_t timeStamp )
             ASFSendMessage( ANDROID_COMM_TASK, pAccSample ); // No error check. We are OK to drop messages
 #endif
 
-            PublishUncalibratedSensorData( &_AccSensDesc, &accelData );
         }
         else
         {
