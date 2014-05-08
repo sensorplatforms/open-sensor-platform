@@ -38,9 +38,9 @@
 #define ACCEL_SCALING_FACTOR            TOFIX_PRECISE(ACCEL_SENSITIVITY_4G * M_SI_EARTH_GRAVITY)
 #define ACCEL_RANGE_MAX                 TOFIX_EXTENDED(4.0f * M_SI_EARTH_GRAVITY)
 #define MAG_SENSITIVITY_2_5G_XY         1.4925f     //mg/LSB
-#define MAG_SCALING_XY                  TOFIX_PRECISE(MAG_SENSITIVITY_2_5G_XY * 0.1f)  //uT/LSB
+#define MAG_SCALING_XY                  TOFIX_EXTENDED(MAG_SENSITIVITY_2_5G_XY * 0.1f)  //uT/LSB
 #define MAG_SENSITIVITY_2_5G_Z          1.6666f     //mg/LSB
-#define MAG_SCALING_Z                   TOFIX_PRECISE(MAG_SENSITIVITY_2_5G_Z * 0.1f)  //uT/LSB
+#define MAG_SCALING_Z                   TOFIX_EXTENDED(MAG_SENSITIVITY_2_5G_Z * 0.1f)  //uT/LSB
 #define MAG_RANGE_MAX                   (2.5f * 100.0f) //µT
 #define GYRO_SENSITIVITY                0.07f       //70mdps/digit
 #define GYRO_SCALING_FACTOR             TOFIX_PRECISE(GYRO_SENSITIVITY * 0.0175f)  //rad/sec/lsb
@@ -51,10 +51,13 @@
 #define GYRO_NOISE                      TOFIX_PRECISE(0.006f)
 
 #define XYZ_FROM_ORIGIN                 TOFIX_PRECISE(0.0f)
-#define ACCEL_OUTPUT_RATES              TOFIX_EXTENDED(12.5f),TOFIX_EXTENDED(25.0f),TOFIX_EXTENDED(50.0f),TOFIX_EXTENDED(100.0f)
-#define MAG_OUTPUT_RATES                TOFIX_EXTENDED(12.5f),TOFIX_EXTENDED(25.0f),TOFIX_EXTENDED(50.0f),TOFIX_EXTENDED(100.0f)
-#define GYRO_OUTPUT_RATES               TOFIX_EXTENDED(12.5f),TOFIX_EXTENDED(25.0f),TOFIX_EXTENDED(50.0f),TOFIX_EXTENDED(100.0f)
+#define ACCEL_INPUT_RATES               TOFIX_EXTENDED(12.5f),TOFIX_EXTENDED(25.0f),TOFIX_EXTENDED(50.0f),TOFIX_EXTENDED(100.0f)
+#define MAG_INPUT_RATES                 TOFIX_EXTENDED(12.5f),TOFIX_EXTENDED(25.0f),TOFIX_EXTENDED(50.0f),TOFIX_EXTENDED(100.0f)
+#define GYRO_INPUT_RATES                TOFIX_EXTENDED(12.5f),TOFIX_EXTENDED(25.0f),TOFIX_EXTENDED(50.0f),TOFIX_EXTENDED(100.0f)
 #define STEP_COUNT_OUTPUT_RATE          TOFIX_EXTENDED(50.0f),TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f)
+#define ACCEL_OUTPUT_RATES              TOFIX_EXTENDED(50.0f),TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f)
+#define MAG_OUTPUT_RATES                TOFIX_EXTENDED(50.0f),TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f)
+#define GYRO_OUTPUT_RATES               TOFIX_EXTENDED(50.0f),TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f)
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E   T Y P E   D E F I N I T I O N S
@@ -88,7 +91,7 @@ static SensorDescriptor_t _AccSensDesc =
     OSP_NO_OUTPUT_READY_CALLBACK,
     OSP_NO_NVM_WRITE_CALLBACK,
     OSP_NO_SENSOR_CONTROL_CALLBACK,
-    ACCEL_OUTPUT_RATES,
+    ACCEL_INPUT_RATES,
     OSP_FLAGS_INPUT_SENSOR,
     &_AccInputSensor
 };
@@ -118,7 +121,7 @@ static SensorDescriptor_t _MagSensDesc =
     OSP_NO_OUTPUT_READY_CALLBACK,
     OSP_NO_NVM_WRITE_CALLBACK,
     OSP_NO_SENSOR_CONTROL_CALLBACK,
-    MAG_OUTPUT_RATES,
+    MAG_INPUT_RATES,
     OSP_FLAGS_INPUT_SENSOR,
     &_MagInputSensor
 };
@@ -148,7 +151,7 @@ static SensorDescriptor_t _GyroSensDesc =
     OSP_NO_OUTPUT_READY_CALLBACK,
     OSP_NO_NVM_WRITE_CALLBACK,
     OSP_NO_SENSOR_CONTROL_CALLBACK,
-    GYRO_OUTPUT_RATES,
+    GYRO_INPUT_RATES,
     OSP_FLAGS_INPUT_SENSOR,
     &_GyroInputSensor
 };
@@ -156,7 +159,17 @@ static SensorDescriptor_t _GyroSensDesc =
 static void stepCounterOutputCallback(OutputSensorHandle_t outputHandle,
     Android_StepCounterOutputData_t* pOutput);
 
-SensorDescriptor_t  stepCounterRequest = {
+static void UnCalAccelDataResultCallback(OutputSensorHandle_t outputHandle,
+    Android_UncalibratedAccelOutputData_t* pOutput);
+
+static void UnCalMagDataResultCallback(OutputSensorHandle_t outputHandle,
+    Android_UncalibratedMagOutputData_t* pOutput);
+
+static void UnCalGyroDataResultCallback(OutputSensorHandle_t outputHandle,
+    Android_UncalibratedGyroOutputData_t* pOutput);
+
+/* Output result descriptor for subscribing to step counts */
+static SensorDescriptor_t  stepCounterRequest = {
     SENSOR_STEP_COUNTER,
     DATA_CONVENTION_ANDROID,
     (OSP_OutputReadyCallback_t)stepCounterOutputCallback,
@@ -167,11 +180,50 @@ SensorDescriptor_t  stepCounterRequest = {
     OSP_NO_OPTIONAL_DATA
 };
 
+/* Output result descriptor for subscribing to uncalibrated accelerometer data */
+static SensorDescriptor_t UnCalAccelRequest = {
+    SENSOR_ACCELEROMETER,
+    DATA_CONVENTION_ANDROID,
+    (OSP_OutputReadyCallback_t)UnCalAccelDataResultCallback,
+    OSP_NO_NVM_WRITE_CALLBACK,
+    OSP_NO_SENSOR_CONTROL_CALLBACK,
+    ACCEL_OUTPUT_RATES,
+    OSP_FLAGS_UNCALIBRATED,
+    OSP_NO_OPTIONAL_DATA
+};
+
+/* Output result descriptor for subscribing to uncalibrated magnetometer data */
+static SensorDescriptor_t UnCalMagRequest = {
+    SENSOR_MAGNETIC_FIELD,
+    DATA_CONVENTION_ANDROID,
+    (OSP_OutputReadyCallback_t)UnCalMagDataResultCallback,
+    OSP_NO_NVM_WRITE_CALLBACK,
+    OSP_NO_SENSOR_CONTROL_CALLBACK,
+    MAG_OUTPUT_RATES,
+    OSP_FLAGS_UNCALIBRATED,
+    OSP_NO_OPTIONAL_DATA
+};
+
+/* Output result descriptor for subscribing to uncalibrated gyroscope data */
+static SensorDescriptor_t UnCalGyroRequest = {
+    SENSOR_GYROSCOPE,
+    DATA_CONVENTION_ANDROID,
+    (OSP_OutputReadyCallback_t)UnCalGyroDataResultCallback,
+    OSP_NO_NVM_WRITE_CALLBACK,
+    OSP_NO_SENSOR_CONTROL_CALLBACK,
+    GYRO_OUTPUT_RATES,
+    OSP_FLAGS_UNCALIBRATED,
+    OSP_NO_OPTIONAL_DATA
+};
+
 static InputSensorHandle_t _AccHandle;
 static InputSensorHandle_t _MagHandle;
 static InputSensorHandle_t _GyroHandle;
 static const OSP_Library_Version_t* version;
-static OutputSensorHandle_t stepCounterHandle;
+static OutputSensorHandle_t _stepCounterHandle;
+static OutputSensorHandle_t _unCalAccelHandle;
+static OutputSensorHandle_t _unCalMagHandle;
+static OutputSensorHandle_t _unCalGyroHandle;
 
 static OS_MUT mutexCritSection;
 
@@ -207,6 +259,54 @@ __inline void EnterCriticalSection(void)
 __inline void ExitCriticalSection(void)
 {
     os_mut_release( mutexCritSection );
+}
+
+
+/****************************************************************************************************
+ * @fn      UnCalAccelDataResultCallback
+ *          Call back for Uncalibrated accelerometer data
+ *
+ ***************************************************************************************************/
+static void UnCalAccelDataResultCallback(OutputSensorHandle_t outputHandle,
+    Android_UncalibratedAccelOutputData_t* pOutput)
+{
+    if (g_logging & 0x40)  //Uncalibrated data, in Android conventions
+    {
+        Print_LIPS("RA,%.6f,%.6f,%.6f,%.6f", TOFLT_TIME(pOutput->TimeStamp), TOFLT_PRECISE(pOutput->X),
+            TOFLT_PRECISE(pOutput->Y), TOFLT_PRECISE(pOutput->Z));
+    }
+}
+
+
+/****************************************************************************************************
+ * @fn      UnCalMagDataResultCallback
+ *          Call back for Uncalibrated magnetometer data
+ *
+ ***************************************************************************************************/
+static void UnCalMagDataResultCallback(OutputSensorHandle_t outputHandle,
+    Android_UncalibratedMagOutputData_t* pOutput)
+{
+    if (g_logging & 0x40)  //Uncalibrated data, in Android conventions
+    {
+        Print_LIPS("RM,%.6f,%.6f,%.6f,%.6f", TOFLT_TIME(pOutput->TimeStamp), TOFLT_EXTENDED(pOutput->X),
+            TOFLT_EXTENDED(pOutput->Y), TOFLT_EXTENDED(pOutput->Z));
+    }
+}
+
+
+/****************************************************************************************************
+ * @fn      UnCalGyroDataResultCallback
+ *          Call back for Uncalibrated gyroscope data
+ *
+ ***************************************************************************************************/
+static void UnCalGyroDataResultCallback(OutputSensorHandle_t outputHandle,
+    Android_UncalibratedGyroOutputData_t* pOutput)
+{
+    if (g_logging & 0x40)  //Uncalibrated data, in Android conventions
+    {
+        Print_LIPS("RG,%.6f,%.6f,%.6f,%.6f", TOFLT_TIME(pOutput->TimeStamp), TOFLT_PRECISE(pOutput->X),
+            TOFLT_PRECISE(pOutput->Y), TOFLT_PRECISE(pOutput->Z));
+    }
 }
 
 
@@ -307,7 +407,7 @@ ASF_TASK  void AlgorithmTask ( ASF_TASK_ARG )
     OSP_Status = OSP_Initialize(&gSystemDesc);
     ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "SensorManager: OSP_Initialize Failed");
 
-    // register the sensors
+    // Register the input sensors
     OSP_Status = OSP_RegisterInputSensor(&_AccSensDesc, &_AccHandle);
     ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "SensorManager: OSP_RegisterSensor (accel) Failed");
 
@@ -317,8 +417,18 @@ ASF_TASK  void AlgorithmTask ( ASF_TASK_ARG )
     OSP_Status = OSP_RegisterInputSensor(&_GyroSensDesc, &_GyroHandle);
     ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "SensorManager: OSP_RegisterSensor (gyro) Failed");
 
-    OSP_Status =  OSP_SubscribeOutputSensor(&stepCounterRequest, &stepCounterHandle);
-    ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "SensorManager: OSP_SubscribeResult (RESULT_STEP_DETECTOR) Failed");
+    // Register output sensors/results
+    OSP_Status =  OSP_SubscribeOutputSensor(&stepCounterRequest, &_stepCounterHandle);
+    ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "SensorManager: OSP_SubscribeResult (SENSOR_STEP_COUNTER) Failed");
+
+    OSP_Status =  OSP_SubscribeOutputSensor(&UnCalAccelRequest, &_unCalAccelHandle);
+    ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "SensorManager: OSP_SubscribeResult (SENSOR_ACCELEROMETER) Failed");
+
+    OSP_Status =  OSP_SubscribeOutputSensor(&UnCalMagRequest, &_unCalMagHandle);
+    ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "SensorManager: OSP_SubscribeResult (SENSOR_MAGNETIC_FIELD) Failed");
+
+    OSP_Status =  OSP_SubscribeOutputSensor(&UnCalGyroRequest, &_unCalGyroHandle);
+    ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "SensorManager: OSP_SubscribeResult (SENSOR_GYROSCOPE) Failed");
 
     while (1)
     {
@@ -330,7 +440,11 @@ ASF_TASK  void AlgorithmTask ( ASF_TASK_ARG )
         case MSG_ACC_DATA:
         case MSG_GYRO_DATA:
             HandleSensorData(rcvMsg);
-            while(OSP_DoForegroundProcessing() != OSP_STATUS_IDLE)
+            do
+            {
+                OSP_Status = OSP_DoForegroundProcessing();
+                ASF_assert(OSP_Status != OSP_STATUS_ERROR);
+            } while(OSP_Status != OSP_STATUS_IDLE)
                 ; //keep doing foreground computation until its finished
             break;
 
