@@ -26,9 +26,9 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
-#define OSP_STATUS_OK       0
-#define OSP_STATUS_IDLE     1
-#define OSP_STATUS_ERROR    -1
+#define OSP_STATUS_OK                   0
+#define OSP_STATUS_IDLE                 1
+#define OSP_STATUS_ERROR                -1
 
 #define NULLP               ((void *) 0)
 #ifndef true
