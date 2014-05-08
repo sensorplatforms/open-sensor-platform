@@ -361,7 +361,7 @@
               <MiscControls></MiscControls>
               <Define>ANDROID_DEMO,HSE_VALUE=16000000,USE_STDPERIPH_DRIVER,STM32F10X_HD,DEBUG_BUILD,DEBUG_OUTPUT,STEVAL_MKI109V2,UART_DMA_ENABLE,ASF_PROFILING,ON_DEMAND_PROFILING</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\..\include;..\..\..\Common\App;..\..\..\Common\ASF;..\Sources\App;..\Sources\Config;..\Sources\BoardSupport;..\..\..\Common\Modules\Sensor-Drivers;..\..\..\Common\Modules\Bus-drivers;..\..\..\..\external\MCU\STM32F1-CM3\CSLib;..\..\..\..\external\MCU\STM32F1-CM3\CSLib\inc;..\..\..\..\external\RTOS\RTX\inc;..\..\..\..\external\MCU\CMSIS\Device\ST\STM32F10x\Include;..\..\..\..\external\RTOS\RTX\CM</IncludePath>
+              <IncludePath>..\..\..\..\include;..\..\..\Common\App;..\..\..\Common\ASF;..\..\..\Common\Alg;..\Sources\App;..\Sources\Config;..\Sources\BoardSupport;..\..\..\Common\Modules\Sensor-Drivers;..\..\..\Common\Modules\Bus-drivers;..\..\..\..\external\MCU\STM32F1-CM3\CSLib;..\..\..\..\external\MCU\STM32F1-CM3\CSLib\inc;..\..\..\..\external\RTOS\RTX\inc;..\..\..\..\external\MCU\CMSIS\Device\ST\STM32F10x\Include;..\..\..\..\external\RTOS\RTX\CM</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -582,13 +582,33 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>App-Common</GroupName>
+          <GroupName>Alg</GroupName>
           <Files>
             <File>
-              <FileName>Alg_Conversion.c</FileName>
+              <FileName>OSP_EmbeddedAlgCalls.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Common\App\Alg_Conversion.c</FilePath>
+              <FilePath>..\..\..\Common\Alg\OSP_EmbeddedAlgCalls.c</FilePath>
             </File>
+            <File>
+              <FileName>StepDetector.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Common\Alg\StepDetector.c</FilePath>
+            </File>
+            <File>
+              <FileName>StepSegmenter.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Common\Alg\StepSegmenter.c</FilePath>
+            </File>
+            <File>
+              <FileName>StepSignalGenerator.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Common\Alg\StepSignalGenerator.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>App-Common</GroupName>
+          <Files>
             <File>
               <FileName>CmdHandler_T.c</FileName>
               <FileType>1</FileType>
@@ -643,11 +663,6 @@
               <FileName>TaskInit_User.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Sources\App\TaskInit_User.c</FilePath>
-            </File>
-            <File>
-              <FileName>SensorDescriptors.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Sources\App\SensorDescriptors.c</FilePath>
             </File>
             <File>
               <FileName>I2C_SlaveComm_T.c</FileName>
