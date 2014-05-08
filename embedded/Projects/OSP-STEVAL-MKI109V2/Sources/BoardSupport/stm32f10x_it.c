@@ -231,6 +231,10 @@ void EXTI2_IRQHandler(void)
 *******************************************************************************/
 void EXTI3_IRQHandler(void)
 {
+    // !!WARNING!!: The time stamp extension scheme implemented in osp-api.c will need to be changed
+    // if timer capture is used for sensor time-stamping. Current scheme will cause time jumps if two
+    // sensors are timer-captured before & after rollover but the sensor that was captured after
+    // rollover is queued before the sensor that was captured before timer rollover
     if (EXTI_GetFlagStatus(EXTI_LINE_ACCEL_INT) != RESET)
     {
         /* Clear the EXTI line pending bit */
@@ -650,6 +654,10 @@ void USART3_IRQHandler(void)
 *******************************************************************************/
 void EXTI15_10_IRQHandler(void)
 {
+    // !!WARNING!!: The time stamp extension scheme implemented in osp-api.c will need to be changed
+    // if timer capture is used for sensor time-stamping. Current scheme will cause time jumps if two
+    // sensors are timer-captured before & after rollover but the sensor that was captured after
+    // rollover is queued before the sensor that was captured before timer rollover
     if (EXTI_GetFlagStatus(MAG_RDY_INT_EXTI_LINE) != RESET)
     {
         /* Clear the EXTI line pending bit */
