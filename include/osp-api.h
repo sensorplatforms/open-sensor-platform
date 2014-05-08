@@ -42,6 +42,7 @@ extern "C" {
 #define OSP_STATUS_INVALID_HANDLE       -10
 #define OSP_STATUS_NOT_SUBSCRIBED       -11
 #define OSP_STATUS_QUEUE_FULL           -12
+#define OSP_STATUS_NOT_IMPLEMENTED      -13
 
 /// flags to pass into sensor descriptors
 #define OSP_NO_SENSOR_CONTROL_CALLBACK  ((OSP_SensorControlCallback_t)NULL)
@@ -280,12 +281,12 @@ typedef struct {
 typedef struct {
     NTTIME TimeStamp;              //!< Time in seconds
     NTEXTENDED X;                  //!< 32Q12 fixed point data representing uT.
-    NTEXTENDED Y;                  //!< 32Q12 fixed point data representing uT. 
-    NTEXTENDED Z;                  //!< 32Q12 fixed point data representing uT. 
-    NTEXTENDED X_hardIron_offset;  //!< 32Q12 fixed point data representing uT   
-    NTEXTENDED Y_hardIron_offset;  //!< 32Q12 fixed point data representing uT
-    NTEXTENDED Z_hardIron_offset;  //!< 32Q12 fixed point data representing uT
-} Android_UncalibratedMagnetometerOutputData_t;
+    NTEXTENDED Y;                  //!< 32Q12 fixed point data representing uT.
+    NTEXTENDED Z;                  //!< 32Q12 fixed point data representing uT.
+    NTEXTENDED X_hardIron_offset;  //!< 32Q12 fixed point data representing uT.
+    NTEXTENDED Y_hardIron_offset;  //!< 32Q12 fixed point data representing uT.
+    NTEXTENDED Z_hardIron_offset;  //!< 32Q12 fixed point data representing uT.
+} Android_UncalibratedMagOutputData_t;
 
 //! uncalibrated rotation rate in rad/s.  Note positive Z when spin counter-clockwise on the table (right handed).
 typedef struct {
