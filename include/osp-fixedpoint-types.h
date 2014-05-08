@@ -43,6 +43,7 @@ extern "C" {
 #define QFIXEDPOINTEXTENDED             12
 #define QFIXEDPOINTTIME                 24
 #define QFIXEDPOINTDELTATIME            24
+#define FIXEDPOINT_ROUNDING_VALUE       (2048)
 
 
 /*
