@@ -31,6 +31,9 @@ extern "C" {
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
+#define OSP_STATUS_OK                    0
+#define OSP_STATUS_IDLE                  1
+#define OSP_STATUS_ERROR                -1
 #define OSP_STATUS_DESCRIPTOR_INVALID   -2
 #define OSP_STATUS_ALREADY_REGISTERED   -3
 #define OSP_STATUS_NO_MORE_HANDLES      -4
@@ -43,6 +46,7 @@ extern "C" {
 #define OSP_STATUS_NOT_SUBSCRIBED       -11
 #define OSP_STATUS_QUEUE_FULL           -12
 #define OSP_STATUS_NOT_IMPLEMENTED      -13
+#define OSP_STATUS_UNKNOWN_INPUT        -14
 
 /// flags to pass into sensor descriptors
 #define OSP_NO_SENSOR_CONTROL_CALLBACK  ((OSP_SensorControlCallback_t)NULL)
