@@ -493,8 +493,6 @@ osp_status_t     OSP_DoBackgroundProcessing(void);
  *     - as GPS requires it, create result descriptors requesting RESULT_UNCALIBRATED_ACCELEROMETER, 
  *       RESULT_UNCALIBRATED_MAGNETOMETER, RESULT_UNCALIBRATED_GYROSCOPE
  *     - as host requests come in, create result descriptors per a standard Sensor Hub
- *     - be sure callbacks handle the WIN_ formated results differently than the SPI_UNCALIBRATED_ results
- *       as they have different units, orientations, and numeric formats
  *
  *
  *  \sa OSP_UnsubscribeOutputSensor
