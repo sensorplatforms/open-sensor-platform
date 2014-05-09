@@ -125,7 +125,7 @@ static void AddDataAndRunFilter(StepSignalGenerator_t * pStepSigGen, float *filt
  *          <brief>
  *
  ***************************************************************************************************/
-Bool StepSignalGenerator_Init(StepSignalGenerator_t * pStepSigGen){
+osp_bool_t StepSignalGenerator_Init(StepSignalGenerator_t * pStepSigGen){
     pStepSigGen->count = 0;
 
     // Initialize buffer memory to zero
@@ -163,7 +163,7 @@ void StepSignalGenerator_CleanUp(StepSignalGenerator_t * pStepSigGen){
  *          update filters (returns true when inertial acc buffers have been updated)
  *
  ***************************************************************************************************/
-Bool StepSignalGenerator_UpdateFilters(StepSignalGenerator_t * pStepSigGen, const float * acc, NTTIME * tstamp, float * accZ){
+osp_bool_t StepSignalGenerator_UpdateFilters(StepSignalGenerator_t * pStepSigGen, const float * acc, NTTIME * tstamp, float * accZ){
     float lpf[3];
 
     SetDebugMatrixFloat("stepSignal_rawacc",acc,3,1);

@@ -79,7 +79,7 @@ extern uint8_t GetTaskList( uint8_t **pTaskList );
 ASF_TASK void InstrManagerTask( ASF_TASK_ARG )
 {
     MessageBuffer *rcvMsg = NULLP;
-    Bool msgHandled;
+    osp_bool_t msgHandled;
 
     /* Create other tasks & OS resources in the system */
     InitializeTasks();

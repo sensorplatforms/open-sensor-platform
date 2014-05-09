@@ -20,8 +20,8 @@
 \*-------------------------------------------------------------------------------------------------*/
 #include "Common.h"
 #ifdef ANDROID_COMM_TASK
-#include "Alg_Conversion.h"
 #include "HostInterface.h"
+#include "osp-sensors.h"
 #include <string.h>
 
 /*-------------------------------------------------------------------------------------------------*\
@@ -204,17 +204,17 @@ static void SendSensorData( uint8_t sensorId, MsgSensorData *pMsg )
 
     switch (sensorId)
     {
-    case SENSOR_TYPE_ACCELEROMETER:
+    case SENSOR_ACCELEROMETER:
         SlaveRegMap.rd_mem[0] = SH_MSG_TYPE_ABS_ACCEL;
         sensData.TimeStamp.timestamp40 = AccelTimeExtend & 0xFF;
         break;
 
-    case SENSOR_TYPE_MAGNETIC_FIELD:
+    case SENSOR_MAGNETIC_FIELD:
         SlaveRegMap.rd_mem[0] = SH_MSG_TYPE_ABS_MAG;
         sensData.TimeStamp.timestamp40 = MagTimeExtend & 0xFF;
         break;
 
-    case SENSOR_TYPE_GYROSCOPE:
+    case SENSOR_GYROSCOPE:
         SlaveRegMap.rd_mem[0] = SH_MSG_TYPE_ABS_GYRO;
         sensData.TimeStamp.timestamp40 = GyroTimeExtend & 0xFF;
         break;
@@ -455,15 +455,15 @@ ASF_TASK void I2CCommTask( ASF_TASK_ARG )
         switch (rcvMsg->msgId)
         {
         case MSG_ACC_DATA:
-            SendSensorData(SENSOR_TYPE_ACCELEROMETER, &rcvMsg->msg.msgAccelData);
+            SendSensorData(SENSOR_ACCELEROMETER, &rcvMsg->msg.msgAccelData);
             break;
 
         case MSG_MAG_DATA:
-            SendSensorData(SENSOR_TYPE_MAGNETIC_FIELD, &rcvMsg->msg.msgMagData);
+            SendSensorData(SENSOR_MAGNETIC_FIELD, &rcvMsg->msg.msgMagData);
             break;
 
         case MSG_GYRO_DATA:
-            SendSensorData(SENSOR_TYPE_GYROSCOPE, &rcvMsg->msg.msgGyroData);
+            SendSensorData(SENSOR_GYROSCOPE, &rcvMsg->msg.msgGyroData);
             break;
 
         case MSG_QUATERNION_DATA:

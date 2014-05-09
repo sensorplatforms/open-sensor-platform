@@ -329,7 +329,7 @@ static void stepCounterOutputCallback(OutputSensorHandle_t OutputHandle,
  ***************************************************************************************************/
 static void HandleSensorData( MessageBuffer *pRcvMsg )
 {
-    OSP_STATUS_t status;
+    osp_status_t status;
     TriAxisSensorRawData_t sensorData;
 
     switch(pRcvMsg->msgId)
@@ -399,10 +399,10 @@ static void SendBgTrigger( void )
 ASF_TASK  void AlgorithmTask ( ASF_TASK_ARG )
 {
     MessageBuffer *rcvMsg = NULLP;
-    OSP_STATUS_t OSP_Status;
+    osp_status_t OSP_Status;
 
     OSP_GetVersion(&version);
-    D1_printf("OSP Version: %s\n", version->VersionString);
+    D1_printf("OSP Version: %s\r\n", version->VersionString);
 
     OSP_Status = OSP_Initialize(&gSystemDesc);
     ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "SensorManager: OSP_Initialize Failed");

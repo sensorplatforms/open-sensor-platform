@@ -91,7 +91,7 @@ static void SetNewStepSegment(StepSegment_t * segment){
 
     //Estimate step frequency and length
     dt = segment->stopTime - stepDetectData.startWalkTime;
-    stepDetectData.step.stepFrequency = TOFIX(((FLT)stepDetectData.step.numStepsSinceWalking)/TOFLT_TIME(dt));
+    stepDetectData.step.stepFrequency = TOFIX(((osp_float_t)stepDetectData.step.numStepsSinceWalking)/TOFLT_TIME(dt));
 
     //Callback to subscribers if any
     if(stepDetectData.stepResultReadyCallback){

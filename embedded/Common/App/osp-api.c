@@ -23,6 +23,7 @@
 #include <string.h>
 #include "spi_algInterface.h"
 #include "OSP_EmbeddedAlgCalls.h"
+#include "osp-version.h"
 
 
 /*-------------------------------------------------------------------------------------------------*\
@@ -92,6 +93,11 @@ typedef union {
 /*-------------------------------------------------------------------------------------------------*\
  |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+static const OSP_Library_Version_t libVersion = {
+    (OSP_VERSION_MAJOR << 16) | (OSP_VERSION_MINOR << 8) | (OSP_VERSION_PATCH),
+    OSP_VERSION_STRING
+};
+
 static uint64_t _SubscribedResults;   // bit field of currently subscribed results, bit positions
                                       // same as SensorType_t
 // pointer to platform descriptor structure
@@ -146,7 +152,7 @@ static const _ResultResourceMap_t _ResultResourceMap[] = {
 /*-------------------------------------------------------------------------------------------------*\
  |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-static OSP_STATUS_t NullRoutine(void);
+static osp_status_t NullRoutine(void);
 /* callback for entering/exiting a critical section of code (i.e. disable/enable task switch) */
 OSP_CriticalSectionCallback_t EnterCritical = (OSP_CriticalSectionCallback_t)&NullRoutine;
 OSP_CriticalSectionCallback_t ExitCritical = (OSP_CriticalSectionCallback_t)&NullRoutine;
@@ -187,7 +193,7 @@ static void OnStepResultsReady( StepDataOSP_t* stepData )
  *          for unused call backs so that we never try to execute a function pointed to by NULL
  *
  ***************************************************************************************************/
-static OSP_STATUS_t NullRoutine(void)
+static osp_status_t NullRoutine(void)
 {
     return OSP_STATUS_OK;
 }
@@ -338,7 +344,7 @@ static int16_t FindResourceMapIndexByType(SensorType_t ResultType)
 static int16_t ValidateSensorDescriptor(SensorDescriptor_t *pSensorDescriptor)
 {
     InputSensorSpecificData_t *pSensSpecific;
-    Bool haveGoodCalData = FALSE;
+    osp_bool_t haveGoodCalData = FALSE;
 
     // test that the ENUMs are in range
     if ( pSensorDescriptor->SensorType >= SENSOR_ENUM_COUNT )
@@ -537,7 +543,7 @@ static int16_t DeactivateResultSensors(SensorType_t ResultType)
 {
     int16_t i,j,k,l;
     int16_t index;
-    Bool NeedSensor;
+    osp_bool_t NeedSensor;
     uint32_t sensorsMask = 0;
 
 
@@ -640,7 +646,7 @@ void UMul32(uint32_t x,uint32_t y, uint32_t * pHigh, uint32_t * pLow)
  *          Helper routine for time conversion
  *
  ***************************************************************************************************/
-Bool GetTimeFromCounter(
+osp_bool_t GetTimeFromCounter(
     NTTIME * pTime,
     TIMECOEFFICIENT counterToTimeConversionFactor,
     uint32_t counterHigh,
@@ -857,14 +863,14 @@ static int16_t ConvertSensorData(
  * @return  status as specified in OSP_Types.h
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSP_Initialize(const SystemDescriptor_t* pSystemDesc)
+osp_status_t OSP_Initialize(const SystemDescriptor_t* pSystemDesc)
 {
     _SubscribedResults = 0;     // by definition, we are not subscribed to any results
     memset(_SensorTable, 0, sizeof(_SensorTable));   // init the sensor table
     memset(_ResultTable, 0, sizeof(_ResultTable));   // init the result table also
 
     if(ValidateSystemDescriptor(pSystemDesc) == ERROR)
-        return (OSP_STATUS_t)OSP_STATUS_DESCRIPTOR_INVALID;
+        return (osp_status_t)OSP_STATUS_DESCRIPTOR_INVALID;
     _pPlatformDesc = pSystemDesc;
     if((pSystemDesc->EnterCritical != NULL) && (pSystemDesc->ExitCritical != NULL)) {
         EnterCritical = pSystemDesc->EnterCritical;
@@ -888,12 +894,12 @@ OSP_STATUS_t OSP_Initialize(const SystemDescriptor_t* pSystemDesc)
  * @return  status as specified in OSP_Types.h
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSP_RegisterInputSensor(SensorDescriptor_t *pSensorDescriptor,
+osp_status_t OSP_RegisterInputSensor(SensorDescriptor_t *pSensorDescriptor,
     InputSensorHandle_t *pReturnedHandle)
 {
     int16_t status;
     int16_t index;
-    Bool haveCalData = FALSE;
+    osp_bool_t haveCalData = FALSE;
 
     // Find 1st available slot in the sensor descriptor table, insert descriptor pointer, clear flags
     // and return pointer to this table entry. If no room in the sensor table, return OSP_STATUS_NO_MORE_HANDLES
@@ -948,7 +954,7 @@ OSP_STATUS_t OSP_RegisterInputSensor(SensorDescriptor_t *pSensorDescriptor,
  * @return  status as specified in OSP_Types.h
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSP_UnregisterInputSensor(InputSensorHandle_t sensorHandle)
+osp_status_t OSP_UnregisterInputSensor(InputSensorHandle_t sensorHandle)
 {
     int16_t index;
     // Check the sensor table to be sure we have a valid entry, if so we need to check
@@ -983,10 +989,10 @@ OSP_STATUS_t OSP_UnregisterInputSensor(InputSensorHandle_t sensorHandle)
  * @return  status as specified in OSP_Types.h
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSP_SetData(InputSensorHandle_t sensorHandle, TriAxisSensorRawData_t *data)
+osp_status_t OSP_SetData(InputSensorHandle_t sensorHandle, TriAxisSensorRawData_t *data)
 {
-    register OSP_STATUS_t FgStatus = 0;
-    register OSP_STATUS_t BgStatus = 0;
+    register osp_status_t FgStatus = 0;
+    register osp_status_t BgStatus = 0;
 
 
     if (data == NULL)                                           // just in case
@@ -1041,7 +1047,7 @@ OSP_STATUS_t OSP_SetData(InputSensorHandle_t sensorHandle, TriAxisSensorRawData_
  * @return  status as specified in OSP_Types.h
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSP_DoForegroundProcessing(void)
+osp_status_t OSP_DoForegroundProcessing(void)
 {
     _SensorDataBuffer_t data;
     Common_3AxisResult_t AndoidProcessedData;
@@ -1246,7 +1252,7 @@ OSP_STATUS_t OSP_DoForegroundProcessing(void)
  * @return  status as specified in OSP_Types.h
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSP_DoBackgroundProcessing(void)
+osp_status_t OSP_DoBackgroundProcessing(void)
 {
     _SensorDataBuffer_t data;
     Common_3AxisResult_t AndoidProcessedData;
@@ -1370,7 +1376,7 @@ OSP_STATUS_t OSP_DoBackgroundProcessing(void)
  *          available or licensed
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSP_SubscribeOutputSensor(SensorDescriptor_t *pSensorDescriptor,
+osp_status_t OSP_SubscribeOutputSensor(SensorDescriptor_t *pSensorDescriptor,
     OutputSensorHandle_t *pOutputHandle)
 {
     int16_t index;
@@ -1460,7 +1466,7 @@ OSP_STATUS_t OSP_SubscribeOutputSensor(SensorDescriptor_t *pSensorDescriptor,
  * @return  status as specified in OSP_Types.h.
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSP_UnsubscribeOutputSensor(OutputSensorHandle_t OutputHandle)
+osp_status_t OSP_UnsubscribeOutputSensor(OutputSensorHandle_t OutputHandle)
 {
     int16_t index;
 
@@ -1511,8 +1517,9 @@ OSP_STATUS_t OSP_UnsubscribeOutputSensor(OutputSensorHandle_t OutputHandle)
  * @return  status as specified in OSP_Types.h
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSP_GetVersion(const OSP_Library_Version_t **pVersionStruct)
+osp_status_t OSP_GetVersion(const OSP_Library_Version_t **pVersionStruct)
 {
+    *pVersionStruct = &libVersion;
     return OSP_STATUS_OK;
 }
 

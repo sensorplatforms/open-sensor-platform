@@ -29,7 +29,6 @@
 void ASFMessagingInit( void );
 extern uint8_t GetTaskList( uint8_t **pTaskList );
 
-extern Bool gExitFromStandby;
 
 #define STACK_INCREASE                  0
 

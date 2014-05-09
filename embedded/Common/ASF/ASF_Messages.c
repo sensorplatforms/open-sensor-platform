@@ -230,7 +230,7 @@ void _ASFReceiveMessage ( TaskId rcvTask, MessageBuffer **pMbuf, char *_file, in
  *
  * @see     ASFCreateMessage(), ASFSendMessage(), ASFDeleteMessage(), ASFReceiveMessage()
  ***************************************************************************************************/
-Bool _ASFReceiveMessagePoll ( TaskId rcvTask, MessageBuffer **pMbuf, char *_file, int _line )
+osp_bool_t _ASFReceiveMessagePoll ( TaskId rcvTask, MessageBuffer **pMbuf, char *_file, int _line )
 {
     OS_RESULT   err;
 

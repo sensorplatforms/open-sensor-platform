@@ -136,7 +136,7 @@ SensorDescriptor_t _GyroSensDesc =
 void WaitForHostSync( void )
 {
     MessageBuffer *rcvMsg = NULLP;
-    Bool syncRcvd = false;
+    osp_bool_t syncRcvd = false;
 
     while(!syncRcvd)
     {

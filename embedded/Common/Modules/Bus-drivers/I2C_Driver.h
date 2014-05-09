@@ -62,7 +62,7 @@ typedef enum _SendModeTag {
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-Bool I2C_HardwareSetup( I2C_TypeDef *busId );
+osp_bool_t I2C_HardwareSetup( I2C_TypeDef *busId );
 void I2C_Master_Initialise( void );
 uint8_t I2C_Transceiver_Busy( void );
 uint8_t I2C_Start_Transfer( uint8_t slaveAddr, uint16_t regAddr, uint8_t *pData, uint8_t dataSize,

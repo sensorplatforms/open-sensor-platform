@@ -48,13 +48,13 @@ typedef enum AccelInitOptionTag
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-void Accel_HardwareSetup( Bool initOption );
+void Accel_HardwareSetup( osp_bool_t initOption );
 void Accel_Initialize( AccelInitOption option );
 void Accel_ReadData( AccelData_t *pxyzData );
 void Accel_ClearDataInt( void );
-void Accel_ConfigDataInt( Bool enInt );
+void Accel_ConfigDataInt( osp_bool_t enInt );
 void Accel_ResetDevice( void );
-Bool Accel_SelfTest( void );
+osp_bool_t Accel_SelfTest( void );
 
 
 #endif /* ACC_COMMON_H */

@@ -114,7 +114,7 @@ typedef struct _AsyncTwi {
 /*-------------------------------------------------------------------------------------------------*\
  |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-static Bool sI2C_Bus1Initialized = false;
+static osp_bool_t sI2C_Bus1Initialized = false;
 static volatile AsyncTwi asyncXfer;
 /* Mode of transfer */
 static I2C_SendMode_t gSendMode;
@@ -141,7 +141,7 @@ static I2C_SendMode_t gSendMode;
  * @return  true if successful, false otherwise.
  *
  ***************************************************************************************************/
-Bool I2C_HardwareSetup( I2C_TypeDef *busId )
+osp_bool_t I2C_HardwareSetup( I2C_TypeDef *busId )
 {
     GPIO_InitTypeDef  GPIO_InitStructure;
     NVIC_InitTypeDef  NVIC_InitStructure;

@@ -108,7 +108,7 @@ static void _TimerStart ( AsfTimer *pTimer, char *_file, int _line )
  *
  * @see     ASFTimerStart()
  ***************************************************************************************************/
-Bool ASFTimerStarted ( AsfTimer *pTimer )
+osp_bool_t ASFTimerStarted ( AsfTimer *pTimer )
 {
     return (pTimer->sysUse == TIMER_SYS_ID? true : false);
 }

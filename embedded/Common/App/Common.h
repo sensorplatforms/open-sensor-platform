@@ -27,7 +27,7 @@
 #include "Main.h"
 #include "osp-types.h"
 #include "asf_types.h"
-#include "OspVersion.h"
+#include "osp-version.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
@@ -142,7 +142,7 @@ typedef struct AsfTimerTag
 #define NULL_TIMER {(TimerId)0, (TaskId)0, 0, 0, 0}
 
 typedef void (*fpDmaEnables_t)(void);
-typedef Bool (*fpInputValidate_t)(uint8_t);
+typedef osp_bool_t (*fpInputValidate_t)(uint8_t);
 
 /* UART  driver data structure */
 typedef struct PortInfoTag
@@ -223,14 +223,14 @@ int _dprintf( uint8_t dbgLvl, const char *fmt, ...);
 
 
 void _ASFTimerStart( TaskId owner, uint16_t ref, uint16_t tick, AsfTimer *pTimer, char *_file, int _line  );
-Bool ASFTimerStarted ( AsfTimer *pTimer );
+osp_bool_t ASFTimerStarted ( AsfTimer *pTimer );
 void _ASFKillTimer( AsfTimer *pTimer, char *_file, int _line );
 void _ASFTimerExpiry ( uint16_t info, char *_file, int _line );
 void AsfInitialiseTasks ( void );
 
 /* User instrumentation hooks */
 void InstrManagerUserInit( void );
-Bool InstrManagerUserHandler( MessageBuffer *pMsg );
+osp_bool_t InstrManagerUserHandler( MessageBuffer *pMsg );
 
 /* Uart Support Functions */
 #ifdef UART_DMA_ENABLE

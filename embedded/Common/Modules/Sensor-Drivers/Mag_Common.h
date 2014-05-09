@@ -43,13 +43,13 @@ typedef MsgMagData MagData_t;
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-void Mag_HardwareSetup( Bool enable );
+void Mag_HardwareSetup( osp_bool_t enable );
 void Mag_Initialize( void );
 void Mag_ReadData( MagData_t *pxyzData );
 void Mag_ClearDataInt( void );
-void Mag_ConfigDataInt( Bool enInt );
+void Mag_ConfigDataInt( osp_bool_t enInt );
 void Mag_ResetDevice( void );
-Bool Mag_SelfTest( void );
+osp_bool_t Mag_SelfTest( void );
 void Mag_TriggerDataAcq( void );
 void Mag_SetLowPowerMode( void );
 

@@ -15,8 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#if !defined (YOUR_HEADER_FILE_NAME_H)
-#define   YOUR_HEADER_FILE_NAME_H
+#if !defined (APP_VERSION_H)
+#define   APP_VERSION_H
 
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
@@ -49,7 +49,7 @@
 \*-------------------------------------------------------------------------------------------------*/
 
 
-#endif /* YOUR_HEADER_FILE_NAME_H */
+#endif /* APP_VERSION_H */
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/

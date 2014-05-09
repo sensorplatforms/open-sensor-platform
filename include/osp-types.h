@@ -42,24 +42,44 @@
 # define FALSE (!TRUE)
 #endif
 
+/* Error codes (corresponding to osp_status_t) */
+#define OSP_STATUS_OK                    0
+#define OSP_STATUS_IDLE                  1
+#define OSP_STATUS_ERROR                -1
+#define OSP_STATUS_DESCRIPTOR_INVALID   -2
+#define OSP_STATUS_ALREADY_REGISTERED   -3
+#define OSP_STATUS_NO_MORE_HANDLES      -4
+#define OSP_STATUS_NULL_POINTER         -5
+#define OSP_STATUS_CAL_NOT_VALID        -6
+#define OSP_STATUS_NOT_REGISTERED       -7
+#define OSP_STATUS_ALREADY_SUBSCRIBED   -8
+#define OSP_STATUS_UNKNOWN_REQUEST      -9
+#define OSP_STATUS_INVALID_HANDLE       -10
+#define OSP_STATUS_NOT_SUBSCRIBED       -11
+#define OSP_STATUS_QUEUE_FULL           -12
+#define OSP_STATUS_NOT_IMPLEMENTED      -13
+#define OSP_STATUS_UNKNOWN_INPUT        -14
+
+
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-/* Standard typedefs */
-typedef double              DBL;
-typedef float               FLT;
-
-typedef signed char         OSP_char_t;
+/* Other types that are not provided by stdint */
+typedef char            osp_char_t;
 /* Note that char cannot be replaced by int8_t or uint8_t as most compiler treats
    char, signed char and unsigned char as different because char itself maybe signed or unsigned */
-
-typedef int                 OSP_STATUS_t;
+typedef unsigned char   osp_byte_t;
+typedef double          osp_dbl_t;
+typedef float           osp_float_t;
 
 #ifdef __cplusplus
-  typedef bool              Bool;
+  typedef bool          osp_bool_t;
 #else
-  typedef unsigned char     Bool;
+  typedef char          osp_bool_t;
 #endif
+
+typedef unsigned short osp_size_t;
+typedef int osp_status_t;
 
 #endif /* OSP_TYPES_H */
 /*-------------------------------------------------------------------------------------------------*\

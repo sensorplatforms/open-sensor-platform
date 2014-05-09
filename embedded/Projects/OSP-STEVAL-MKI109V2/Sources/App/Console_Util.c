@@ -58,7 +58,7 @@
  *          Validate the input data against the expected value as per the parsing algorithm.
  *
  ***************************************************************************************************/
-Bool ValidInputData( uint8_t inByte )
+osp_bool_t ValidInputData( uint8_t inByte )
 {
     static uint8_t curState = TOKEN_NULL;
 

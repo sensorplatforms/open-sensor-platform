@@ -180,7 +180,7 @@ AsfResult_t _ASFCreateMessage( MessageId msgId, uint16_t msgSize, MessageBuffer 
 AsfResult_t _ASFSendMessage ( TaskId destTask, MessageBuffer *pMbuf, char *_file, int _line );
 void _ASFReceiveMessage ( TaskId rcvTask, MessageBuffer **pMbuf, char *_file, int _line );
 void _ASFDeleteMessage ( MessageBuffer **pMbuf, char *_file, int _line );
-Bool _ASFReceiveMessagePoll ( TaskId rcvTask, MessageBuffer **pMbuf, char *_file, int _line );
+osp_bool_t _ASFReceiveMessagePoll ( TaskId rcvTask, MessageBuffer **pMbuf, char *_file, int _line );
 
 
 #endif /* ASF_MSGSTRUCT_H */

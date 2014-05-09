@@ -47,7 +47,7 @@ extern PortInfo gDbgUartPort;
 void UartDMAConfiguration( PortInfo *pPort, uint8_t *pTxBuffer, uint16_t txBufferSize );
 
 #ifndef UART_DMA_ENABLE
-Bool GetNextByteToTx( uint8_t* pucByte );
+osp_bool_t GetNextByteToTx( uint8_t* pucByte );
 #else
 void *GetNextBuffer( PortInfo *pPort );
 #endif
@@ -87,7 +87,7 @@ static __inline uint8_t DbgUartReadByte( void ) {
     return (uint8_t) (USART_ReceiveData(DBG_IF_UART) & 0xFF);
 }
 
-static __inline Bool DbgUartTransmitBufferEmpty( void ) {
+static __inline osp_bool_t DbgUartTransmitBufferEmpty( void ) {
     if (USART_GetFlagStatus(DBG_IF_UART, USART_FLAG_TXE) != RESET) {
         return true;
     }

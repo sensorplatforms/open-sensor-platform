@@ -46,7 +46,7 @@ typedef struct {
     // raw accel buffers
     float acc[3][ACC_BUF_SIZE];
 
-    Bool isInitialized;
+    osp_bool_t isInitialized;
 } StepSignalGenerator_t;
 
 
@@ -62,12 +62,12 @@ typedef struct {
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 //Init/reset/destroy methods
-Bool StepSignalGenerator_Init(StepSignalGenerator_t * pStepSigGen);
+osp_bool_t StepSignalGenerator_Init(StepSignalGenerator_t * pStepSigGen);
 void StepSignalGenerator_Reset(StepSignalGenerator_t * pStepSigGen);
 void StepSignalGenerator_CleanUp(StepSignalGenerator_t * pStepSigGen);
 
 // update filters (returns true when inertial acc buffers have been updated)
-Bool StepSignalGenerator_UpdateFilters(StepSignalGenerator_t * pStepSigGen, const float * acc, NTTIME * tstamp, float *accZ);
+osp_bool_t StepSignalGenerator_UpdateFilters(StepSignalGenerator_t * pStepSigGen, const float * acc, NTTIME * tstamp, float *accZ);
 
 #ifdef __cplusplus
 }

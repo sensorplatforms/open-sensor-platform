@@ -223,7 +223,7 @@ void Accel_Initialize( AccelInitOption option )
  * @return  none
  *
  ***************************************************************************************************/
-void Accel_HardwareSetup( Bool enable )
+void Accel_HardwareSetup( osp_bool_t enable )
 {
     GPIO_InitTypeDef  GPIO_InitStructure;
     NVIC_InitTypeDef  NVIC_InitStructure;
@@ -314,7 +314,7 @@ void Accel_ClearDataInt( void )
  *          Enables/Disables the New Data interrupt on the accel.
  *
  ***************************************************************************************************/
-void Accel_ConfigDataInt( Bool enInt )
+void Accel_ConfigDataInt( osp_bool_t enInt )
 {
     uint8_t ctrl3;
 
@@ -353,7 +353,7 @@ void Accel_ResetDevice( void )
  *          Runs self test on the accelerometer. Returns true if passed.
  *
  ***************************************************************************************************/
-Bool Accel_SelfTest( void )
+osp_bool_t Accel_SelfTest( void )
 {
     return true; //Not supported
 }

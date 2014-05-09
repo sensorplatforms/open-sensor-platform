@@ -29,7 +29,7 @@ extern RCC_ClocksTypeDef gRccClockInfo;
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-Bool gExitFromStandby = false;
+osp_bool_t gExitFromStandby = false;
 DeviceUid_t *gDevUniqueId = (DeviceUid_t *)(DEV_UID_OFFSET);
 uint32_t g_logging = 0; //0x40;
 
@@ -119,9 +119,9 @@ static void GPIO_AINConfig(void)
  * @return  True - if Standby flag is set
  *
  ***************************************************************************************************/
-static Bool ConfigRTCandBkupDomain( void )
+static osp_bool_t ConfigRTCandBkupDomain( void )
 {
-    Bool standbyState = false;
+    osp_bool_t standbyState = false;
 
     /* Enable PWR and BKP clocks */
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);

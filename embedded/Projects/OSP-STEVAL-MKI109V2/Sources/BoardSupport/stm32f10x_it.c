@@ -18,8 +18,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h"
 #include "Common.h"
-#include "Alg_Conversion.h"
 #include "DebugPrint.h"
+#include "osp-sensors.h"
 
 void RxBytesToBuff( PortInfo *pPort, uint8_t byte );
 
@@ -240,7 +240,7 @@ void EXTI3_IRQHandler(void)
         /* Clear the EXTI line pending bit */
         EXTI_ClearFlag(EXTI_LINE_ACCEL_INT);
         /* Send indication to Sensor task */
-        SendDataReadyIndication(SENSOR_TYPE_ACCELEROMETER, RTC_GetCounter());
+        SendDataReadyIndication(SENSOR_ACCELEROMETER, RTC_GetCounter());
         /* NOTE: No I2C transactions (rd/wr) allowed from ISR */
     }
 }
@@ -662,7 +662,7 @@ void EXTI15_10_IRQHandler(void)
     {
         /* Clear the EXTI line pending bit */
         EXTI_ClearFlag(MAG_RDY_INT_EXTI_LINE);
-        SendDataReadyIndication(SENSOR_TYPE_MAGNETIC_FIELD, RTC_GetCounter());
+        SendDataReadyIndication(SENSOR_MAGNETIC_FIELD, RTC_GetCounter());
         /* NOTE: No I2C transactions (rd/wr) allowed from ISR */
     }
 
@@ -671,7 +671,7 @@ void EXTI15_10_IRQHandler(void)
         /* Clear the EXTI line pending bit */
         EXTI_ClearFlag(GYRO_RDY_INT_EXTI_LINE);
         /* Send indication to Sensor task */
-        SendDataReadyIndication(SENSOR_TYPE_GYROSCOPE, RTC_GetCounter());
+        SendDataReadyIndication(SENSOR_GYROSCOPE, RTC_GetCounter());
         /* NOTE: No I2C transactions (rd/wr) allowed from ISR */
     }
 }

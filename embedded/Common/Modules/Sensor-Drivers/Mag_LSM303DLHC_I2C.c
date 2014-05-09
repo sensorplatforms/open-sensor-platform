@@ -208,7 +208,7 @@ void Mag_Initialize( void )
  * @return  none
  *
  ***************************************************************************************************/
-void Mag_HardwareSetup( Bool enable )
+void Mag_HardwareSetup( osp_bool_t enable )
 {
     GPIO_InitTypeDef  GPIO_InitStructure;
     NVIC_InitTypeDef  NVIC_InitStructure;
@@ -310,7 +310,7 @@ void Mag_ClearDataInt( void )
  *          Enables/Disables the New Data interrupt on the mag.
  *
  ***************************************************************************************************/
-void Mag_ConfigDataInt( Bool enInt )
+void Mag_ConfigDataInt( osp_bool_t enInt )
 {
     /* Data sheet not clear about how DRDY signal is enabled */
     if (enInt)
@@ -342,7 +342,7 @@ void Mag_ResetDevice( void )
  *          Runs self test on the magnetometer. Returns true if passed.
  *
  ***************************************************************************************************/
-Bool Mag_SelfTest( void )
+osp_bool_t Mag_SelfTest( void )
 {
     /* No self test supported */
     return true;

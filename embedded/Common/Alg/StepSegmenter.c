@@ -79,8 +79,8 @@ static float MIN_PEAK_ACC_INITIAL = 0.5; //m/s^2
  *          Takes new accel norm data and checks for a peak
  *
  ***************************************************************************************************/
-static Bool UpdateAndLookForPeak(StepSegmenter_t * pStruct, float accNorm, EExtremaType * peakType){
-    Bool peakFound = FALSE;
+static osp_bool_t UpdateAndLookForPeak(StepSegmenter_t * pStruct, float accNorm, EExtremaType * peakType){
+    osp_bool_t peakFound = FALSE;
 
     if(accNorm >= pStruct->prevAccNorm){
         if(pStruct->prevPeakType == potentialNegPeak){
@@ -105,7 +105,7 @@ static Bool UpdateAndLookForPeak(StepSegmenter_t * pStruct, float accNorm, EExtr
  *          <brief>
  *
  ***************************************************************************************************/
-static Bool IsValidNegativePeak(StepSegmenter_t * pStruct){
+static osp_bool_t IsValidNegativePeak(StepSegmenter_t * pStruct){
 
     //if in the middle of walking, use peak if:
     //(1) peak magnitude is sufficient,
@@ -196,7 +196,7 @@ static void ComputePeakProperties(StepSegmenter_t * pStruct){
  *          <brief>
  *
  ***************************************************************************************************/
-static Bool PeakMeetsStepCriteria(uint16_t peakFlags){
+static osp_bool_t PeakMeetsStepCriteria(uint16_t peakFlags){
 
     //must have small enough period if not in swingingMode (where we may have missed a step)
     if(!(peakFlags & PEAKPROP_PEAK_PERIOD_SHORT_ENOUGH)){
@@ -231,7 +231,7 @@ static void AddStep(StepSegmenter_t * pStruct, StepSegment_t segment){
     EStepSegmenterState initState = pStruct->segmenterState;
     NTTIME stridePeriod = segment.stopTime - pStruct->stepSegment.startTime;
     uint8_t stepIdx = (pStruct->numStoredSteps-1) & (uint16_t)STORED_STEPS_MASK;
-    Bool validStep = TRUE;
+    osp_bool_t validStep = TRUE;
 
     //Compute step props
     ComputeStepProperties(pStruct);
@@ -319,8 +319,8 @@ static void AddStep(StepSegmenter_t * pStruct, StepSegment_t segment){
  *          <brief>
  *
  ***************************************************************************************************/
-static Bool CheckForPotentialNewStep(StepSegmenter_t *pStruct, EExtremaType peakType, StepSegment_t * potSegment){
-    Bool endWalkConditions = FALSE;
+static osp_bool_t CheckForPotentialNewStep(StepSegmenter_t *pStruct, EExtremaType peakType, StepSegment_t * potSegment){
+    osp_bool_t endWalkConditions = FALSE;
 
     //set potential segment params
     potSegment->startTime = pStruct->stepSegment.stopTime;

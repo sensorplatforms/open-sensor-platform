@@ -126,9 +126,9 @@ void InstrManagerUserInit( void )
  * @return  true if message was handled by the user, false otherwise
  *
  ***************************************************************************************************/
-Bool InstrManagerUserHandler( MessageBuffer *pMsg )
+osp_bool_t InstrManagerUserHandler( MessageBuffer *pMsg )
 {
-    Bool msgHandled = false;
+    osp_bool_t msgHandled = false;
 
     switch (pMsg->msgId)
     {

@@ -43,14 +43,14 @@ typedef MsgGyroData GyroData_t;
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-void Gyro_HardwareSetup( Bool enable );
+void Gyro_HardwareSetup( osp_bool_t enable );
 void Gyro_Initialize( void );
 void Gyro_ReadData( GyroData_t *pxyzData );
 void Gyro_WaitDataReady( uint16_t timeOut );
 void Gyro_ClearDataInt( void );
-void Gyro_ConfigDataInt( Bool enInt );
+void Gyro_ConfigDataInt( osp_bool_t enInt );
 void Gyro_ResetDevice( void );
-Bool Gyro_SelfTest( void );
+osp_bool_t Gyro_SelfTest( void );
 void Gyro_TriggerDataAcq( void );
 void Gyro_SetLowPowerMode( void );
 

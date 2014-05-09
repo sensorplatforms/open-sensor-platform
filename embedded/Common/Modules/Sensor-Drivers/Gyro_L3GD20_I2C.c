@@ -206,7 +206,7 @@ void Gyro_Initialize( void )
  * @return  none
  *
  ***************************************************************************************************/
-void Gyro_HardwareSetup( Bool enable )
+void Gyro_HardwareSetup( osp_bool_t enable )
 {
     GPIO_InitTypeDef  GPIO_InitStructure;
     NVIC_InitTypeDef  NVIC_InitStructure;
@@ -314,7 +314,7 @@ void Gyro_ClearDataInt( void )
  *          Enables/Disables the New Data interrupt on the gyro.
  *
  ***************************************************************************************************/
-void Gyro_ConfigDataInt( Bool enInt )
+void Gyro_ConfigDataInt( osp_bool_t enInt )
 {
     if (enInt)
     {
@@ -350,7 +350,7 @@ void Gyro_ResetDevice( void )
  *          Runs self test on the gyroscope. Returns true if passed.
  *
  ***************************************************************************************************/
-Bool Gyro_SelfTest( void )
+osp_bool_t Gyro_SelfTest( void )
 {
     /* Not available */
     return true;
