@@ -80,18 +80,18 @@ static int _evdevFds[SENSORHUBD_RESULT_INDEX_COUNT] ={-1};
 static int _enablePipeFds[SENSORHUBD_RESULT_INDEX_COUNT] ={-1};
 static const char* _sensorNames[SENSORHUBD_RESULT_INDEX_COUNT] = {
     "accel", "mag", "gyro", /*"sig-motion", "step-count"*/};
-static uint32_t _ospResultCodes[SENSORHUBD_RESULT_INDEX_COUNT]= {
-    SENSOR_TYPE_ACCELEROMETER,
-    SENSOR_TYPE_MAGNETIC_FIELD,
-    SENSOR_TYPE_GYROSCOPE,
-    //SENSOR_TYPE_SIGNIFICANT_MOTION,
-    //SENSOR_TYPE_STEP_COUNTER
+static SensorType_t _ospResultCodes[SENSORHUBD_RESULT_INDEX_COUNT]= {
+    SENSOR_ACCELEROMETER,
+    SENSOR_MAGNETIC_FIELD,
+    SENSOR_GYROSCOPE,
+    //SENSOR_SIGNIFICANT_MOTION,
+    //SENSOR_STEP_COUNTER
 };
 
 /*-------------------------------------------------------------------------------------------------*\
  |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-static void _onTriAxisSensorResultDataUpdate(uint32_t sensorType, void* pData);
+static void _onTriAxisSensorResultDataUpdate(SensorType_t sensorType, void* pData);
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
@@ -203,7 +203,7 @@ static void _initializeNamedPipes()
  *          Common callback for sensor data or results received from the hub
  *
  ***************************************************************************************************/
-static void _onTriAxisSensorResultDataUpdate(uint32_t sensorType, void* pData)
+static void _onTriAxisSensorResultDataUpdate(SensorType_t sensorType, void* pData)
 {
     OSPD_ThreeAxisData_t* pSensorData= (OSPD_ThreeAxisData_t*)pData;
     int32_t uinputCompatibleDataFormat[3];
@@ -211,7 +211,7 @@ static void _onTriAxisSensorResultDataUpdate(uint32_t sensorType, void* pData)
 
     switch(sensorType)  {
 
-    case SENSOR_TYPE_ACCELEROMETER:
+    case SENSOR_ACCELEROMETER:
         uinputCompatibleDataFormat[0] = pSensorData->data[0].i;
         uinputCompatibleDataFormat[1] = pSensorData->data[1].i;
         uinputCompatibleDataFormat[2] = pSensorData->data[2].i;
@@ -229,7 +229,7 @@ static void _onTriAxisSensorResultDataUpdate(uint32_t sensorType, void* pData)
         break;
 
 
-    case SENSOR_TYPE_MAGNETIC_FIELD:
+    case SENSOR_MAGNETIC_FIELD:
         uinputCompatibleDataFormat[0] = pSensorData->data[0].i;
         uinputCompatibleDataFormat[1] = pSensorData->data[1].i;
         uinputCompatibleDataFormat[2] = pSensorData->data[2].i;
@@ -240,7 +240,7 @@ static void _onTriAxisSensorResultDataUpdate(uint32_t sensorType, void* pData)
                     pSensorData->timestamp.ll);
         break;
 
-    case SENSOR_TYPE_GYROSCOPE:
+    case SENSOR_GYROSCOPE:
         uinputCompatibleDataFormat[0] = pSensorData->data[0].i;
         uinputCompatibleDataFormat[1] = pSensorData->data[1].i;
         uinputCompatibleDataFormat[2] = pSensorData->data[2].i;
@@ -251,7 +251,7 @@ static void _onTriAxisSensorResultDataUpdate(uint32_t sensorType, void* pData)
                     pSensorData->timestamp.ll);
         break;
 #if 0
-    case SENSOR_TYPE_SIGNIFICANT_MOTION:
+    case SENSOR_DEVICE_MOTION: 
         //LOGS("SIGM %.3f (0x%8x), %.3f (0x%8x), %.3f (0x%8x)\n", pSensorData->data[0]);
 
         uinputCompatibleDataFormat[0]= (int)(pSensorData->data[0]);
@@ -278,20 +278,20 @@ static void _subscribeToAllResults()
     OSP_STATUS_t status;
     LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
 
-    status = OSPD_SubscribeResult(SENSOR_TYPE_ACCELEROMETER, _onTriAxisSensorResultDataUpdate);
-    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_UNCALIBRATED_ACCELEROMETER");
+    status = OSPD_SubscribeResult(SENSOR_ACCELEROMETER, _onTriAxisSensorResultDataUpdate);
+    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to SENSOR_ACCELEROMETER");
 
-    status = OSPD_SubscribeResult(SENSOR_TYPE_MAGNETIC_FIELD, _onTriAxisSensorResultDataUpdate);
-    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_UNCALIBRATED_ACCELEROMETER");
+    status = OSPD_SubscribeResult(SENSOR_MAGNETIC_FIELD, _onTriAxisSensorResultDataUpdate);
+    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to SENSOR_MAGNETIC_FIELD");
 
-    status = OSPD_SubscribeResult(SENSOR_TYPE_GYROSCOPE, _onTriAxisSensorResultDataUpdate);
-    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_UNCALIBRATED_GYRO");
+    status = OSPD_SubscribeResult(SENSOR_GYROSCOPE, _onTriAxisSensorResultDataUpdate);
+    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to SENSOR_GYROSCOPE");
 
-    //    status = OSPD_SubscribeResult(SENSOR_TYPE_SIGNIFICANT_MOTION, _onTriAxisSensorResultDataUpdate);
-    //    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_SIGNIFICANT_MOTION");
+    //    status = OSPD_SubscribeResult(SENSOR_DEVICE_MOTION, _onTriAxisSensorResultDataUpdate);
+    //    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to SENSOR_DEVICE_MOTION");
 
-    //    status = OSPD_SubscribeResult(SENSOR_TYPE_STEP_COUNTER, _onTriAxisSensorResultDataUpdate);
-    //    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to RESULT_STEP_COUNTER");
+    //    status = OSPD_SubscribeResult(SENSOR_STEP_COUNTER, _onTriAxisSensorResultDataUpdate);
+    //    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to SENSOR_STEP_COUNTER");
 
 }
 
@@ -343,20 +343,20 @@ static void _stopAllResults()
 {
     LOGT("%s\r\n", __FUNCTION__);
 
-    OSP_STATUS_t status= OSPD_UnsubscribeResult(SENSOR_TYPE_ACCELEROMETER);
-    _logErrorIf(status != OSP_STATUS_OK, "error Unsubscribing to RESULT_UNCALIBRATED_ACCELEROMETER");
+    OSP_STATUS_t status= OSPD_UnsubscribeResult(SENSOR_ACCELEROMETER);
+    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to SENSOR_ACCELEROMETER");
 
-    status= OSPD_UnsubscribeResult(SENSOR_TYPE_MAGNETIC_FIELD);
-    _logErrorIf(status != OSP_STATUS_OK, "error Unsubscribing to RESULT_UNCALIBRATED_MAGNETOMETER");
+    status= OSPD_UnsubscribeResult(SENSOR_MAGNETIC_FIELD);
+    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to SENSOR_MAGNETIC_FIELD");
 
-    status= OSPD_UnsubscribeResult(SENSOR_TYPE_GYROSCOPE);
-    _logErrorIf(status != OSP_STATUS_OK, "error Unsubscribing to RESULT_UNCALIBRATED_GYRO");
+    status= OSPD_UnsubscribeResult(SENSOR_GYROSCOPE);
+    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to SENSOR_GYROSCOPE");
 
-    status= OSPD_UnsubscribeResult(SENSOR_TYPE_SIGNIFICANT_MOTION);
-    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to RESULT_SIGNIFICANT_MOTION");
+    //    status= OSPD_UnsubscribeResult(SENSOR_DEVICE_MOTION);
+    //    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to SENSOR_DEVICE_MOTION");
 
-    status= OSPD_UnsubscribeResult(SENSOR_TYPE_STEP_COUNTER);
-    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to RESULT_STEP_COUNTER");
+    status= OSPD_UnsubscribeResult(SENSOR_STEP_COUNTER);
+    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to SENSOR_STEP_COUNTER");
 }
 
 /****************************************************************************************************

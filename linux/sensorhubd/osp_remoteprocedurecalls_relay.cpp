@@ -78,7 +78,7 @@ static const char* const sensornames[MAX_NUM_SENSORS_TO_HANDLE] = {
 static pthread_t _relayThread;
 static volatile bool _relayThreadActive = false;
 
-static OSPD_ResultDataCallback_t _resultReadyCallbacks[COUNT_OF_SENSOR_TYPES] = {0};
+static OSPD_ResultDataCallback_t _resultReadyCallbacks[SENSOR_ENUM_COUNT] = {0};
 
 
 /*-------------------------------------------------------------------------------------------------*\
@@ -100,11 +100,11 @@ static void ProcessInputEventsRelay(void);
  ***************************************************************************************************/
 static void _sensorDataPublish(uint32_t sensorIndex, OSPD_ThreeAxisData_t *pSensData)
 {
-    int32_t sensorType = -1;
+    SensorType_t sensorType = SENSOR_ENUM_COUNT;
 
     switch(sensorIndex) {
     case ACCEL_INDEX:
-        sensorType = SENSOR_TYPE_ACCELEROMETER;
+        sensorType = SENSOR_ACCELEROMETER;
         LOG_Info("RA %.3f, %.3f, %.3f, %lld\n",
              pSensData->data[0].f,
              pSensData->data[1].f,
@@ -113,7 +113,7 @@ static void _sensorDataPublish(uint32_t sensorIndex, OSPD_ThreeAxisData_t *pSens
         break;
 
     case GYRO_INDEX:
-        sensorType = SENSOR_TYPE_GYROSCOPE;
+        sensorType = SENSOR_GYROSCOPE;
         //LOG_Info("RG %.3f, %.3f, %.3f, %lld\n",
         //     pSensData->data[0].f,
         //     pSensData->data[1].f,
@@ -122,7 +122,7 @@ static void _sensorDataPublish(uint32_t sensorIndex, OSPD_ThreeAxisData_t *pSens
         break;
 
     case MAG_INDEX:
-        sensorType = SENSOR_TYPE_MAGNETIC_FIELD;
+        sensorType = SENSOR_MAGNETIC_FIELD;
         //LOG_Info("RM %.3f, %.3f, %.3f, %lld\n",
         //     pSensData->data[0].f,
         //     pSensData->data[1].f,
@@ -134,7 +134,7 @@ static void _sensorDataPublish(uint32_t sensorIndex, OSPD_ThreeAxisData_t *pSens
         break;
     }
 
-    if (( sensorType > 0) && (_resultReadyCallbacks[sensorType] != NULL)) {
+    if (( sensorType < SENSOR_ENUM_COUNT) && (_resultReadyCallbacks[sensorType] != NULL)) {
         _resultReadyCallbacks[sensorType](sensorType, pSensData);
     }
 }
@@ -837,7 +837,7 @@ OSP_STATUS_t OSPD_GetVersion(char* versionString, int bufSize) {
  *          Enables subscription for results
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSPD_SubscribeResult(uint32_t sensorType, OSPD_ResultDataCallback_t dataReadyCallback ) {
+OSP_STATUS_t OSPD_SubscribeResult(SensorType_t sensorType, OSPD_ResultDataCallback_t dataReadyCallback ) {
     OSP_STATUS_t result = OSP_STATUS_OK;
 
     LOGT("%s\r\n", __FUNCTION__);
@@ -852,7 +852,7 @@ OSP_STATUS_t OSPD_SubscribeResult(uint32_t sensorType, OSPD_ResultDataCallback_t
  *          Unsubscribe from sensor results
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSPD_UnsubscribeResult(uint32_t sensorType) {
+OSP_STATUS_t OSPD_UnsubscribeResult(SensorType_t sensorType) {
     OSP_STATUS_t result = OSP_STATUS_OK;
 
     LOGT("%s\r\n", __FUNCTION__);

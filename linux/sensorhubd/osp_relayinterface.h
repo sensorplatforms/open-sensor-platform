@@ -36,16 +36,6 @@ typedef enum {
     MAG_INDEX                       = 1,
     GYRO_INDEX                      = 2,
 //    PRESSURE_INDEX                  = 3,
-//    LIGHT_INDEX                     = 4,
-//    PROXIMITY_INDEX                 = 5,
-//    TEMPERATURE_INDEX               = 6,
-//    CAMERA_RELATIVE_ATTITUDE_INDEX  = 7,
-//    CAMERA_RELATIVE_POSITION_INDEX  = 8,
-//    SENSOR_CAMERA_ATTITUDE_INDEX    = 9,
-//    CHANGE_DETECTOR_INDEX           = 10,
-//    STEPS_SENSITIVE_INDEX           = 11,
-//    SENSOR_QUATERNION_INDEX         = 12,
-
     MAX_NUM_SENSORS_TO_HANDLE
 } deviceIndex;
 
