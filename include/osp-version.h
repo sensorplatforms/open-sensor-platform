@@ -27,10 +27,10 @@
 \*-------------------------------------------------------------------------------------------------*/
 #define OSP_MODULE_NAME                 "Open Sensor Platform"
 #define OSP_VERSION_MAJOR               0
-#define OSP_VERSION_MINOR               7
+#define OSP_VERSION_MINOR               8
 #define OSP_VERSION_PATCH               0
 
-#define OSP_VERSION_STRING              "0.7.0"
+#define OSP_VERSION_STRING              "0.8.0"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
