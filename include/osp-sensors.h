@@ -21,7 +21,9 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
-
+  /* This file is meant to provide a common definition of sensor related enumerations/defines and
+   * generally should not depend on any other includes
+   */
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
@@ -73,6 +75,61 @@ typedef enum {
     SENSOR_BREATHALYZER                    = 31, //!< breathalyzer data
     SENSOR_ENUM_COUNT
 } SensorType_t ;
+
+//! Use these enums as indices into the probability vector of a ContextOutputData_t in a CONTEXT_DEVICE_MOTION result callback
+typedef enum {
+    CONTEXT_MOTION_STILL                 = 0,
+    CONTEXT_MOTION_ACCELERATING          = 1,
+    CONTEXT_MOTION_ROTATING              = 2,
+    CONTEXT_MOTION_TRANSLATING           = 3,
+    CONTEXT_MOTION_FREE_FALLING          = 4,
+    CONTEXT_MOTION_SIGNIFICANT_MOTION    = 5, //!< significant motion (as specified by Android HAL 1.0)
+    CONTEXT_MOTION_SIGNIFICANT_STILLNESS = 6, //!< complement to significant motion
+    CONTEXT_MOTION_ENUM_COUNT
+} ContextMotionType_t;
+
+//! Use these enums as indices into the probability vector of a ContextOutputData_t in a CONTEXT_POSTURE result callback
+typedef enum {
+    CONTEXT_POSTURE_WALKING     = 0,
+    CONTEXT_POSTURE_STANDING    = 1,
+    CONTEXT_POSTURE_SITTING     = 2,
+    CONTEXT_POSTURE_JOGGING     = 3,
+    CONTEXT_POSTURE_RUNNING     = 4,
+    CONTEXT_POSTURE_ENUM_COUNT
+} ContextPostureType_t;
+
+//! Use these enums as indices into the probability vector of a ContextOutputData_t in a CONTEXT_CARRY result callback
+typedef enum {
+    CONTEXT_CARRY_IN_POCKET     = 0,
+    CONTEXT_CARRY_IN_HAND       = 1,
+    CONTEXT_CARRY_NOT_ON_PERSON = 2,
+    CONTEXT_CARRY_IN_HAND_FRONT = 3,
+    CONTEXT_CARRY_IN_HAND_SIDE  = 4,
+    CONTEXT_CARRY_ENUM_COUNT
+} ContextCarryType_t;
+
+//! Use these enums as indices into the probability vector of a ContextOutputData_t in a CONTEXT_TRANSPORT result callback
+typedef enum {
+    CONTEXT_TRANSPORT_VEHICLE        = 0,
+    CONTEXT_TRANSPORT_CAR            = 1,
+    CONTEXT_TRANSPORT_TRAIN          = 2,
+    CONTEXT_TRANSPORT_AIRPLANE       = 3,
+    CONTEXT_TRANSPORT_UP_STAIRS      = 4,
+    CONTEXT_TRANSPORT_DOWN_STAIRS    = 5,
+    CONTEXT_TRANSPORT_UP_ELEVATOR    = 6,
+    CONTEXT_TRANSPORT_DOWN_ELEVATOR  = 7,
+    CONTEXT_TRANSPORT_UP_ESCALATOR   = 8,
+    CONTEXT_TRANSPORT_DOWN_ESCALATOR = 9,
+    CONTEXT_TRANSPORT_MOVING_WALKWAY = 10,
+    CONTEXT_TRANSPORT_ON_BIKE        = 11,
+    CONTEXT_TRANSPORT_ENUM_COUNT
+} ContextTransportType_t;
+
+//! Use these enums as indices into the probability vector of a ContextOutputData_t in a STEP result callback
+typedef enum {
+    CONTEXT_STEP = 0,              //!< only one kind of step now
+    CONTEXT_STEP_ENUM_COUNT
+} ContextStepType_t;
 
 
 /*-------------------------------------------------------------------------------------------------*\
