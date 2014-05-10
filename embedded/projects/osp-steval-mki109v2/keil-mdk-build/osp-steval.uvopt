@@ -492,8 +492,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Common\ASF\ASF_Messages.c</PathWithFileName>
-      <FilenameWithoutPath>ASF_Messages.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\asf\asf_messages.c</PathWithFileName>
+      <FilenameWithoutPath>asf_messages.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -508,8 +508,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Common\ASF\ASF_TaskInit.c</PathWithFileName>
-      <FilenameWithoutPath>ASF_TaskInit.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\asf\asf_taskinit.c</PathWithFileName>
+      <FilenameWithoutPath>asf_taskinit.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -524,8 +524,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Common\ASF\ASF_Timers.c</PathWithFileName>
-      <FilenameWithoutPath>ASF_Timers.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\asf\asf_timers.c</PathWithFileName>
+      <FilenameWithoutPath>asf_timers.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -548,8 +548,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\Sources\Config\RTX_Conf_CM.c</PathWithFileName>
-      <FilenameWithoutPath>RTX_Conf_CM.c</FilenameWithoutPath>
+      <PathWithFileName>..\sources\config\rtx_conf_cm.c</PathWithFileName>
+      <FilenameWithoutPath>rtx_conf_cm.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -588,8 +588,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Common\Alg\OSP_EmbeddedAlgCalls.c</PathWithFileName>
-      <FilenameWithoutPath>OSP_EmbeddedAlgCalls.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\alg\osp_embeddedalgcalls.c</PathWithFileName>
+      <FilenameWithoutPath>osp_embeddedalgcalls.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -604,8 +604,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Common\Alg\StepDetector.c</PathWithFileName>
-      <FilenameWithoutPath>StepDetector.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\alg\stepdetector.c</PathWithFileName>
+      <FilenameWithoutPath>stepdetector.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -620,8 +620,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Common\Alg\StepSegmenter.c</PathWithFileName>
-      <FilenameWithoutPath>StepSegmenter.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\alg\stepsegmenter.c</PathWithFileName>
+      <FilenameWithoutPath>stepsegmenter.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -636,8 +636,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Common\Alg\StepSignalGenerator.c</PathWithFileName>
-      <FilenameWithoutPath>StepSignalGenerator.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\alg\stepsignalgenerator.c</PathWithFileName>
+      <FilenameWithoutPath>stepsignalgenerator.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -660,8 +660,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Common\App\CmdHandler_T.c</PathWithFileName>
-      <FilenameWithoutPath>CmdHandler_T.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\app\algorithm_t.c</PathWithFileName>
+      <FilenameWithoutPath>algorithm_t.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -676,8 +676,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Common\App\DebugPrint.c</PathWithFileName>
-      <FilenameWithoutPath>DebugPrint.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\app\cmdhandler_t.c</PathWithFileName>
+      <FilenameWithoutPath>cmdhandler_t.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -692,8 +692,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Common\App\InstrMgr_T.c</PathWithFileName>
-      <FilenameWithoutPath>InstrMgr_T.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\app\debugprint.c</PathWithFileName>
+      <FilenameWithoutPath>debugprint.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -708,8 +708,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Common\App\InstrMgr_User.c</PathWithFileName>
-      <FilenameWithoutPath>InstrMgr_User.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\app\instrmgr_t.c</PathWithFileName>
+      <FilenameWithoutPath>instrmgr_t.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -724,8 +724,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Common\App\SensorAcq_T.c</PathWithFileName>
-      <FilenameWithoutPath>SensorAcq_T.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\app\instrmgr_user.c</PathWithFileName>
+      <FilenameWithoutPath>instrmgr_user.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -740,8 +740,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Common\App\Algorithm_T.c</PathWithFileName>
-      <FilenameWithoutPath>Algorithm_T.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\app\osp-api.c</PathWithFileName>
+      <FilenameWithoutPath>osp-api.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -756,8 +756,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Common\App\osp-api.c</PathWithFileName>
-      <FilenameWithoutPath>osp-api.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\app\sensoracq_t.c</PathWithFileName>
+      <FilenameWithoutPath>sensoracq_t.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -780,8 +780,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\Sources\App\Console_Util.c</PathWithFileName>
-      <FilenameWithoutPath>Console_Util.c</FilenameWithoutPath>
+      <PathWithFileName>..\sources\app\console_util.c</PathWithFileName>
+      <FilenameWithoutPath>console_util.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -796,8 +796,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\Sources\App\Main.c</PathWithFileName>
-      <FilenameWithoutPath>Main.c</FilenameWithoutPath>
+      <PathWithFileName>..\sources\app\i2c_slavecomm_t.c</PathWithFileName>
+      <FilenameWithoutPath>i2c_slavecomm_t.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -812,8 +812,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\Sources\App\TaskInit_User.c</PathWithFileName>
-      <FilenameWithoutPath>TaskInit_User.c</FilenameWithoutPath>
+      <PathWithFileName>..\sources\app\main.c</PathWithFileName>
+      <FilenameWithoutPath>main.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -828,8 +828,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\Sources\App\I2C_SlaveComm_T.c</PathWithFileName>
-      <FilenameWithoutPath>I2C_SlaveComm_T.c</FilenameWithoutPath>
+      <PathWithFileName>..\sources\app\taskinit_user.c</PathWithFileName>
+      <FilenameWithoutPath>taskinit_user.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -908,8 +908,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Common\Modules\Bus-drivers\STM32F1-CM3\I2C_Driver.c</PathWithFileName>
-      <FilenameWithoutPath>I2C_Driver.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\modules\bus-drivers\stm32f1-cm3\i2c_driver.c</PathWithFileName>
+      <FilenameWithoutPath>i2c_driver.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -932,8 +932,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Common\Modules\Sensor-Drivers\Acc_LSM303DLHC_I2C.c</PathWithFileName>
-      <FilenameWithoutPath>Acc_LSM303DLHC_I2C.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\modules\sensor-drivers\acc_lsm303dlhc_i2c.c</PathWithFileName>
+      <FilenameWithoutPath>acc_lsm303dlhc_i2c.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -948,8 +948,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Common\Modules\Sensor-Drivers\Gyro_L3GD20_I2C.c</PathWithFileName>
-      <FilenameWithoutPath>Gyro_L3GD20_I2C.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\modules\sensor-drivers\gyro_l3gd20_i2c.c</PathWithFileName>
+      <FilenameWithoutPath>gyro_l3gd20_i2c.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -964,8 +964,8 @@
       <TopLine>0</TopLine>
       <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\Common\Modules\Sensor-Drivers\Mag_LSM303DLHC_I2C.c</PathWithFileName>
-      <FilenameWithoutPath>Mag_LSM303DLHC_I2C.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\modules\sensor-drivers\mag_lsm303dlhc_i2c.c</PathWithFileName>
+      <FilenameWithoutPath>mag_lsm303dlhc_i2c.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

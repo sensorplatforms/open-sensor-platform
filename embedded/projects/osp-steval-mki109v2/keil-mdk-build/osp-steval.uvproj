@@ -361,7 +361,7 @@
               <MiscControls></MiscControls>
               <Define>ANDROID_DEMO,HSE_VALUE=16000000,USE_STDPERIPH_DRIVER,STM32F10X_HD,DEBUG_BUILD,DEBUG_OUTPUT,STEVAL_MKI109V2,UART_DMA_ENABLE,ASF_PROFILING,ON_DEMAND_PROFILING</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\..\include;..\..\..\Common\App;..\..\..\Common\ASF;..\..\..\Common\Alg;..\Sources\App;..\Sources\Config;..\Sources\BoardSupport;..\..\..\Common\Modules\Sensor-Drivers;..\..\..\Common\Modules\Bus-drivers;..\..\..\..\external\MCU\STM32F1-CM3\CSLib;..\..\..\..\external\MCU\STM32F1-CM3\CSLib\inc;..\..\..\..\external\RTOS\RTX\inc;..\..\..\..\external\MCU\CMSIS\Device\ST\STM32F10x\Include;..\..\..\..\external\RTOS\RTX\CM</IncludePath>
+              <IncludePath>..\..\..\..\include;..\..\..\common\app;..\..\..\common\asf;..\..\..\common\alg;..\sources\app;..\sources\config;..\sources\boardsupport;..\..\..\common\modules\sensor-drivers;..\..\..\common\modules\bus-drivers;..\..\..\..\external\mcu\stm32f1-cm3\cslib;..\..\..\..\external\mcu\stm32f1-cm3\cslib\inc;..\..\..\..\external\rtos\rtx\inc;..\..\..\..\external\mcu\cmsis\device\st\stm32f10x\include;..\..\..\..\external\rtos\rtx\cm</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -490,19 +490,19 @@
           <GroupName>ASF</GroupName>
           <Files>
             <File>
-              <FileName>ASF_Messages.c</FileName>
+              <FileName>asf_messages.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Common\ASF\ASF_Messages.c</FilePath>
+              <FilePath>..\..\..\common\asf\asf_messages.c</FilePath>
             </File>
             <File>
-              <FileName>ASF_TaskInit.c</FileName>
+              <FileName>asf_taskinit.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Common\ASF\ASF_TaskInit.c</FilePath>
+              <FilePath>..\..\..\common\asf\asf_taskinit.c</FilePath>
             </File>
             <File>
-              <FileName>ASF_Timers.c</FileName>
+              <FileName>asf_timers.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Common\ASF\ASF_Timers.c</FilePath>
+              <FilePath>..\..\..\common\asf\asf_timers.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -570,9 +570,9 @@
           </GroupOption>
           <Files>
             <File>
-              <FileName>RTX_Conf_CM.c</FileName>
+              <FileName>rtx_conf_cm.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Sources\Config\RTX_Conf_CM.c</FilePath>
+              <FilePath>..\sources\config\rtx_conf_cm.c</FilePath>
             </File>
             <File>
               <FileName>RTX_CM3.lib</FileName>
@@ -585,24 +585,24 @@
           <GroupName>Alg</GroupName>
           <Files>
             <File>
-              <FileName>OSP_EmbeddedAlgCalls.c</FileName>
+              <FileName>osp_embeddedalgcalls.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Common\Alg\OSP_EmbeddedAlgCalls.c</FilePath>
+              <FilePath>..\..\..\common\alg\osp_embeddedalgcalls.c</FilePath>
             </File>
             <File>
-              <FileName>StepDetector.c</FileName>
+              <FileName>stepdetector.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Common\Alg\StepDetector.c</FilePath>
+              <FilePath>..\..\..\common\alg\stepdetector.c</FilePath>
             </File>
             <File>
-              <FileName>StepSegmenter.c</FileName>
+              <FileName>stepsegmenter.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Common\Alg\StepSegmenter.c</FilePath>
+              <FilePath>..\..\..\common\alg\stepsegmenter.c</FilePath>
             </File>
             <File>
-              <FileName>StepSignalGenerator.c</FileName>
+              <FileName>stepsignalgenerator.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Common\Alg\StepSignalGenerator.c</FilePath>
+              <FilePath>..\..\..\common\alg\stepsignalgenerator.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -610,39 +610,39 @@
           <GroupName>App-Common</GroupName>
           <Files>
             <File>
-              <FileName>CmdHandler_T.c</FileName>
+              <FileName>algorithm_t.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Common\App\CmdHandler_T.c</FilePath>
+              <FilePath>..\..\..\common\app\algorithm_t.c</FilePath>
             </File>
             <File>
-              <FileName>DebugPrint.c</FileName>
+              <FileName>cmdhandler_t.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Common\App\DebugPrint.c</FilePath>
+              <FilePath>..\..\..\common\app\cmdhandler_t.c</FilePath>
             </File>
             <File>
-              <FileName>InstrMgr_T.c</FileName>
+              <FileName>debugprint.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Common\App\InstrMgr_T.c</FilePath>
+              <FilePath>..\..\..\common\app\debugprint.c</FilePath>
             </File>
             <File>
-              <FileName>InstrMgr_User.c</FileName>
+              <FileName>instrmgr_t.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Common\App\InstrMgr_User.c</FilePath>
+              <FilePath>..\..\..\common\app\instrmgr_t.c</FilePath>
             </File>
             <File>
-              <FileName>SensorAcq_T.c</FileName>
+              <FileName>instrmgr_user.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Common\App\SensorAcq_T.c</FilePath>
-            </File>
-            <File>
-              <FileName>Algorithm_T.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\Common\App\Algorithm_T.c</FilePath>
+              <FilePath>..\..\..\common\app\instrmgr_user.c</FilePath>
             </File>
             <File>
               <FileName>osp-api.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Common\App\osp-api.c</FilePath>
+              <FilePath>..\..\..\common\app\osp-api.c</FilePath>
+            </File>
+            <File>
+              <FileName>sensoracq_t.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\app\sensoracq_t.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -650,24 +650,24 @@
           <GroupName>App</GroupName>
           <Files>
             <File>
-              <FileName>Console_Util.c</FileName>
+              <FileName>console_util.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Sources\App\Console_Util.c</FilePath>
+              <FilePath>..\sources\app\console_util.c</FilePath>
             </File>
             <File>
-              <FileName>Main.c</FileName>
+              <FileName>i2c_slavecomm_t.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Sources\App\Main.c</FilePath>
+              <FilePath>..\sources\app\i2c_slavecomm_t.c</FilePath>
             </File>
             <File>
-              <FileName>TaskInit_User.c</FileName>
+              <FileName>main.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Sources\App\TaskInit_User.c</FilePath>
+              <FilePath>..\sources\app\main.c</FilePath>
             </File>
             <File>
-              <FileName>I2C_SlaveComm_T.c</FileName>
+              <FileName>taskinit_user.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Sources\App\I2C_SlaveComm_T.c</FilePath>
+              <FilePath>..\sources\app\taskinit_user.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -695,9 +695,9 @@
           <GroupName>Bus-Drivers</GroupName>
           <Files>
             <File>
-              <FileName>I2C_Driver.c</FileName>
+              <FileName>i2c_driver.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Common\Modules\Bus-drivers\STM32F1-CM3\I2C_Driver.c</FilePath>
+              <FilePath>..\..\..\common\modules\bus-drivers\stm32f1-cm3\i2c_driver.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -705,19 +705,19 @@
           <GroupName>Sensor-Drivers</GroupName>
           <Files>
             <File>
-              <FileName>Acc_LSM303DLHC_I2C.c</FileName>
+              <FileName>acc_lsm303dlhc_i2c.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Common\Modules\Sensor-Drivers\Acc_LSM303DLHC_I2C.c</FilePath>
+              <FilePath>..\..\..\common\modules\sensor-drivers\acc_lsm303dlhc_i2c.c</FilePath>
             </File>
             <File>
-              <FileName>Gyro_L3GD20_I2C.c</FileName>
+              <FileName>gyro_l3gd20_i2c.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Common\Modules\Sensor-Drivers\Gyro_L3GD20_I2C.c</FilePath>
+              <FilePath>..\..\..\common\modules\sensor-drivers\gyro_l3gd20_i2c.c</FilePath>
             </File>
             <File>
-              <FileName>Mag_LSM303DLHC_I2C.c</FileName>
+              <FileName>mag_lsm303dlhc_i2c.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\Common\Modules\Sensor-Drivers\Mag_LSM303DLHC_I2C.c</FilePath>
+              <FilePath>..\..\..\common\modules\sensor-drivers\mag_lsm303dlhc_i2c.c</FilePath>
             </File>
           </Files>
         </Group>
