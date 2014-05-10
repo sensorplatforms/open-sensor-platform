@@ -20,7 +20,6 @@
 
 #define I2C_DRIVER                  /* Include I2C Driver */
 #define INTERRUPT_BASED_SAMPLING    /* Sensor sampling is interrupt driver */
-//#define PUBLISH_RAW               /* Publish raw sensor counts instead of standard units */
 #define TRIGGERED_MAG_SAMPLING      /* Magnetometer sampling is software triggered */
 
 /*-------------------------------------------------------------------------------------------------*\

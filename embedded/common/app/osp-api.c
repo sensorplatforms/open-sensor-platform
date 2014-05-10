@@ -21,7 +21,6 @@
 #include "common.h"
 #include "osp-api.h"
 #include <string.h>
-#include "spi_alginterface.h"
 #include "osp_embeddedalgcalls.h"
 #include "osp-version.h"
 
@@ -89,6 +88,17 @@ typedef union {
     Android_UncalibratedMagOutputData_t   ucMag;
     Android_UncalibratedGyroOutputData_t  ucGyro;
 } AndroidUnCalResult_t;
+
+/* Common bridge between the different data types for base sensors (Accel/Mag/Gyro) */
+typedef struct  {
+    NTTIME TimeStamp;               // time stamp
+    uint8_t accuracy;
+    union {
+        NTEXTENDED  extendedData[3];    // processed sensor data
+        NTPRECISE   preciseData[3];     // processed sensor data
+    } data;
+} Common_3AxisResult_t;
+
 
 /*-------------------------------------------------------------------------------------------------*\
  |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
@@ -165,6 +175,16 @@ static int16_t FindResultTableIndexByType(SensorType_t Type);
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E     F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+
+/****************************************************************************************************
+ * @fn      mult_uint16_uint16
+ *          Unsigned 16-bit multiply with 32-bit result.
+ *
+ ***************************************************************************************************/
+__inline static uint32_t mult_uint16_uint16(uint16_t a, uint16_t b)
+{
+    return ((uint32_t) a * (uint32_t)b);
+}
 
 /****************************************************************************************************
  * @fn      OnStepResultsReady
@@ -593,7 +613,7 @@ static int16_t DeactivateResultSensors(SensorType_t ResultType)
  *          Helper routine for 32-bit saturating multiply. This maybe optimized in assembly if needed
  *
  ***************************************************************************************************/
-void UMul32(uint32_t x,uint32_t y, uint32_t * pHigh, uint32_t * pLow)
+static void UMul32(uint32_t x,uint32_t y, uint32_t * pHigh, uint32_t * pLow)
 {
     uint16_t xmsb;
     uint16_t ymsb;
@@ -660,8 +680,8 @@ osp_bool_t GetTimeFromCounter(
         counterToTimeConversionFactor = ~counterToTimeConversionFactor + 1;
     }
 
-    UMul32(counterToTimeConversionFactor,counterLow,&high1,&low1);
-    UMul32(counterToTimeConversionFactor,counterHigh,&high2,&low2);
+    UMul32(counterToTimeConversionFactor, counterLow, &high1, &low1);
+    UMul32(counterToTimeConversionFactor, counterHigh, &high2, &low2);
 
     low2 += high1;
     if (low2 < high1) {
@@ -727,10 +747,10 @@ static int32_t ScaleSensorData(
 
     llTemp = (int64_t) Data * (int64_t) ScaleFactor; // scale the data
 
-    if(llTemp > SPI_MAX_INT )
-        llTemp = SPI_MAX_INT;   //if overflow, make max
-    if(llTemp < SPI_MIN_INT )
-        llTemp = SPI_MIN_INT;   //if underflow, make min
+    if(llTemp > SATURATE_INT_MAX )
+        llTemp = SATURATE_INT_MAX;   //if overflow, make max
+    if(llTemp < SATURATE_INT_MIN )
+        llTemp = SATURATE_INT_MIN;   //if underflow, make min
     return (int32_t)llTemp;     //return just the lower 32 bits
 }
 
@@ -1053,7 +1073,7 @@ osp_status_t OSP_DoForegroundProcessing(void)
     Common_3AxisResult_t AndoidProcessedData;
     AndroidUnCalResult_t AndoidUncalProcessedData;
     int16_t index;
-    Common_3AxisResult_t spiConvention;
+    Common_3AxisResult_t algConvention;
 
     // Get next sensor data packet from the queue. If nothing in the queue, return OSP_STATUS_IDLE.
     // If we get a data packet that has a sensor handle of NULL, we should drop it and get the next one,
@@ -1119,18 +1139,18 @@ osp_status_t OSP_DoForegroundProcessing(void)
             }
         }
 
-        // convert to SPI convention before feeding data to algorithms.
-        spiConvention.accuracy = QFIXEDPOINTPRECISE;
-        spiConvention.data.preciseData[0] = AndoidProcessedData.data.preciseData[1];  // x (SPI) =  Y (Android)
-        spiConvention.data.preciseData[1] = -AndoidProcessedData.data.preciseData[0]; // y (SPI) = -X (Android)
-        spiConvention.data.preciseData[2] = AndoidProcessedData.data.preciseData[2];  // z (SPI) =  Z (Android)
-        spiConvention.TimeStamp = AndoidProcessedData.TimeStamp;
+        // convert to algorithm convention before feeding data to algorithms.
+        algConvention.accuracy = QFIXEDPOINTPRECISE;
+        algConvention.data.preciseData[0] = AndoidProcessedData.data.preciseData[1];  // x (ALG) =  Y (Android)
+        algConvention.data.preciseData[1] = -AndoidProcessedData.data.preciseData[0]; // y (ALG) = -X (Android)
+        algConvention.data.preciseData[2] = AndoidProcessedData.data.preciseData[2];  // z (ALG) =  Z (Android)
+        algConvention.TimeStamp = AndoidProcessedData.TimeStamp;
 
-        memcpy(&_LastAccelCookedData, &spiConvention, sizeof(Common_3AxisResult_t));
+        memcpy(&_LastAccelCookedData, &algConvention, sizeof(Common_3AxisResult_t));
 
-        //OSP_SetForegroundAccelerometerMeasurement(spiConvention.TimeStamp, spiConvention.data.preciseData);
+        //OSP_SetForegroundAccelerometerMeasurement(algConvention.TimeStamp, algConvention.data.preciseData);
         // Send data on to algorithms
-        OSP_SetAccelerometerMeasurement(spiConvention.TimeStamp, spiConvention.data.preciseData);
+        OSP_SetAccelerometerMeasurement(algConvention.TimeStamp, algConvention.data.preciseData);
 
         // Do linear accel and gravity processing if needed
         // ... TODO
@@ -1171,16 +1191,16 @@ osp_status_t OSP_DoForegroundProcessing(void)
             }
         }
 
-        // convert to SPI convention before feeding data to algs.
-        spiConvention.accuracy = QFIXEDPOINTEXTENDED;
-        spiConvention.data.extendedData[0] = AndoidProcessedData.data.extendedData[1];  // x (SPI) =  Y (Android)
-        spiConvention.data.extendedData[1] = -AndoidProcessedData.data.extendedData[0]; // y (SPI) = -X (Android)
-        spiConvention.data.extendedData[2] = AndoidProcessedData.data.extendedData[2];  // z (SPI) =  Z (Android)
-        spiConvention.TimeStamp = AndoidProcessedData.TimeStamp;
+        // convert to algorithm convention before feeding data to algs.
+        algConvention.accuracy = QFIXEDPOINTEXTENDED;
+        algConvention.data.extendedData[0] = AndoidProcessedData.data.extendedData[1];  // x (ALG) =  Y (Android)
+        algConvention.data.extendedData[1] = -AndoidProcessedData.data.extendedData[0]; // y (ALG) = -X (Android)
+        algConvention.data.extendedData[2] = AndoidProcessedData.data.extendedData[2];  // z (ALG) =  Z (Android)
+        algConvention.TimeStamp = AndoidProcessedData.TimeStamp;
 
-        memcpy(&_LastMagCookedData, &spiConvention, sizeof(Common_3AxisResult_t));
+        memcpy(&_LastMagCookedData, &algConvention, sizeof(Common_3AxisResult_t));
 
-        //OSP_SetForegroundMagnetometerMeasurement(AndoidProcessedData.TimeStamp, spiConvention.data.extendedData);
+        //OSP_SetForegroundMagnetometerMeasurement(AndoidProcessedData.TimeStamp, algConvention.data.extendedData);
         break;
 
     case SENSOR_GYROSCOPE:
@@ -1218,16 +1238,16 @@ osp_status_t OSP_DoForegroundProcessing(void)
             }
         }
 
-        // convert to SPI convention before feeding data to algs.
-        spiConvention.accuracy = QFIXEDPOINTPRECISE;
-        spiConvention.data.preciseData[0] = AndoidProcessedData.data.preciseData[1];  // x (SPI) =  Y (Android)
-        spiConvention.data.preciseData[1] = -AndoidProcessedData.data.preciseData[0]; // y (SPI) = -X (Android)
-        spiConvention.data.preciseData[2] = AndoidProcessedData.data.preciseData[2];  // z (SPI) =  Z (Android)
-        spiConvention.TimeStamp = AndoidProcessedData.TimeStamp;
+        // convert to algorithm convention before feeding data to algs.
+        algConvention.accuracy = QFIXEDPOINTPRECISE;
+        algConvention.data.preciseData[0] = AndoidProcessedData.data.preciseData[1];  // x (ALG) =  Y (Android)
+        algConvention.data.preciseData[1] = -AndoidProcessedData.data.preciseData[0]; // y (ALG) = -X (Android)
+        algConvention.data.preciseData[2] = AndoidProcessedData.data.preciseData[2];  // z (ALG) =  Z (Android)
+        algConvention.TimeStamp = AndoidProcessedData.TimeStamp;
 
-        memcpy(&_LastGyroCookedData, &spiConvention, sizeof(Common_3AxisResult_t));
+        memcpy(&_LastGyroCookedData, &algConvention, sizeof(Common_3AxisResult_t));
 
-        //OSP_SetForegroundGyroscopeMeasurement(AndoidProcessedData.TimeStamp, spiConvention.data.preciseData);
+        //OSP_SetForegroundGyroscopeMeasurement(AndoidProcessedData.TimeStamp, algConvention.data.preciseData);
         break;
 
     default:
@@ -1256,7 +1276,7 @@ osp_status_t OSP_DoBackgroundProcessing(void)
 {
     _SensorDataBuffer_t data;
     Common_3AxisResult_t AndoidProcessedData;
-    //Common_3AxisResult_t spiConvention;
+    //Common_3AxisResult_t algConvention;
 
     // Get next sensor data packet from the queue. If nothing in the queue, return OSP_STATUS_IDLE.
     // If we get a data packet that has a sensor handle of NULL, we should drop it and get the next one,
@@ -1298,14 +1318,14 @@ osp_status_t OSP_DoBackgroundProcessing(void)
             &_sensorLastBackgroundTimeStampExtension);
 
 #if 0 //Nothing to be done for bg processing at this time!
-        // convert to SPI convention.
-        spiConvention.accuracy = QFIXEDPOINTPRECISE;
-        spiConvention.data.preciseData[0] = AndoidProcessedData.data.preciseData[1];  // x (SPI) =  Y (Android)
-        spiConvention.data.preciseData[1] = -AndoidProcessedData.data.preciseData[0]; // y (SPI) = -X (Android)
-        spiConvention.data.preciseData[2] = AndoidProcessedData.data.preciseData[2];  // z (SPI) =  Z (Android)
-        spiConvention.TimeStamp = AndoidProcessedData.TimeStamp;
+        // convert to algorithm convention.
+        algConvention.accuracy = QFIXEDPOINTPRECISE;
+        algConvention.data.preciseData[0] = AndoidProcessedData.data.preciseData[1];  // x (ALG) =  Y (Android)
+        algConvention.data.preciseData[1] = -AndoidProcessedData.data.preciseData[0]; // y (ALG) = -X (Android)
+        algConvention.data.preciseData[2] = AndoidProcessedData.data.preciseData[2];  // z (ALG) =  Z (Android)
+        algConvention.TimeStamp = AndoidProcessedData.TimeStamp;
 
-        //OSP_SetBackgroundAccelerometerMeasurement(spiConvention.TimeStamp, spiConvention.data.preciseData);
+        //OSP_SetBackgroundAccelerometerMeasurement(algConvention.TimeStamp, algConvention.data.preciseData);
 #endif
         break;
 
@@ -1319,14 +1339,14 @@ osp_status_t OSP_DoBackgroundProcessing(void)
             &_sensorLastBackgroundTimeStampExtension);
 
 #if 0 //Nothing to be done for bg processing at this time!
-        // convert to SPI convention.
-        spiConvention.accuracy = QFIXEDPOINTEXTENDED;
-        spiConvention.data.extendedData[0] = AndoidProcessedData.data.extendedData[1];   // x (SPI) =  Y (Android)
-        spiConvention.data.extendedData[1] = -AndoidProcessedData.data.extendedData[0];  // y (SPI) = -X (Android)
-        spiConvention.data.extendedData[2] = AndoidProcessedData.data.extendedData[2];   // z (SPI) =  Z (Android)
-        spiConvention.TimeStamp = AndoidProcessedData.TimeStamp;
+        // convert to algorithm convention.
+        algConvention.accuracy = QFIXEDPOINTEXTENDED;
+        algConvention.data.extendedData[0] = AndoidProcessedData.data.extendedData[1];   // x (ALG) =  Y (Android)
+        algConvention.data.extendedData[1] = -AndoidProcessedData.data.extendedData[0];  // y (ALG) = -X (Android)
+        algConvention.data.extendedData[2] = AndoidProcessedData.data.extendedData[2];   // z (ALG) =  Z (Android)
+        algConvention.TimeStamp = AndoidProcessedData.TimeStamp;
 
-        //OSP_SetBackgroundMagnetometerMeasurement(spiConvention.TimeStamp, spiConvention.data.extendedData);
+        //OSP_SetBackgroundMagnetometerMeasurement(algConvention.TimeStamp, algConvention.data.extendedData);
 #endif
         break;
 
@@ -1340,14 +1360,14 @@ osp_status_t OSP_DoBackgroundProcessing(void)
             &_sensorLastBackgroundTimeStampExtension);
 
 #if 0 //Nothing to be done for bg processing at this time!
-        // convert to SPI convention.
-        spiConvention.accuracy = QFIXEDPOINTPRECISE;
-        spiConvention.data.preciseData[0] = AndoidProcessedData.data.preciseData[1];  // x (SPI) =  Y (Android)
-        spiConvention.data.preciseData[1] = -AndoidProcessedData.data.preciseData[0]; // y (SPI) = -X (Android)
-        spiConvention.data.preciseData[2] = AndoidProcessedData.data.preciseData[2];  // z (SPI) =  Z (Android)
-        spiConvention.TimeStamp = AndoidProcessedData.TimeStamp;
+        // convert to algorithm convention.
+        algConvention.accuracy = QFIXEDPOINTPRECISE;
+        algConvention.data.preciseData[0] = AndoidProcessedData.data.preciseData[1];  // x (ALG) =  Y (Android)
+        algConvention.data.preciseData[1] = -AndoidProcessedData.data.preciseData[0]; // y (ALG) = -X (Android)
+        algConvention.data.preciseData[2] = AndoidProcessedData.data.preciseData[2];  // z (ALG) =  Z (Android)
+        algConvention.TimeStamp = AndoidProcessedData.TimeStamp;
 
-        //OSP_SetBackgroundGyroscopeMeasurement(spiConvention.TimeStamp, spiConvention.data.preciseData);
+        //OSP_SetBackgroundGyroscopeMeasurement(algConvention.TimeStamp, algConvention.data.preciseData);
 #endif
         break;
 

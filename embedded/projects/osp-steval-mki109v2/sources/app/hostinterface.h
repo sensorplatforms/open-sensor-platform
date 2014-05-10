@@ -84,14 +84,14 @@ typedef struct SH_RegArea_tag
     uint8_t endMarker;
 } SH_RegArea_t;
 
-#define spi_pack __attribute__ ((__packed__))
+#define osp_pack __attribute__ ((__packed__))
 
-typedef struct spi_pack Timestamp40Tag {
+typedef struct osp_pack Timestamp40Tag {
     uint32_t timestamp32;
     uint8_t timestamp40;
 } Timestamp40_t;
 
-typedef struct spi_pack sh_motion_sensor_data {
+typedef struct osp_pack sh_motion_sensor_data {
     /*
      * raw time stamp in sensor time capture ticks
      */
@@ -99,32 +99,32 @@ typedef struct spi_pack sh_motion_sensor_data {
     int16_t Data[3];    /* x/y/z Raw sensor data */
 } ShMotionSensor_t;
 
-typedef struct spi_pack sh_segment_data {
+typedef struct osp_pack sh_segment_data {
     Timestamp40_t endTime;     /* in sensor ticks  */
     Timestamp40_t duration;    /* in sensor ticks  */
     uint8_t type;
 } ShSegment_t;
 
-typedef struct spi_pack sh_quaternion_data {
+typedef struct osp_pack sh_quaternion_data {
     /*
      * raw time stamp in sensor time capture ticks
      */
     Timestamp40_t TimeStamp;
-    int32_t Data[4];	/* w/x/y/z Raw sensor data */
+    int32_t Data[4];    /* w/x/y/z Raw sensor data */
 } ShQuaternion_t;
 
-typedef struct spi_pack sh_sensor_data {
-    uint8_t sensorId;	/* enum SPIHUB_DATA */
-    union spi_pack {
+typedef struct osp_pack sh_sensor_data {
+    uint8_t sensorId;
+    union osp_pack {
         struct sh_motion_sensor_data  sensorData;
         struct sh_segment_data        changeDetectorData;
         struct sh_quaternion_data     quaternionData;
     } data;
 } ShGenericSensor_t;
 
-typedef struct spi_pack sh_command_sensor_header {
-    uint8_t command;	/* enum SPI_SH_SENSOR_COMMANDS */
-    uint8_t sensorId;	/* enum SPI_SH_SENSOR_ID */
+typedef struct osp_pack sh_command_sensor_header {
+    uint8_t command;    /* Sensor hub commands */
+    uint8_t sensorId;
 } ShCmdHeader_t;
 
 

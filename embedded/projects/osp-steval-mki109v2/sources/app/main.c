@@ -102,8 +102,8 @@ int main( void )
     DebugPortInit();
 
     /* Print version number */
-    printf("\r\n*** Open Sensor Platform Version: %s Date: %s - %s ***\r\n",
-           "!TBD!", __DATE__, __TIME__);
+    printf("\r\n*** Open Sensor Platform Application Version: %s Date: %s - %s ***\r\n",
+           APP_VERSION_STRING, __DATE__, __TIME__);
 
     /* Display System clock information */
     RCC_GetClocksFreq( &gRccClockInfo );
