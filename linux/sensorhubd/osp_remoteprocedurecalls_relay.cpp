@@ -181,13 +181,6 @@ int32_t _doAxisSwap(int32_t eventCode, int32_t sensorIndex, const int swap[3])
             assert( zeroIndexedDeviceAxis < 3 );
             result = swap[zeroIndexedDeviceAxis];
         }
-#if 0
-        else {
-            assert( zeroIndexedDeviceAxis >= 0, "Quaternion Axis index out of bounds!"); //should never happen
-            assert( zeroIndexedDeviceAxis < 4, "Quaternion Axis index out of bounds!"); //should never happen
-            result = zeroIndexedDeviceAxis; // no need for Axis conversion
-        }
-#endif
     } else {
         if (result < 0) {
             LOG_Err("Received unknown event code: %d", eventCode );
@@ -584,20 +577,20 @@ static void ProcessInputEventsRelay(void)
             sensorIndex = -1;
 
             switch (sensorNode->sensorData.sensorId) {
-            case SENSOR_RELAY_SENSOR_ID_ACCELEROMETER:
+            case SENSOR_ACCELEROMETER:
                 sensorIndex = ACCEL_INDEX;
                 //LOG_Info("Accel Data %d", sensorNode->sensorData.sensorId);
                 //strncpy(label,"RA", sizeof(label));
                 //goto ProcessInputEventsCommon;
                 break;
 
-            case SENSOR_RELAY_SENSOR_ID_GYROSCOPE:
+            case SENSOR_GYROSCOPE:
                 sensorIndex = GYRO_INDEX;
                 //strncpy(label,"RG", sizeof(label));
                 //goto ProcessInputEventsCommon;
                 break;
 
-            case SENSOR_RELAY_SENSOR_ID_MAGNETOMETER:
+            case SENSOR_MAGNETIC_FIELD:
                 sensorIndex = MAG_INDEX;
                 //strncpy(label,"RM", sizeof(label));
                 //goto ProcessInputEventsCommon;
@@ -790,8 +783,8 @@ static void ProcessInputEventsRelay(void)
  *          Initialize remote procedure call for the daemon
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSPD_Initialize(void) {
-    OSP_STATUS_t result = OSP_STATUS_OK;
+osp_status_t OSPD_Initialize(void) {
+    osp_status_t result = OSP_STATUS_OK;
     //int tick_us = 24;
     LOGT("%s\r\n", __FUNCTION__);
 
@@ -824,8 +817,8 @@ OSP_STATUS_t OSPD_Initialize(void) {
  *          Helper routine for getting daemon version information
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSPD_GetVersion(char* versionString, int bufSize) {
-    OSP_STATUS_t result = OSP_STATUS_OK;
+osp_status_t OSPD_GetVersion(char* versionString, int bufSize) {
+    osp_status_t result = OSP_STATUS_OK;
 
     LOGT("%s\r\n", __FUNCTION__);
 
@@ -837,8 +830,8 @@ OSP_STATUS_t OSPD_GetVersion(char* versionString, int bufSize) {
  *          Enables subscription for results
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSPD_SubscribeResult(SensorType_t sensorType, OSPD_ResultDataCallback_t dataReadyCallback ) {
-    OSP_STATUS_t result = OSP_STATUS_OK;
+osp_status_t OSPD_SubscribeResult(SensorType_t sensorType, OSPD_ResultDataCallback_t dataReadyCallback ) {
+    osp_status_t result = OSP_STATUS_OK;
 
     LOGT("%s\r\n", __FUNCTION__);
 
@@ -852,8 +845,8 @@ OSP_STATUS_t OSPD_SubscribeResult(SensorType_t sensorType, OSPD_ResultDataCallba
  *          Unsubscribe from sensor results
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSPD_UnsubscribeResult(SensorType_t sensorType) {
-    OSP_STATUS_t result = OSP_STATUS_OK;
+osp_status_t OSPD_UnsubscribeResult(SensorType_t sensorType) {
+    osp_status_t result = OSP_STATUS_OK;
 
     LOGT("%s\r\n", __FUNCTION__);
 
@@ -868,9 +861,9 @@ OSP_STATUS_t OSPD_UnsubscribeResult(SensorType_t sensorType) {
  *          Tear down RPC interface function
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSPD_Deinitialize(void) {
+osp_status_t OSPD_Deinitialize(void) {
     int threadStatus;
-    OSP_STATUS_t result = OSP_STATUS_OK;
+    osp_status_t result = OSP_STATUS_OK;
     LOGT("%s\r\n", __FUNCTION__);
 
     _relayThreadActive = false;

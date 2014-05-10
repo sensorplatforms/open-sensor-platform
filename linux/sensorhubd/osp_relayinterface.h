@@ -22,7 +22,7 @@
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
 #include <string>
-#include "osp_datatypes.h"
+#include "osp-types.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
@@ -35,7 +35,8 @@ typedef enum {
     ACCEL_INDEX                     = 0,
     MAG_INDEX                       = 1,
     GYRO_INDEX                      = 2,
-//    PRESSURE_INDEX                  = 3,
+    //STEP_COUNTER_INDEX              = 3,
+    //SIG_MOTION_INDEX                = 4,
     MAX_NUM_SENSORS_TO_HANDLE
 } deviceIndex;
 

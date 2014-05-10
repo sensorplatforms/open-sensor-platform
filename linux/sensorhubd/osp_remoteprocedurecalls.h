@@ -55,11 +55,11 @@ typedef void (*OSPD_ResultDataCallback_t)(SensorType_t sensorType, void* data);
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-OSP_STATUS_t OSPD_Initialize(void);
-OSP_STATUS_t OSPD_GetVersion(char* versionString, int bufSize);
-OSP_STATUS_t OSPD_SubscribeResult(SensorType_t sensorType, OSPD_ResultDataCallback_t dataReadyCallback );
-OSP_STATUS_t OSPD_UnsubscribeResult(SensorType_t sensorType);
-OSP_STATUS_t OSPD_Deinitialize(void);
+osp_status_t OSPD_Initialize(void);
+osp_status_t OSPD_GetVersion(char* versionString, int bufSize);
+osp_status_t OSPD_SubscribeResult(SensorType_t sensorType, OSPD_ResultDataCallback_t dataReadyCallback );
+osp_status_t OSPD_UnsubscribeResult(SensorType_t sensorType);
+osp_status_t OSPD_Deinitialize(void);
 
 
 #endif /* OSP_RPC_H */

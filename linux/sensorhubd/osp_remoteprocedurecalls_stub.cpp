@@ -63,8 +63,8 @@ static OSPD_ResultDataCallback_t _resultReadyCallbacks[RESULT_ENUM_COUNT] = {0};
  *          Initialize remote procedure call for the daemon
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSPD_Initialize(void) {
-    OSP_STATUS_t result = OSP_STATUS_OK;
+osp_status_t OSPD_Initialize(void) {
+    osp_status_t result = OSP_STATUS_OK;
     LOGT("%s\r\n", __FUNCTION__);
 
     return result;
@@ -75,8 +75,8 @@ OSP_STATUS_t OSPD_Initialize(void) {
  *          Helper routine for getting daemon version information
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSPD_GetVersion(char* versionString, int bufSize) {
-    OSP_STATUS_t result = OSP_STATUS_OK;
+osp_status_t OSPD_GetVersion(char* versionString, int bufSize) {
+    osp_status_t result = OSP_STATUS_OK;
 
     LOGT("%s\r\n", __FUNCTION__);
 
@@ -88,8 +88,8 @@ OSP_STATUS_t OSPD_GetVersion(char* versionString, int bufSize) {
  *          Enables subscription for results
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSPD_SubscribeResult(uint32_t sensorType, OSPD_ResultDataCallback_t dataReadyCallback ) {
-    OSP_STATUS_t result = OSP_STATUS_OK;
+osp_status_t OSPD_SubscribeResult(uint32_t sensorType, OSPD_ResultDataCallback_t dataReadyCallback ) {
+    osp_status_t result = OSP_STATUS_OK;
 
     LOGT("%s\r\n", __FUNCTION__);
 
@@ -101,8 +101,8 @@ OSP_STATUS_t OSPD_SubscribeResult(uint32_t sensorType, OSPD_ResultDataCallback_t
  *          Unsubscribe from sensor results
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSPD_UnsubscribeResult(uint32_t sensorType) {
-    OSP_STATUS_t result = OSP_STATUS_OK;
+osp_status_t OSPD_UnsubscribeResult(uint32_t sensorType) {
+    osp_status_t result = OSP_STATUS_OK;
 
     LOGT("%s\r\n", __FUNCTION__);
 
@@ -115,8 +115,8 @@ OSP_STATUS_t OSPD_UnsubscribeResult(uint32_t sensorType) {
  *          Tear down RPC interface function
  *
  ***************************************************************************************************/
-OSP_STATUS_t OSPD_Deinitialize(void) {
-    OSP_STATUS_t result = OSP_STATUS_OK;
+osp_status_t OSPD_Deinitialize(void) {
+    osp_status_t result = OSP_STATUS_OK;
 
     LOGT("%s\r\n", __FUNCTION__);
 

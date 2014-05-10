@@ -15,8 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef DEBUGLOG_H
-#define DEBUGLOG_H
+#ifndef OSP_DEBUGLOGGING_H
+#define OSP_DEBUGLOGGING_H
 
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
@@ -62,7 +62,7 @@
 
 
 
-#endif // DEBUGLOG_H
+#endif // OSP_DEBUGLOGGING_H
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/

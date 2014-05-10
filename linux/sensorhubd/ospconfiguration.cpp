@@ -20,7 +20,7 @@
 \*-------------------------------------------------------------------------------------------------*/
 #include <string.h>
 #include <assert.h>
-#include "osp_datatypes.h"
+#include "osp-types.h"
 #include "osp_names.h"
 #include "osp_debuglogging.h"
 #include "ospconfiguration.h"
@@ -101,7 +101,7 @@ public:
  *          Helper routine for getting configuration parameter
  *
  ***************************************************************************************************/
-const unsigned short SPI::OspConfiguration::getSizeFromName( const char* const shortName){
+const unsigned short OSP::OspConfiguration::getSizeFromName( const char* const shortName){
     static bool initialized = false;
     static std::map<std::string, unsigned short> _typeToSize;
     if (!initialized){
@@ -125,7 +125,7 @@ const unsigned short SPI::OspConfiguration::getSizeFromName( const char* const s
  *          Helper routine for getting configuration parameter
  *
  ***************************************************************************************************/
-const int SPI::OspConfiguration::getDimensionFromName( const char* const shortName){
+const int OSP::OspConfiguration::getDimensionFromName( const char* const shortName){
     static bool initialized = false;
     static std::map<std::string, int> _typeToDimension;
     if (!initialized){
@@ -147,7 +147,7 @@ const int SPI::OspConfiguration::getDimensionFromName( const char* const shortNa
  *          Helper routine for getting configuration parameter
  *
  ***************************************************************************************************/
-const ESensorType SPI::OspConfiguration::getTypeFromName( const char* const shortName ){
+const ESensorType OSP::OspConfiguration::getTypeFromName( const char* const shortName ){
     static bool initialized = false;
     static std::map<std::string, ESensorType> _nameToSensorType;
     if (!initialized){
@@ -170,7 +170,7 @@ const ESensorType SPI::OspConfiguration::getTypeFromName( const char* const shor
  *          Init routine
  *
  ***************************************************************************************************/
-SPI::OspConfiguration::Init::Init(){
+OSP::OspConfiguration::Init::Init(){
 }
 
 
@@ -180,7 +180,7 @@ SPI::OspConfiguration::Init::Init(){
  *
  ***************************************************************************************************/
 const char* const
-SPI::OspConfiguration::getConfigItem( const char* const name ){
+OSP::OspConfiguration::getConfigItem( const char* const name ){
     if (name == NULL){
         LOG_Err("Attempt to get config item for null name");
     } else if( configItemsString.find(std::string(name)) != configItemsString.end()){
@@ -198,7 +198,7 @@ SPI::OspConfiguration::getConfigItem( const char* const name ){
  *
  ***************************************************************************************************/
 std::vector<const char* >
-SPI::OspConfiguration::getConfigItemsMultiple( const char* const name ){
+OSP::OspConfiguration::getConfigItemsMultiple( const char* const name ){
     std::vector< const char*  > retval;
     if (name == NULL){
         LOG_Err("Attempt to get config item for null name");
@@ -222,7 +222,7 @@ SPI::OspConfiguration::getConfigItemsMultiple( const char* const name ){
  *
  ***************************************************************************************************/
 const float *
-SPI::OspConfiguration::getConfigItemFloat( const char* const name ,  unsigned int* size ){
+OSP::OspConfiguration::getConfigItemFloat( const char* const name ,  unsigned int* size ){
     if (name == NULL){
         if(size) *size = 0;
         return NULL;
@@ -244,7 +244,7 @@ SPI::OspConfiguration::getConfigItemFloat( const char* const name ,  unsigned in
  *
  ***************************************************************************************************/
 int
-SPI::OspConfiguration::getConfigItemIntV(
+OSP::OspConfiguration::getConfigItemIntV(
         const char* const name,
         const int defaultValue,
         int* status){
@@ -275,7 +275,7 @@ SPI::OspConfiguration::getConfigItemIntV(
  *
  ***************************************************************************************************/
 const int *
-SPI::OspConfiguration::getConfigItemInt(
+OSP::OspConfiguration::getConfigItemInt(
         const char* const name,
         unsigned int* size ){
     if (name == NULL){
@@ -298,7 +298,7 @@ SPI::OspConfiguration::getConfigItemInt(
  *
  ***************************************************************************************************/
 int
-SPI::OspConfiguration::setConfigItem(
+OSP::OspConfiguration::setConfigItem(
         const char* const name,
         const char* const value,
         const bool allowMultiple,
@@ -346,7 +346,7 @@ SPI::OspConfiguration::setConfigItem(
  *
  ***************************************************************************************************/
 int
-SPI::OspConfiguration::setConfigItemFloat(
+OSP::OspConfiguration::setConfigItemFloat(
         const char* const name,
         const float* const value,
         const unsigned int size,
@@ -380,7 +380,7 @@ SPI::OspConfiguration::setConfigItemFloat(
  *
  ***************************************************************************************************/
 void
-SPI::OspConfiguration::clear(const bool final){
+OSP::OspConfiguration::clear(const bool final){
     typedef std::map<std::string,  std::pair< const float *,  unsigned int> >::iterator it_type;
     for(it_type iterator = configItemsFloat.begin(); iterator != configItemsFloat.end(); iterator++) {
         delete[] (*iterator).second.first;
@@ -414,7 +414,7 @@ SPI::OspConfiguration::clear(const bool final){
  *
  ***************************************************************************************************/
 int
-SPI::OspConfiguration::setConfigItemInt(
+OSP::OspConfiguration::setConfigItemInt(
         const char* const name,
         const int* const value,
         const unsigned int size,
@@ -442,32 +442,12 @@ SPI::OspConfiguration::setConfigItemInt(
 
 
 /****************************************************************************************************
- * @fn      establishAsynchronousSensor
- *          Helper routine for sensor configuration
- *
- ***************************************************************************************************/
-void
-SPI::OspConfiguration::establishAsynchronousSensor(
-        const char* name,
-        const char* protocol,
-        const char* type){
-    float conversion[1] = {1.0f};
-    assert(OSPConfig::setConfigItem( "sensor", name, true)==0);
-    OSPConfig::setConfigItem( OSPConfig::keyFrom( name, SENSOR_PROTOCOL).c_str(), protocol);
-    OSPConfig::setConfigItemFloat( OSPConfig::keyFrom( name,SENSOR_CONVERSION).c_str(),conversion,1);
-    OSPConfig::setConfigItem(
-                OSPConfig::keyFrom( name, OSPConfig::SENSOR_TYPE).c_str(),
-                type);
-}
-
-
-/****************************************************************************************************
  * @fn      establishCartesianSensor
  *          Helper routine for creating a default sensor configuration
  *
  ***************************************************************************************************/
 void
-SPI::OspConfiguration::establishCartesianSensor(
+OSP::OspConfiguration::establishCartesianSensor(
         const char* name,
         const char* protocol,
         const char* type,
@@ -506,7 +486,7 @@ SPI::OspConfiguration::establishCartesianSensor(
  *
  ***************************************************************************************************/
 void
-SPI::OspConfiguration::establishDefaultConfig(const char* const protocol){
+OSP::OspConfiguration::establishDefaultConfig(const char* const protocol){
     int tick_us = 24;
 
     setConfigItem(OSPConfig::PROTOCOL_RELAY_DRIVER, "sensor_relay_kernel");
@@ -607,7 +587,7 @@ SPI::OspConfiguration::establishDefaultConfig(const char* const protocol){
  *
  ***************************************************************************************************/
 int
-SPI::OspConfiguration::dump( const char* const filename ){
+OSP::OspConfiguration::dump( const char* const filename ){
     FILE* f = ::fopen( filename, "w");
     if (!f){
         LOG_Err("Unable to open file '%s'",filename);
@@ -700,10 +680,10 @@ SPI::OspConfiguration::dump( const char* const filename ){
 
 
 extern "C++"{
-std::map<std::string, std::vector<const char*> > SPI::OspConfiguration::configItemsString;
-std::map<std::string, std::pair< const float*, unsigned int>  > SPI::OspConfiguration::configItemsFloat;
-std::map<std::string, std::pair< const int *,  unsigned int>  > SPI::OspConfiguration::configItemsInt;
-SPI::OspConfiguration::Init SPI::OspConfiguration::initializer;
+std::map<std::string, std::vector<const char*> > OSP::OspConfiguration::configItemsString;
+std::map<std::string, std::pair< const float*, unsigned int>  > OSP::OspConfiguration::configItemsFloat;
+std::map<std::string, std::pair< const int *,  unsigned int>  > OSP::OspConfiguration::configItemsInt;
+OSP::OspConfiguration::Init OSP::OspConfiguration::initializer;
 }
 
 /*-------------------------------------------------------------------------------------------------*\

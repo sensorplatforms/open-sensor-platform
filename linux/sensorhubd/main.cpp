@@ -80,11 +80,12 @@ static int _evdevFds[SENSORHUBD_RESULT_INDEX_COUNT] ={-1};
 static int _enablePipeFds[SENSORHUBD_RESULT_INDEX_COUNT] ={-1};
 static const char* _sensorNames[SENSORHUBD_RESULT_INDEX_COUNT] = {
     "accel", "mag", "gyro", /*"sig-motion", "step-count"*/};
+
 static SensorType_t _ospResultCodes[SENSORHUBD_RESULT_INDEX_COUNT]= {
     SENSOR_ACCELEROMETER,
     SENSOR_MAGNETIC_FIELD,
     SENSOR_GYROSCOPE,
-    //SENSOR_SIGNIFICANT_MOTION,
+    //SENSOR_CONTEXT_DEVICE_MOTION,
     //SENSOR_STEP_COUNTER
 };
 
@@ -152,13 +153,13 @@ static void _parseAndHandleEnable(int sensorIndex, char* buffer, ssize_t numByte
     LOGT("%s: sensorIndex %d\r\n", __FUNCTION__, sensorIndex);
 
     if ('0' == buffer[0]) {
-        LOG_Info("UNsubscribe to sensorcode %d\n", (int)sensorIndex);
-        OSP_STATUS_t status= OSPD_UnsubscribeResult(_ospResultCodes[sensorIndex]);
+        LOG_Info("Unsubscribe from sensor index %d\n", (int)sensorIndex);
+        osp_status_t status= OSPD_UnsubscribeResult(_ospResultCodes[sensorIndex]);
         _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing from result\n");
 
     } else if ('1' == buffer[0]) {
-        LOG_Info("SUBSCRIBE to sensorcode %d\n", (int)sensorIndex);
-        OSP_STATUS_t status= OSPD_SubscribeResult(_ospResultCodes[sensorIndex], _onTriAxisSensorResultDataUpdate);
+        LOG_Info("Subscribe to sensor index %d\n", (int)sensorIndex);
+        osp_status_t status= OSPD_SubscribeResult(_ospResultCodes[sensorIndex], _onTriAxisSensorResultDataUpdate);
         _logErrorIf(status != OSP_STATUS_OK, "error subscribing to result\n");
 
     } else {
@@ -251,7 +252,7 @@ static void _onTriAxisSensorResultDataUpdate(SensorType_t sensorType, void* pDat
                     pSensorData->timestamp.ll);
         break;
 #if 0
-    case SENSOR_DEVICE_MOTION: 
+    case SENSOR_CONTEXT_DEVICE_MOTION: 
         //LOGS("SIGM %.3f (0x%8x), %.3f (0x%8x), %.3f (0x%8x)\n", pSensorData->data[0]);
 
         uinputCompatibleDataFormat[0]= (int)(pSensorData->data[0]);
@@ -275,7 +276,7 @@ static void _onTriAxisSensorResultDataUpdate(SensorType_t sensorType, void* pDat
  ***************************************************************************************************/
 static void _subscribeToAllResults()
 {
-    OSP_STATUS_t status;
+    osp_status_t status;
     LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
 
     status = OSPD_SubscribeResult(SENSOR_ACCELEROMETER, _onTriAxisSensorResultDataUpdate);
@@ -287,8 +288,8 @@ static void _subscribeToAllResults()
     status = OSPD_SubscribeResult(SENSOR_GYROSCOPE, _onTriAxisSensorResultDataUpdate);
     _logErrorIf(status != OSP_STATUS_OK, "error subscribing to SENSOR_GYROSCOPE");
 
-    //    status = OSPD_SubscribeResult(SENSOR_DEVICE_MOTION, _onTriAxisSensorResultDataUpdate);
-    //    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to SENSOR_DEVICE_MOTION");
+    //    status = OSPD_SubscribeResult(SENSOR_CONTEXT_DEVICE_MOTION, _onTriAxisSensorResultDataUpdate);
+    //    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to SENSOR_CONTEXT_DEVICE_MOTION");
 
     //    status = OSPD_SubscribeResult(SENSOR_STEP_COUNTER, _onTriAxisSensorResultDataUpdate);
     //    _logErrorIf(status != OSP_STATUS_OK, "error subscribing to SENSOR_STEP_COUNTER");
@@ -303,7 +304,7 @@ static void _subscribeToAllResults()
  ***************************************************************************************************/
 static void _initialize()
 {
-    OSP_STATUS_t status;
+    osp_status_t status;
 
     LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
 
@@ -343,7 +344,7 @@ static void _stopAllResults()
 {
     LOGT("%s\r\n", __FUNCTION__);
 
-    OSP_STATUS_t status= OSPD_UnsubscribeResult(SENSOR_ACCELEROMETER);
+    osp_status_t status= OSPD_UnsubscribeResult(SENSOR_ACCELEROMETER);
     _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to SENSOR_ACCELEROMETER");
 
     status= OSPD_UnsubscribeResult(SENSOR_MAGNETIC_FIELD);
@@ -352,8 +353,8 @@ static void _stopAllResults()
     status= OSPD_UnsubscribeResult(SENSOR_GYROSCOPE);
     _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to SENSOR_GYROSCOPE");
 
-    //    status= OSPD_UnsubscribeResult(SENSOR_DEVICE_MOTION);
-    //    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to SENSOR_DEVICE_MOTION");
+    //    status= OSPD_UnsubscribeResult(SENSOR_CONTEXT_DEVICE_MOTION);
+    //    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to SENSOR_CONTEXT_DEVICE_MOTION");
 
     status= OSPD_UnsubscribeResult(SENSOR_STEP_COUNTER);
     _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to SENSOR_STEP_COUNTER");

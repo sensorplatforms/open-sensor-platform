@@ -20,6 +20,7 @@
 #ifdef __KERNEL__
 # include <linux/device.h>
 #endif
+#include "osp-sensors.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
@@ -30,29 +31,8 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-enum SENSOR_RELAY_SENSOR_ID {
-    SENSOR_RELAY_SENSOR_ID_FIRST = 0,
-
-    SENSOR_RELAY_SENSOR_ID_ACCELEROMETER = SENSOR_RELAY_SENSOR_ID_FIRST,
-    SENSOR_RELAY_SENSOR_ID_MAGNETOMETER,
-    SENSOR_RELAY_SENSOR_ID_GYROSCOPE,
-    SENSOR_RELAY_SENSOR_ID_PRESSURE,
-    SENSOR_RELAY_SENSOR_ID_LIGHT,
-    SENSOR_RELAY_SENSOR_ID_PROXIMITY,
-    SENSOR_RELAY_SENSOR_ID_TEMPERATURE,
-    SENSOR_RELAY_SENSOR_ID_CHANGE_DETECTOR,
-    SENSOR_RELAY_SENSOR_ID_SENSOR_CAMERA_ATTITUDE,
-    SENSOR_RELAY_SENSOR_ID_CAMERA_RELATIVE_ATTITUDE,
-    SENSOR_RELAY_SENSOR_ID_CAMERA_RELATIVE_POSITION,
-    SENSOR_RELAY_SENSOR_ID_STEPS,
-    SENSOR_RELAY_SENSOR_ID_QUATERNION,
-
-    SENSOR_RELAY_SENSOR_ID_COUNT    /* may not exceed SENSOR_RELAY_SENSOR_ID_TYPE_MASK */
-};
-
-
 struct  sensor_relay_motion_sensor_broadcast_node {
-    uint8_t sensorId;   /* enum SENSOR_RELAY_SENSOR_ID  - MUST be 1st*/
+    uint8_t sensorId;   /* Holds Sensor type enumeration - MUST be 1st */
     uint64_t TimeStamp; /* raw time stamp in sensor time capture ticks */
 
     int16_t Data[3];    /* Raw sensor data for 3axis */
@@ -60,20 +40,20 @@ struct  sensor_relay_motion_sensor_broadcast_node {
 
 
 struct  sensor_relay_quaternion_sensor_broadcast_node {
-    uint8_t sensorId;    /* enum SENSOR_RELAY_SENSOR_ID  - MUST be 1st*/
+    uint8_t sensorId;   /* Holds Sensor type enumeration - MUST be 1st */
     uint64_t TimeStamp; /* raw time stamp in sensor time capture ticks */
 
     int32_t Data[4];    /* Quaternion data */
 };
 struct  sensor_relay_steps_broadcast_node {
-    uint8_t sensorId;   /* enum SENSOR_RELAY_SENSOR_ID  - MUST be 1st*/
+    uint8_t sensorId;   /* Holds Sensor type enumeration - MUST be 1st */
     uint64_t TimeStamp; /* raw time stamp in sensor time capture ticks */
 
     int16_t Data[1];    /* step count */
 };
 
 struct sensor_relay_motion_change_detector_broadcast_node {
-    uint8_t sensorId;   /* enum SENSOR_RELAY_SENSOR_ID  - MUST be 1st*/
+    uint8_t sensorId;   /* Holds Sensor type enumeration - MUST be 1st */
     uint64_t TimeStamp; /* raw time stamp in sensor time capture ticks */
 
     uint32_t duration;  /* raw time stamp in sensor time capture ticks */
@@ -92,7 +72,7 @@ union  sensor_relay_broadcast_node {
 
 struct sensor_relay_classdev {
     char *sensor_name;
-    enum SENSOR_RELAY_SENSOR_ID sensorId;
+    SensorType_t sensorId;
     int flags;
     bool enable;
     unsigned int delay;

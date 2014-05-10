@@ -22,7 +22,7 @@
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
 #include <string>
-#include "osp_datatypes.h"
+#include "osp-types.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
@@ -40,10 +40,10 @@ public:
     static constexpr NameString INPUT_EVENT_EMBEDDED_64_BIT_TIMESTAMP = "EMBEDDED_64_BIT_TIMESTAMP";
 
 
-    static constexpr NameString SYSTEM_EVENT = "SYSTEM_EVENT";
-    static constexpr NameString RAW_ACCELEROMETER = "RAW_ACCELEROMETER";
-    static constexpr NameString RAW_MAGNETOMETER = "RAW_MAGNETOMETER";
-    static constexpr NameString RAW_GYROSCOPE = "RAW_GYROSCOPE";
+    static constexpr NameString SYSTEM_EVENT        = "SYSTEM_EVENT";
+    static constexpr NameString RAW_ACCELEROMETER   = "RAW_ACCELEROMETER";
+    static constexpr NameString RAW_MAGNETOMETER    = "RAW_MAGNETOMETER";
+    static constexpr NameString RAW_GYROSCOPE       = "RAW_GYROSCOPE";
 
 };
 

@@ -47,10 +47,10 @@ enum class ESensorType: unsigned short {
     SENSOR_STEP_DATA,
     SENSOR_SYSTEM_EVENT,
     SENSOR_ATTITUDE,
-    SENSOR_UNDEFINED};
-namespace SPI{
+    SENSOR_UNDEFINED
+};
 
-
+namespace OSP {
 
 //class FileBasedConfigParser;
 //class ConfigParser;
@@ -222,9 +222,6 @@ public:
                                           const float * const nonlinear = NULL,
                                           const float * const shake = NULL );
 
-    static void establishAsynchronousSensor( const char* const name,
-                                             const char* const protocol,
-                                             const char* const type);
     static int dump( const char* const filename );
 
     static void establishDefaultConfig( const char* const protocol = "domain_socket");
@@ -287,7 +284,7 @@ private:
 
 }
 
-typedef SPI::OspConfiguration OSPConfig;
+typedef OSP::OspConfiguration OSPConfig;
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
