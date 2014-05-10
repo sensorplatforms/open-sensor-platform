@@ -45,6 +45,8 @@ extern "C" {
 #define QFIXEDPOINTDELTATIME            24
 #define FIXEDPOINT_ROUNDING_VALUE       (2048)
 
+#define SATURATE_INT_MAX                (2147483647LL)
+#define SATURATE_INT_MIN                (-2147483648LL)
 
 /*
  *  Conversion between different formats
