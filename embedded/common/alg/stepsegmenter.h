@@ -56,15 +56,15 @@ typedef struct {
     StepSegment_t stepSegment;
 
     //constants related to step segmentation
-    float lastPosPeakMag;
-    float lastNegPeakMag;
-    float lastStepPeakMag;
+    osp_float_t lastPosPeakMag;
+    osp_float_t lastNegPeakMag;
+    osp_float_t lastStepPeakMag;
     NTTIME lastPosPeakTime;
     NTTIME lastNegPeakTime;
     NTTIME expectedStridePeriod;
 
     //peak finding variables
-    float prevAccNorm;
+    osp_float_t prevAccNorm;
     NTTIME prevTime;
     EExtremaType prevPeakType;
 
@@ -108,7 +108,7 @@ void StepSegmenter_CleanUp(StepSegmenter_t * pStruct);
 void StepSegmenter_Reset(StepSegmenter_t * pStruct);
 
 //Update function
-void StepSegmenter_UpdateAndCheckForSegment(StepSegmenter_t * pStruct, const float accNorm, NTTIME tstamp);
+void StepSegmenter_UpdateAndCheckForSegment(StepSegmenter_t * pStruct, const osp_float_t accNorm, NTTIME tstamp);
 
 // Get functions
 void StepSegmenter_GetLatestSegment(StepSegmenter_t * pStruct, StepSegment_t * segment);

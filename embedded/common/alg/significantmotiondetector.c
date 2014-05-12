@@ -59,11 +59,11 @@
 typedef struct {
     OSP_EventResultCallback_t sigMotCallback;
 
-    float meanbuf[NUM_ACCEL_AXES][MOVING_WINDOW_MEAN_BUF_SIZE];
-    float meanaccumulator[NUM_ACCEL_AXES];
+    osp_float_t meanbuf[NUM_ACCEL_AXES][MOVING_WINDOW_MEAN_BUF_SIZE];
+    osp_float_t meanaccumulator[NUM_ACCEL_AXES];
 
-    float energybuf[MOVING_WINDOW_MEAN_BUF_SIZE];
-    float energyaccumulator;
+    osp_float_t energybuf[MOVING_WINDOW_MEAN_BUF_SIZE];
+    osp_float_t energyaccumulator;
 
     osp_bool_t isSignificantMotion;
 
@@ -87,8 +87,8 @@ static SigMotionDetector_t _sigMotData;
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E     F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-static float UpdateSignals(const float sigIn[NUM_ACCEL_AXES]);
-static void SignificantMotionStateMachine(const NTTIME time, const float energy);
+static osp_float_t UpdateSignals(const osp_float_t sigIn[NUM_ACCEL_AXES]);
+static void SignificantMotionStateMachine(const NTTIME time, const osp_float_t energy);
 
 
 /****************************************************************************************************
@@ -128,8 +128,8 @@ void SignificantMotDetector_Reset(void){
  *          Main worker of significant motion detector. Results are only produced when this is called
  *
  ***************************************************************************************************/
-void SignificantMotDetector_SetFilteredAccelerometerMeasurement(const NTTIME tstamp, const float acc[NUM_ACCEL_AXES]){
-    float totalEnergy;
+void SignificantMotDetector_SetFilteredAccelerometerMeasurement(const NTTIME tstamp, const osp_float_t acc[NUM_ACCEL_AXES]){
+    osp_float_t totalEnergy;
 
     totalEnergy = UpdateSignals(acc);
 
@@ -144,13 +144,13 @@ void SignificantMotDetector_SetFilteredAccelerometerMeasurement(const NTTIME tst
  *          Computes energy signal used for significant motion detection
  *
  ***************************************************************************************************/
-float UpdateSignals(const float accIn[NUM_ACCEL_AXES]) {
+osp_float_t UpdateSignals(const osp_float_t accIn[NUM_ACCEL_AXES]) {
     const uint16_t movingWindowIdx = _sigMotData.signalCounter & (uint16_t)MOVING_WINDOW_MEAN_BUF_MASK;
     uint8_t i;    
-    float absAccMinusMean[NUM_ACCEL_AXES];
-    float mean[NUM_ACCEL_AXES];
-    float temp;
-    float totalEnergy = 0.f;
+    osp_float_t absAccMinusMean[NUM_ACCEL_AXES];
+    osp_float_t mean[NUM_ACCEL_AXES];
+    osp_float_t temp;
+    osp_float_t totalEnergy = 0.f;
 
     //compute mean of filtered accel signal and energy surrogate
     for (i = 0; i < NUM_ACCEL_AXES; i++) {
@@ -190,7 +190,7 @@ float UpdateSignals(const float accIn[NUM_ACCEL_AXES]) {
  *          Detects significant motion based on threshold crossing and callbacks to subscribers
  *
  ***************************************************************************************************/
-void SignificantMotionStateMachine(const NTTIME time, const float energy) {
+void SignificantMotionStateMachine(const NTTIME time, const osp_float_t energy) {
 
     osp_bool_t isSignificantMotion = FALSE;
     NTTIME eventTime = time - SIGNIFICANT_MOTION_DETECTOR_DELAY;

@@ -60,8 +60,8 @@
  |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 // Variables that effect segmentation
-static float MIN_PEAK_ACC = 1.1; //m/s^2
-static float MIN_PEAK_ACC_INITIAL = 0.5; //m/s^2
+static osp_float_t MIN_PEAK_ACC = 1.1; //m/s^2
+static osp_float_t MIN_PEAK_ACC_INITIAL = 0.5; //m/s^2
 
 /*-------------------------------------------------------------------------------------------------*\
  |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
@@ -80,7 +80,7 @@ static float MIN_PEAK_ACC_INITIAL = 0.5; //m/s^2
  *          Takes new accel norm data and checks for a peak
  *
  ***************************************************************************************************/
-static osp_bool_t UpdateAndLookForPeak(StepSegmenter_t * pStruct, float accNorm, EExtremaType * peakType){
+static osp_bool_t UpdateAndLookForPeak(StepSegmenter_t * pStruct, osp_float_t accNorm, EExtremaType * peakType){
     osp_bool_t peakFound = FALSE;
 
     if(accNorm >= pStruct->prevAccNorm){
@@ -154,7 +154,7 @@ static void ComputeStepProperties(StepSegmenter_t * pStruct){
 static void ComputePeakProperties(StepSegmenter_t * pStruct){
     NTTIME peakPeriod = pStruct->prevTime - pStruct->lastPosPeakTime;
     NTTIME stepPeriod = pStruct->prevTime - pStruct->stepSegment.stopTime;
-    float peakMag = pStruct->prevAccNorm - pStruct->lastNegPeakMag;
+    osp_float_t peakMag = pStruct->prevAccNorm - pStruct->lastNegPeakMag;
 
     //clear existing flags
     pStruct->peakFlags = 0;
@@ -266,9 +266,9 @@ static void AddStep(StepSegmenter_t * pStruct, StepSegment_t segment){
             //peak height delta = peakLeft - peakRight
             //                  = (posPeakMag - negPeakMag) - (prevZ - negPeakMag)
             //                  = (posPeakMag - prevZ)
-            float peakHeightDelta = ABS(pStruct->lastPosPeakMag - pStruct->prevAccNorm);
-            float peakHeightRight = pStruct->prevAccNorm - pStruct->lastNegPeakMag;
-            float peakComp = PEAK_TO_PEAK_COMPARE_RATIO*peakHeightRight;
+            osp_float_t peakHeightDelta = ABS(pStruct->lastPosPeakMag - pStruct->prevAccNorm);
+            osp_float_t peakHeightRight = pStruct->prevAccNorm - pStruct->lastNegPeakMag;
+            osp_float_t peakComp = PEAK_TO_PEAK_COMPARE_RATIO*peakHeightRight;
             if(((pStruct->numStoredSteps == 0) &&
                 (peakHeightDelta > peakComp))){
                 validStep = FALSE;
@@ -418,7 +418,7 @@ void StepSegmenter_CleanUp(StepSegmenter_t * pStruct){
  *          <brief>
  *
  ***************************************************************************************************/
-void StepSegmenter_UpdateAndCheckForSegment(StepSegmenter_t * pStruct, const float accNorm, NTTIME tstamp){
+void StepSegmenter_UpdateAndCheckForSegment(StepSegmenter_t * pStruct, const osp_float_t accNorm, NTTIME tstamp){
     EExtremaType peakType;
     StepSegment_t potSegment;
 

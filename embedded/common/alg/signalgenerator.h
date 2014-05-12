@@ -67,11 +67,11 @@ extern "C" {
 void SignalGenerator_Init(void);
 
 // Returns true if filtered signal is updated
-osp_bool_t SignalGenerator_SetAccelerometerData(const float accInMetersPerSecondSquare[NUM_ACCEL_AXES], float* accFilteredOut);
+osp_bool_t SignalGenerator_SetAccelerometerData(const osp_float_t accInMetersPerSecondSquare[NUM_ACCEL_AXES], osp_float_t* accFilteredOut);
 
 // Moving average function
-float SignalGenerator_UpdateMovingWindowMean(float * buffer, float * pMeanAccumulator,
-                                             float newmeas, uint16_t idx, uint16_t buflen2N);
+osp_float_t SignalGenerator_UpdateMovingWindowMean(osp_float_t * buffer, osp_float_t * pMeanAccumulator,
+                                             osp_float_t newmeas, uint16_t idx, uint16_t buflen2N);
 
 #ifdef __cplusplus
 }

@@ -58,7 +58,7 @@ void SignificantMotDetector_CleanUp(void);
 void SignificantMotDetector_Reset(void);
 
 // Set methods
-void SignificantMotDetector_SetFilteredAccelerometerMeasurement(const NTTIME tstamp, const float acc[NUM_ACCEL_AXES]);
+void SignificantMotDetector_SetFilteredAccelerometerMeasurement(const NTTIME tstamp, const osp_float_t acc[NUM_ACCEL_AXES]);
 
 #ifdef __cplusplus
 }

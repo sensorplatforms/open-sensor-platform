@@ -160,8 +160,8 @@ void StepDetector_Reset(void){
  *          Set method
  *
  ***************************************************************************************************/
-void StepDetector_SetFilteredAccelerometerMeasurement(const NTTIME tstamp, const float filteredAcc[3]){
-    float accNorm = sqrtf(filteredAcc[0]*filteredAcc[0] + 
+void StepDetector_SetFilteredAccelerometerMeasurement(const NTTIME tstamp, const osp_float_t filteredAcc[3]){
+    osp_float_t accNorm = sqrtf(filteredAcc[0]*filteredAcc[0] + 
                           filteredAcc[1]*filteredAcc[1] + 
                           filteredAcc[2]*filteredAcc[2]);
     NTTIME tFilter = tstamp;

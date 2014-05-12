@@ -62,7 +62,7 @@ void StepDetector_CleanUp(void);
 void StepDetector_Reset(void);
 
 // Set methods
-void StepDetector_SetFilteredAccelerometerMeasurement(NTTIME tstamp, const float filteredAcc[NUM_ACCEL_AXES]);
+void StepDetector_SetFilteredAccelerometerMeasurement(NTTIME tstamp, const osp_float_t filteredAcc[NUM_ACCEL_AXES]);
 
 #ifdef __cplusplus
 }

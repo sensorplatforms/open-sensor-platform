@@ -104,8 +104,8 @@ void OSP_DestroyAlgorithms(void){
  ***************************************************************************************************/
 void OSP_SetAccelerometerMeasurement(const NTTIME timeInSeconds, const NTPRECISE measurementInMetersPerSecondSquare[NUM_ACCEL_AXES]){
     //convert sensor data to floating point
-    float measurementFloat[NUM_ACCEL_AXES];
-    float measurementFiltered[NUM_ACCEL_AXES];
+    osp_float_t measurementFloat[NUM_ACCEL_AXES];
+    osp_float_t measurementFiltered[NUM_ACCEL_AXES];
     NTTIME filterTime = timeInSeconds;
 
     measurementFloat[0] = TOFLT_PRECISE(measurementInMetersPerSecondSquare[0]);

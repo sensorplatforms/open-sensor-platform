@@ -52,7 +52,7 @@ typedef struct {
 typedef struct StepDataOSP_t{
     NTTIME startTime;
     NTTIME stopTime;
-    float stepFrequency;
+    osp_float_t stepFrequency;
     uint32_t numStepsTotal;
     uint32_t numStepsSinceWalking;
 } StepDataOSP_t;

@@ -41,8 +41,8 @@
 typedef struct {
     uint16_t callcounter;
 
-    float accbuf[NUM_ACCEL_AXES][AVERAGING_FILTER_BUF_SIZE];
-    float accAccumulator[NUM_ACCEL_AXES];
+    osp_float_t accbuf[NUM_ACCEL_AXES][AVERAGING_FILTER_BUF_SIZE];
+    osp_float_t accAccumulator[NUM_ACCEL_AXES];
 
 } SignalGenerator_t;
 
@@ -54,7 +54,7 @@ static SignalGenerator_t _signalGenerator;
 /*-------------------------------------------------------------------------------------------------*\
  |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-static osp_bool_t PerformFiltering(const float accInMetersPerSecondSquare[NUM_ACCEL_AXES], float* accFilteredOut);
+static osp_bool_t PerformFiltering(const osp_float_t accInMetersPerSecondSquare[NUM_ACCEL_AXES], osp_float_t* accFilteredOut);
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
@@ -80,7 +80,7 @@ void SignalGenerator_Init(void) {
  *          when the accFilteredOut variable has been updated.
  *
  ***************************************************************************************************/
-osp_bool_t SignalGenerator_SetAccelerometerData(const float accInMetersPerSecondSquare[NUM_ACCEL_AXES], float* accFilteredOut){
+osp_bool_t SignalGenerator_SetAccelerometerData(const osp_float_t accInMetersPerSecondSquare[NUM_ACCEL_AXES], osp_float_t* accFilteredOut){
     return PerformFiltering(accInMetersPerSecondSquare, accFilteredOut);
 }
 
@@ -89,13 +89,13 @@ osp_bool_t SignalGenerator_SetAccelerometerData(const float accInMetersPerSecond
  *          Generic function for updating a moving window mean for a buffer of size 2^buflen2N
  *
  ***************************************************************************************************/
-float SignalGenerator_UpdateMovingWindowMean(float * buffer, float * pMeanAccumulator,
-                                             float newmeas, uint16_t idx, uint16_t buflen2N) {
+osp_float_t SignalGenerator_UpdateMovingWindowMean(osp_float_t * buffer, osp_float_t * pMeanAccumulator,
+                                             osp_float_t newmeas, uint16_t idx, uint16_t buflen2N) {
     *pMeanAccumulator += newmeas;
     *pMeanAccumulator -= buffer[idx];
     buffer[idx] = newmeas;
 
-    return (float) ((*pMeanAccumulator)/((float)(1 << buflen2N)));
+    return (osp_float_t) ((*pMeanAccumulator)/((osp_float_t)(1 << buflen2N)));
 }
 
 /****************************************************************************************************
@@ -104,7 +104,7 @@ float SignalGenerator_UpdateMovingWindowMean(float * buffer, float * pMeanAccumu
  *          Returns true if filtered data was updated.
  *
  ***************************************************************************************************/
-osp_bool_t PerformFiltering(const float accInMetersPerSecondSquare[NUM_ACCEL_AXES], float *accFilteredOut) {
+osp_bool_t PerformFiltering(const osp_float_t accInMetersPerSecondSquare[NUM_ACCEL_AXES], osp_float_t *accFilteredOut) {
     uint8_t iAxis;
     osp_bool_t success = FALSE;
 
