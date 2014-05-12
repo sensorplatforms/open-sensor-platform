@@ -15,51 +15,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#if !defined (OSP_ALG_TYPES)
-#define   OSP_ALG_TYPES
+#ifndef _SIGNALGENERATOR_H_
+#define _SIGNALGENERATOR_H_
 
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
-#include <stddef.h>
+#include "osp-alg-types.h"
 #include "osp-types.h"
-#include "osp-fixedpoint-types.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
-#define NUM_ACCEL_AXES                  (3)
+// Moving average filter length
+#define AVERAGING_FILTER_BUF_SIZE_2N (4)
+#define AVERAGING_FILTER_BUF_SIZE (1 << AVERAGING_FILTER_BUF_SIZE_2N)
+
+// Expected sample period in seconds
+#define SIGNAL_GENERATOR_EXPECTED_SAMPLE_PERIOD TOFIX_TIME(0.02f)
+
+// This is the total decimation of the signal generator with respect to incoming data rate
+#define SIGNAL_GENERATOR_TOTAL_DECIMATION_2N (3)
+
+// This is the expected output sample period of the signal generator
+#define SIGNAL_GENERATOR_OUTPUT_SAMPLE_PERIOD (SIGNAL_GENERATOR_EXPECTED_SAMPLE_PERIOD << SIGNAL_GENERATOR_TOTAL_DECIMATION_2N)
+
+// This is the expected time delay of the signal generator output
+#define SIGNAL_GENERATOR_DELAY (((AVERAGING_FILTER_BUF_SIZE-1) * SIGNAL_GENERATOR_EXPECTED_SAMPLE_PERIOD) >> 1)
 
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-//! Enumeration typedef for segment type
-typedef enum EStepSegmentType {
-    firstStep,
-    midStep,
-    lastStep
-} EStepSegmentType;
-
-//! Struct definition for a step segment
-typedef struct {
-    //store start/stop times of the last step
-    NTTIME startTime;
-    NTTIME stopTime;
-    EStepSegmentType type;
-} StepSegment_t;
-
-//struct for defining a step
-typedef struct StepDataOSP_t{
-    NTTIME startTime;
-    NTTIME stopTime;
-    float stepFrequency;
-    uint32_t numStepsTotal;
-    uint32_t numStepsSinceWalking;
-} StepDataOSP_t;
-
-typedef void (*OSP_StepSegmentResultCallback_t)(StepSegment_t * segment);
-typedef void (*OSP_StepResultCallback_t)(StepDataOSP_t* stepData);
-typedef void (*OSP_EventResultCallback_t)(NTTIME * eventTime);
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
@@ -73,8 +59,26 @@ typedef void (*OSP_EventResultCallback_t)(NTTIME * eventTime);
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif /* OSP_ALG_TYPES */
+// Constructor
+void SignalGenerator_Init(void);
+
+// Returns true if filtered signal is updated
+osp_bool_t SignalGenerator_SetAccelerometerData(const float accInMetersPerSecondSquare[NUM_ACCEL_AXES], float* accFilteredOut);
+
+// Moving average function
+float SignalGenerator_UpdateMovingWindowMean(float * buffer, float * pMeanAccumulator,
+                                             float newmeas, uint16_t idx, uint16_t buflen2N);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+#endif //_SIGNALGENERATOR_H_
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/

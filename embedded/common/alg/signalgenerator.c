@@ -18,10 +18,8 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
-#include "stepdetector.h"
-#include "stepsegmenter.h"
-#include "osp-alg-types.h"
-#include <math.h>
+#include "SignalGenerator.h"
+#include <string.h>
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
@@ -30,34 +28,33 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E   C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
+// moving window mean for incoming raw data
+#define AVERAGING_FILTER_BUF_MASK (AVERAGING_FILTER_BUF_SIZE - 1)
+
+// decimation count inside prefiltering
+#define DECIMATION_COUNT_2N (3)
+#define DECIMATION_MASK ((1 << DECIMATION_COUNT_2N)-1)
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E   T Y P E   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-//struct for containing step generation data
 typedef struct {
-    //step segmenter
-    StepSegmenter_t stepSegmenter;
+    uint16_t callcounter;
 
-    //step data
-    StepDataOSP_t step;
+    float accbuf[NUM_ACCEL_AXES][AVERAGING_FILTER_BUF_SIZE];
+    float accAccumulator[NUM_ACCEL_AXES];
 
-    //first step time
-    NTTIME startWalkTime;
-
-    //callback variables
-    OSP_StepResultCallback_t stepResultReadyCallback;
-    OSP_StepSegmentResultCallback_t stepSegmentResultReadyCallback;
-} StepDetector_t;
+} SignalGenerator_t;
 
 /*-------------------------------------------------------------------------------------------------*\
  |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-static StepDetector_t stepDetectData;
+static SignalGenerator_t _signalGenerator;
 
 /*-------------------------------------------------------------------------------------------------*\
  |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+static osp_bool_t PerformFiltering(const float accInMetersPerSecondSquare[NUM_ACCEL_AXES], float* accFilteredOut);
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
@@ -68,107 +65,71 @@ static StepDetector_t stepDetectData;
 \*-------------------------------------------------------------------------------------------------*/
 
 /****************************************************************************************************
- * @fn      SetNewStepSegment
- *          <brief>
+ * @fn      SignalGenerator_Init
+ *          Initializes memory for signal generator structure
  *
  ***************************************************************************************************/
-static void SetNewStepSegment(StepSegment_t * segment){
-    NTTIME dt;
+void SignalGenerator_Init(void) {
+    memset(&_signalGenerator,0,sizeof(_signalGenerator));
+}
 
-    //Check for start of walk sequence
-    if(segment->type == firstStep){
-        stepDetectData.startWalkTime = segment->startTime;
-        stepDetectData.step.numStepsSinceWalking = 0;
+/****************************************************************************************************
+ * @fn      SignalGenerator_SetAccelerometerData
+ *          Main caller function for signal generation. Since this module decimates the 
+ *          incoming signal after filtering, this function returns a boolean which indicates 
+ *          when the accFilteredOut variable has been updated.
+ *
+ ***************************************************************************************************/
+osp_bool_t SignalGenerator_SetAccelerometerData(const float accInMetersPerSecondSquare[NUM_ACCEL_AXES], float* accFilteredOut){
+    return PerformFiltering(accInMetersPerSecondSquare, accFilteredOut);
+}
+
+/****************************************************************************************************
+ * @fn      SignalGenerator_UpdateMovingWindowMean
+ *          Generic function for updating a moving window mean for a buffer of size 2^buflen2N
+ *
+ ***************************************************************************************************/
+float SignalGenerator_UpdateMovingWindowMean(float * buffer, float * pMeanAccumulator,
+                                             float newmeas, uint16_t idx, uint16_t buflen2N) {
+    *pMeanAccumulator += newmeas;
+    *pMeanAccumulator -= buffer[idx];
+    buffer[idx] = newmeas;
+
+    return (float) ((*pMeanAccumulator)/((float)(1 << buflen2N)));
+}
+
+/****************************************************************************************************
+ * @fn      PerformFiltering
+ *          Filters acceleration data with moving window average.
+ *          Returns true if filtered data was updated.
+ *
+ ***************************************************************************************************/
+osp_bool_t PerformFiltering(const float accInMetersPerSecondSquare[NUM_ACCEL_AXES], float *accFilteredOut) {
+    uint8_t iAxis;
+    osp_bool_t success = FALSE;
+
+    const uint16_t movingWindowIdx = _signalGenerator.callcounter & (uint16_t)AVERAGING_FILTER_BUF_MASK;
+
+    // Compute moving average of input acceleration data
+    for (iAxis = 0; iAxis < NUM_ACCEL_AXES; iAxis++) {
+        accFilteredOut[iAxis] = SignalGenerator_UpdateMovingWindowMean(_signalGenerator.accbuf[iAxis],
+                                                                    &_signalGenerator.accAccumulator[iAxis],
+                                                                    accInMetersPerSecondSquare[iAxis],
+                                                                    movingWindowIdx,
+                                                                    AVERAGING_FILTER_BUF_SIZE_2N);
     }
 
-    //Set times and increment counters
-    stepDetectData.step.startTime = segment->startTime;
-    stepDetectData.step.stopTime = segment->stopTime;
-    stepDetectData.step.numStepsTotal++;
-    stepDetectData.step.numStepsSinceWalking++;
-
-    //Estimate step frequency and length
-    dt = segment->stopTime - stepDetectData.startWalkTime;
-    stepDetectData.step.stepFrequency = ((osp_float_t)stepDetectData.step.numStepsSinceWalking)/TOFLT_TIME(dt);
-
-    //Callback to subscribers if any
-    if(stepDetectData.stepResultReadyCallback){
-        stepDetectData.stepResultReadyCallback(&stepDetectData.step);
+    /// Decimate
+    if ((_signalGenerator.callcounter > AVERAGING_FILTER_BUF_SIZE-1) &&
+        ((_signalGenerator.callcounter & DECIMATION_MASK) == DECIMATION_MASK)) {
+        success = TRUE;
     }
-    if(stepDetectData.stepSegmentResultReadyCallback){
-        stepDetectData.stepSegmentResultReadyCallback(segment);
-    }
+
+    _signalGenerator.callcounter++;
+
+    return success;
 }
 
-
-/*-------------------------------------------------------------------------------------------------*\
- |    P U B L I C     F U N C T I O N S
-\*-------------------------------------------------------------------------------------------------*/
-
-/****************************************************************************************************
- * @fn      StepDetector_Init
- *          <brief>
- *
- ***************************************************************************************************/
-void StepDetector_Init(OSP_StepResultCallback_t pStepResultReadyCallback, OSP_StepSegmentResultCallback_t pStepSegmentResultReadyCallback){
-    //Set up callbacks
-    stepDetectData.stepResultReadyCallback = pStepResultReadyCallback;
-    stepDetectData.stepSegmentResultReadyCallback = pStepSegmentResultReadyCallback;
-
-    //initialize sub-structs
-    StepSegmenter_Init(&stepDetectData.stepSegmenter, &SetNewStepSegment);
-
-    //reset
-    StepDetector_Reset();
-}
-
-
-/****************************************************************************************************
- * @fn      StepDetector_CleanUp
- *          <brief>
- *
- ***************************************************************************************************/
-void StepDetector_CleanUp(void){
-    stepDetectData.stepResultReadyCallback = NULL;
-    stepDetectData.stepSegmentResultReadyCallback = NULL;
-
-    StepSegmenter_CleanUp(&stepDetectData.stepSegmenter);
-}
-
-
-/****************************************************************************************************
- * @fn      StepDetector_Reset
- *          <brief>
- *
- ***************************************************************************************************/
-void StepDetector_Reset(void){
-    //reset step data
-    StepDataOSP_t * step = &stepDetectData.step;
-    step->startTime = TOFIX_TIME(-1.f);
-    step->stopTime = TOFIX_TIME(-1.f);
-    step->stepFrequency = 0;
-    step->numStepsTotal = 0;
-    step->numStepsSinceWalking = 0;
-
-    //reset signal generation and segmentation code
-    StepSegmenter_Reset(&stepDetectData.stepSegmenter);
-}
-
-
-/****************************************************************************************************
- * @fn      StepDetector_SetAccelerometerMeasurement
- *          Set method
- *
- ***************************************************************************************************/
-void StepDetector_SetFilteredAccelerometerMeasurement(const NTTIME tstamp, const float filteredAcc[3]){
-    float accNorm = sqrtf(filteredAcc[0]*filteredAcc[0] + 
-                          filteredAcc[1]*filteredAcc[1] + 
-                          filteredAcc[2]*filteredAcc[2]);
-    NTTIME tFilter = tstamp;
-
-    //Update step segmenter
-    StepSegmenter_UpdateAndCheckForSegment(&stepDetectData.stepSegmenter, accNorm, tFilter);
-}
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E

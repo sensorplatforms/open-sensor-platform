@@ -15,40 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef STEPSIGNALGENERATOR_H_
-#define STEPSIGNALGENERATOR_H_
+#ifndef _SIGNIFICANTMOTIONDETECTOR_H_
+#define _SIGNIFICANTMOTIONDETECTOR_H_
 
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
 #include "osp-alg-types.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+/*
+ * This module detects significant motion events
+ */
 
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
-#define ACC_BUF_SIZE_2N (5)
-#define ACC_BUF_SIZE (1 << ACC_BUF_SIZE_2N)
-
-#define SetDebugMatrixFloat(...)
-#define SetDebugMatrixTime(...)
 
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-typedef struct {
-    // data counter
-    int16_t count;
-
-    // raw accel buffers
-    float acc[3][ACC_BUF_SIZE];
-
-    osp_bool_t isInitialized;
-} StepSignalGenerator_t;
-
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
@@ -61,19 +46,25 @@ typedef struct {
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-//Init/reset/destroy methods
-osp_bool_t StepSignalGenerator_Init(StepSignalGenerator_t * pStepSigGen);
-void StepSignalGenerator_Reset(StepSignalGenerator_t * pStepSigGen);
-void StepSignalGenerator_CleanUp(StepSignalGenerator_t * pStepSigGen);
 
-// update filters (returns true when inertial acc buffers have been updated)
-osp_bool_t StepSignalGenerator_UpdateFilters(StepSignalGenerator_t * pStepSigGen, const float * acc, NTTIME * tstamp, float *accZ);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Constructor, destructor and reset methods
+void SignificantMotDetector_Init(OSP_EventResultCallback_t pSigMotionCallback);
+
+void SignificantMotDetector_CleanUp(void);
+void SignificantMotDetector_Reset(void);
+
+// Set methods
+void SignificantMotDetector_SetFilteredAccelerometerMeasurement(const NTTIME tstamp, const float acc[NUM_ACCEL_AXES]);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif //STEPSIGNALGENERATOR_H_
+#endif //_SIGNIFICANTMOTIONDETECTOR_H_
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/

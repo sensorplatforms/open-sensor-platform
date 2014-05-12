@@ -42,9 +42,10 @@
 #define STEPPROP_INVALID_NEG_PEAK                   (1<<4)
 
 //local constants
-#define DEFAULT_EXPECTED_STRIDE_PERIOD TOFIX_TIME   (1.8f)
-#define MAX_STRIDE_TIME TOFIX_TIME                  (2.5f)
-#define MAX_STEP_TIME TOFIX_TIME                    (1.3f)
+#define DEFAULT_EXPECTED_STRIDE_PERIOD    TOFIX_TIME(1.8f)
+#define MAX_STRIDE_TIME                   TOFIX_TIME(2.5f)
+#define MAX_STEP_TIME                     TOFIX_TIME(1.3f)
+#define PEAK_TO_PEAK_COMPARE_RATIO                  (0.75f)
 
 //initial step counter variables
 #define NUM_STEPS_BEFORE_REPORTING                  (3)
@@ -267,7 +268,7 @@ static void AddStep(StepSegmenter_t * pStruct, StepSegment_t segment){
             //                  = (posPeakMag - prevZ)
             float peakHeightDelta = ABS(pStruct->lastPosPeakMag - pStruct->prevAccNorm);
             float peakHeightRight = pStruct->prevAccNorm - pStruct->lastNegPeakMag;
-            float peakComp = 0.75*peakHeightRight;
+            float peakComp = PEAK_TO_PEAK_COMPARE_RATIO*peakHeightRight;
             if(((pStruct->numStoredSteps == 0) &&
                 (peakHeightDelta > peakComp))){
                 validStep = FALSE;

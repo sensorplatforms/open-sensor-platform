@@ -600,9 +600,14 @@
               <FilePath>..\..\..\common\alg\stepsegmenter.c</FilePath>
             </File>
             <File>
-              <FileName>stepsignalgenerator.c</FileName>
+              <FileName>signalgenerator.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\common\alg\stepsignalgenerator.c</FilePath>
+              <FilePath>..\..\..\common\alg\signalgenerator.c</FilePath>
+            </File>
+            <File>
+              <FileName>significantmotiondetector.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\alg\significantmotiondetector.c</FilePath>
             </File>
           </Files>
         </Group>

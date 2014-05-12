@@ -186,6 +186,7 @@ __inline static uint32_t mult_uint16_uint16(uint16_t a, uint16_t b)
     return ((uint32_t) a * (uint32_t)b);
 }
 
+
 /****************************************************************************************************
  * @fn      OnStepResultsReady
  *          Local callback used for Step Counter results from algorithm
@@ -201,6 +202,27 @@ static void OnStepResultsReady( StepDataOSP_t* stepData )
         callbackData.TimeStamp = stepData->startTime; //!TODO - Double check if start time or stop time
 
         index = FindResultTableIndexByType(SENSOR_STEP_COUNTER);
+        _ResultTable[index].pResDesc->pOutputReadyCallback((OutputSensorHandle_t)&_ResultTable[index],
+            &callbackData);
+    }
+}
+
+
+/****************************************************************************************************
+ * @fn      OnSignificantMotionResult
+ *          Local callback used for Significant motion results from algorithm
+ *
+ ***************************************************************************************************/
+static void OnSignificantMotionResult( NTTIME * eventTime )
+{
+    if(_SubscribedResults & (1 << SENSOR_CONTEXT_DEVICE_MOTION)) {
+        int16_t index;
+        Android_SignificantMotionOutputData_t callbackData;
+
+        callbackData.significantMotionDetected = true;
+        callbackData.TimeStamp = *eventTime;
+
+        index = FindResultTableIndexByType(SENSOR_CONTEXT_DEVICE_MOTION);
         _ResultTable[index].pResDesc->pOutputReadyCallback((OutputSensorHandle_t)&_ResultTable[index],
             &callbackData);
     }
@@ -1454,7 +1476,7 @@ osp_status_t OSP_SubscribeOutputSensor(SensorDescriptor_t *pSensorDescriptor,
 
     case SENSOR_CONTEXT_DEVICE_MOTION:
         _SubscribedResults |= (1 << SENSOR_CONTEXT_DEVICE_MOTION);
-        //OSP_RegisterDeviceMotionContextCallback(deviceMotionContextInsensitive, onMotionResultReady);
+        OSP_RegisterSignificantMotionCallback(OnSignificantMotionResult);
         break;
 
     case SENSOR_STEP_COUNTER:

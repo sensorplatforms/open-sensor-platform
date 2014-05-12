@@ -20,6 +20,8 @@
 \*-------------------------------------------------------------------------------------------------*/
 #include "osp_embeddedalgcalls.h"
 #include "stepdetector.h"
+#include "signalgenerator.h"
+#include "significantmotiondetector.h"
 #include "osp-alg-types.h"
 
 /*-------------------------------------------------------------------------------------------------*\
@@ -39,6 +41,7 @@
 \*-------------------------------------------------------------------------------------------------*/
 static OSP_StepResultCallback_t _fpStepResultCallback = NULL;
 static OSP_StepSegmentResultCallback_t _fpStepSegmentResultCallback = NULL;
+static OSP_EventResultCallback_t _fpSigMotCallback = NULL;
 
 /*-------------------------------------------------------------------------------------------------*\
  |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
@@ -51,29 +54,6 @@ static OSP_StepSegmentResultCallback_t _fpStepSegmentResultCallback = NULL;
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E     F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-/****************************************************************************************************
- * @fn      OnStepUpdate
- *          Call back for step update
- *
- ***************************************************************************************************/
-static void OnStepUpdate(StepDataOSP_t * step){
-    if(_fpStepResultCallback){
-        _fpStepResultCallback(step);
-    }
-}
-
-
-/****************************************************************************************************
- * @fn      OnStepSegmentUpdate
- *          Call back from algorithm for step segment update
- *
- ***************************************************************************************************/
-static void OnStepSegmentUpdate(StepSegment_t * segment){
-    if(_fpStepSegmentResultCallback){
-        _fpStepSegmentResultCallback(segment);
-    }
-}
-
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   A P I   F U N C T I O N S
@@ -85,7 +65,12 @@ static void OnStepSegmentUpdate(StepSegment_t * segment){
  *
  ***************************************************************************************************/
 void OSP_InitializeAlgorithms(void){
-    StepDetector_Init(OnStepUpdate, OnStepSegmentUpdate);
+    //Initialize signal generator
+    SignalGenerator_Init();
+
+    //Initialize algs
+    SignificantMotDetector_Init(_fpSigMotCallback);
+    StepDetector_Init(_fpStepResultCallback, _fpStepSegmentResultCallback);
 }
 
 
@@ -95,7 +80,9 @@ void OSP_InitializeAlgorithms(void){
  *
  ***************************************************************************************************/
 void OSP_ResetAlgorithms(void){
+    SignalGenerator_Init();
     StepDetector_Reset();
+    SignificantMotDetector_Reset();
 }
 
 
@@ -106,6 +93,7 @@ void OSP_ResetAlgorithms(void){
  ***************************************************************************************************/
 void OSP_DestroyAlgorithms(void){
     StepDetector_CleanUp();
+    SignificantMotDetector_CleanUp();
 }
 
 
@@ -114,9 +102,28 @@ void OSP_DestroyAlgorithms(void){
  *          API to feed accelerometer data into the algorithms
  *
  ***************************************************************************************************/
-void OSP_SetAccelerometerMeasurement(NTTIME timeInSeconds, NTPRECISE measurementInMetersPerSecondSquare[3]){
-    //update step detector
-    StepDetector_SetAccelerometerMeasurement(measurementInMetersPerSecondSquare, timeInSeconds);
+void OSP_SetAccelerometerMeasurement(const NTTIME timeInSeconds, const NTPRECISE measurementInMetersPerSecondSquare[NUM_ACCEL_AXES]){
+    //convert sensor data to floating point
+    float measurementFloat[NUM_ACCEL_AXES];
+    float measurementFiltered[NUM_ACCEL_AXES];
+    NTTIME filterTime = timeInSeconds;
+
+    measurementFloat[0] = TOFLT_PRECISE(measurementInMetersPerSecondSquare[0]);
+    measurementFloat[1] = TOFLT_PRECISE(measurementInMetersPerSecondSquare[1]);
+    measurementFloat[2] = TOFLT_PRECISE(measurementInMetersPerSecondSquare[2]);
+
+    //update signal generator
+    if(SignalGenerator_SetAccelerometerData(measurementFloat, measurementFiltered)){
+
+        filterTime -= SIGNAL_GENERATOR_DELAY;
+
+        //update significant motion alg
+        SignificantMotDetector_SetFilteredAccelerometerMeasurement(filterTime,
+                                                                   measurementFiltered);
+        //update step detector alg
+        StepDetector_SetFilteredAccelerometerMeasurement(filterTime, measurementFiltered);
+    }
+
 }
 
 
@@ -127,6 +134,7 @@ void OSP_SetAccelerometerMeasurement(NTTIME timeInSeconds, NTPRECISE measurement
  ***************************************************************************************************/
 void OSP_RegisterStepSegmentCallback(OSP_StepSegmentResultCallback_t fpCallback){
     _fpStepSegmentResultCallback = fpCallback;
+    StepDetector_Init(_fpStepResultCallback, _fpStepSegmentResultCallback);
 }
 
 
@@ -137,8 +145,19 @@ void OSP_RegisterStepSegmentCallback(OSP_StepSegmentResultCallback_t fpCallback)
  ***************************************************************************************************/
 void OSP_RegisterStepCallback(OSP_StepResultCallback_t fpCallback){
     _fpStepResultCallback = fpCallback;
+    StepDetector_Init(_fpStepResultCallback, _fpStepSegmentResultCallback);
 }
 
+
+/****************************************************************************************************
+ * @fn      OSP_RegisterSignificantMotionCallback
+ *          Register significant motion call back with the algorithms
+ *
+ ***************************************************************************************************/
+void OSP_RegisterSignificantMotionCallback(OSP_EventResultCallback_t fpCallback){
+    _fpSigMotCallback = fpCallback;
+    SignificantMotDetector_Init(_fpSigMotCallback);
+}
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E

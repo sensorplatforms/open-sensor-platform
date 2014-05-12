@@ -86,7 +86,7 @@ void OSP_DestroyAlgorithms(void);
 *         Expected data format NTPRECISE is fixed point format 32 bit, Q24.
 *
 */
-void OSP_SetAccelerometerMeasurement(NTTIME timeInSeconds, NTPRECISE measurementInMetersPerSecondSquare[3]);
+void OSP_SetAccelerometerMeasurement(const NTTIME timeInSeconds, const NTPRECISE measurementInMetersPerSecondSquare[NUM_ACCEL_AXES]);
 
 //! Registers a callback for step detection results
 /*!
@@ -106,6 +106,16 @@ void OSP_RegisterStepCallback(OSP_StepResultCallback_t fpCallback);
 *  \param fpCallback IN function pointer for step segment callback.
 */
 void OSP_RegisterStepSegmentCallback(OSP_StepSegmentResultCallback_t fpCallback);
+
+
+//! Registers a callback for significant motion results
+/*!
+* Sets the callback for significant motion results, where a significant motion result
+* comes in the form of a timestamp corresponding with the start of significant motion
+*
+*  \param fpCallback IN function pointer for significant motion callback.
+*/
+void OSP_RegisterSignificantMotionCallback(OSP_EventResultCallback_t fpCallback);
 
 #ifdef __cplusplus
 }
