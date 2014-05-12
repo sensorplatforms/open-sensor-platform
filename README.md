@@ -44,8 +44,8 @@ eventually leverage the platform agnostic CMSIS APIs.
 
 ### Additional Questions
 
-Refer to the detailed FAQ on the wiki section of this project:
-https://github.com/sensorplatforms/open-sensor-platform/wiki 
+Refer to the detailed [FAQ](https://github.com/sensorplatforms/open-sensor-platform/wiki) on the wiki section of this project.
+
 
 ### Project Structure
   * doc - Doxygen creation
