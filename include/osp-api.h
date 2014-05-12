@@ -114,14 +114,6 @@ typedef struct {
     NT *Probability;                   //!< Probability vector.  index into this with the appropriate GestureType_t enum
 } GestureEventOutputData_t;
 
-//! Use these enums as indices into the probability vector of a GestureEventOutputData_t in a GESTURE_EVENT result callback
-typedef enum {
-    GESTURE_TAP         = 0,
-    GESTURE_DOUBLE_TAP  = 1,
-    GESTURE_SHAKE       = 2,
-    GESTURE_ENUM_COUNT
-} GestureType_t;
-
 // Context results
 
 //! Used for all context results in conjunction with the enums ContextMotionType_t, ContextPostureType_t, ContextCarryType_t
