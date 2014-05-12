@@ -23,7 +23,7 @@
 #include "osp-types.h"
 #include "osp_names.h"
 #include "osp_debuglogging.h"
-#include "ospconfiguration.h"
+#include "osp_configuration.h"
 #include "osp_remoteprocedurecalls.h" //For Status codes -- FIXME!
 #include <sys/types.h>
 #include <sys/stat.h>

@@ -35,16 +35,17 @@ A reference sensor hub example is provided for easily available hardware:
 This example can be ported to a Cortex-M0+, or any other MCU or DSP
 architecture.
 
-The project is starting off by using the Keil-MDK toolchain, but
+The example uses the Keil-MDK toolchain, but
 future releases will utilize gcc under Keil as well as full
 gcc/Makefile based build system.
 
 The project uses the Keil RTX Real Time Operating system and will
 eventually leverage the platform agnostic CMSIS APIs.
 
-### Adding a new sensor
+### Additional Questions
 
-### Porting to another board/MCU
+Refer to the detailed FAQ on the wiki section of this project:
+https://github.com/sensorplatforms/open-sensor-platform/wiki 
 
 ### Project Structure
   * doc - Doxygen creation

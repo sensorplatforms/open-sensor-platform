@@ -1,4 +1,3 @@
-
 /* Open Sensor Platform Project
  * https://github.com/sensorplatforms/open-sensor-platform
  *
@@ -30,7 +29,7 @@
 #include <assert.h>
 #include "osp_relayinterface.h"
 #include "osp_debuglogging.h"
-#include "ospconfiguration.h"
+#include "osp_configuration.h"
 #include "sensor_relay.h"
 
 extern "C" {

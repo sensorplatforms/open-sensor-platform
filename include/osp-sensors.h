@@ -78,14 +78,14 @@ typedef enum {
 
 //! Use these enums as indices into the probability vector of a ContextOutputData_t in a CONTEXT_DEVICE_MOTION result callback
 typedef enum {
-    CONTEXT_MOTION_STILL                 = 0,
-    CONTEXT_MOTION_ACCELERATING          = 1,
-    CONTEXT_MOTION_ROTATING              = 2,
-    CONTEXT_MOTION_TRANSLATING           = 3,
-    CONTEXT_MOTION_FREE_FALLING          = 4,
-    CONTEXT_MOTION_SIGNIFICANT_MOTION    = 5, //!< significant motion (as specified by Android HAL 1.0)
-    CONTEXT_MOTION_SIGNIFICANT_STILLNESS = 6, //!< complement to significant motion
-    CONTEXT_MOTION_ENUM_COUNT
+    CONTEXT_DEVICE_MOTION_STILL                 = 0,
+    CONTEXT_DEVICE_MOTION_ACCELERATING          = 1,
+    CONTEXT_DEVICE_MOTION_ROTATING              = 2,
+    CONTEXT_DEIVCE_MOTION_TRANSLATING           = 3,
+    CONTEXT_DEVICE_MOTION_FREE_FALLING          = 4,
+    CONTEXT_DEVICE_MOTION_SIGNIFICANT_MOTION    = 5, //!< significant motion (as specified by Android HAL 1.0)
+    CONTEXT_DEVICE_MOTION_SIGNIFICANT_STILLNESS = 6, //!< complement to significant motion
+    CONTEXT_DEVICE_MOTION_ENUM_COUNT
 } ContextMotionType_t;
 
 //! Use these enums as indices into the probability vector of a ContextOutputData_t in a CONTEXT_POSTURE result callback

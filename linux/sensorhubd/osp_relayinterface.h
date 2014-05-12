@@ -15,8 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#if !defined (_RELAY_INTERFACE_H_)
-#define   _RELAY_INTERFACE_H_
+#ifndef _RELAY_INTERFACE_H_
+#define _RELAY_INTERFACE_H_
 
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
@@ -35,8 +35,8 @@ typedef enum {
     ACCEL_INDEX                     = 0,
     MAG_INDEX                       = 1,
     GYRO_INDEX                      = 2,
-    //STEP_COUNTER_INDEX              = 3,
-    //SIG_MOTION_INDEX                = 4,
+    STEP_COUNTER_INDEX              = 3,
+    SIG_MOTION_INDEX                = 4,
     MAX_NUM_SENSORS_TO_HANDLE
 } deviceIndex;
 
