@@ -204,17 +204,17 @@ static void SendSensorData( uint8_t sensorId, MsgSensorData *pMsg )
 
     switch (sensorId)
     {
-    case SENSOR_ACCELEROMETER:
+    case SENSOR_ACCELEROMETER_UNCALIBRATED:
         SlaveRegMap.rd_mem[0] = SH_MSG_TYPE_ABS_ACCEL;
         sensData.TimeStamp.timestamp40 = AccelTimeExtend & 0xFF;
         break;
 
-    case SENSOR_MAGNETIC_FIELD:
+    case SENSOR_MAGNETIC_FIELD_UNCALIBRATED:
         SlaveRegMap.rd_mem[0] = SH_MSG_TYPE_ABS_MAG;
         sensData.TimeStamp.timestamp40 = MagTimeExtend & 0xFF;
         break;
 
-    case SENSOR_GYROSCOPE:
+    case SENSOR_GYROSCOPE_UNCALIBRATED:
         SlaveRegMap.rd_mem[0] = SH_MSG_TYPE_ABS_GYRO;
         sensData.TimeStamp.timestamp40 = GyroTimeExtend & 0xFF;
         break;
@@ -232,57 +232,6 @@ static void SendSensorData( uint8_t sensorId, MsgSensorData *pMsg )
     SlaveRegMap.irq_cause = SH_MSG_IRQCAUSE_NEWMSG;
     SlaveRegMap.read_len = sizeof(sensData) + 1;
     memcpy( &SlaveRegMap.rd_mem[1], &sensData, sizeof(sensData) );
-    /*  Assert interrupt request to Host */
-    SensorHubIntHigh();
-    /* Wait for I2C transfer to finish */
-    I2C_Slave_Wait_Completion();
-}
-
-
-/****************************************************************************************************
- * @fn      SendQuaternionData
- *          Sends Quaternion data over the I2C slave interface
- *
- ***************************************************************************************************/
-static void SendQuaternionData( MsgQuaternionData *pMsg )
-{
-    ShQuaternion_t quatData;
-    quatData.Data[0] = pMsg->w;
-    quatData.Data[1] = pMsg->x;
-    quatData.Data[2] = pMsg->y;
-    quatData.Data[3] = pMsg->z;
-    quatData.TimeStamp.timestamp32 = pMsg->timeStamp;
-    quatData.TimeStamp.timestamp40 = QuatTimeExtend;
-
-    SlaveRegMap.rd_mem[0] = SH_MSG_TYPE_QUAT;
-    SlaveRegMap.irq_cause = SH_MSG_IRQCAUSE_NEWMSG;
-    SlaveRegMap.read_len = sizeof(quatData) + 1;
-    memcpy( &SlaveRegMap.rd_mem[1], &quatData, sizeof(quatData) );
-    /* Assert interrupt request to Host */
-    SensorHubIntHigh();
-    /* Wait for I2C transfer to finish */
-    I2C_Slave_Wait_Completion();
-}
-
-
-/****************************************************************************************************
- * @fn      SendCDSegmentData
- *          Sends Change Detector segment data over the I2C slave interface
- *
- ***************************************************************************************************/
-static void SendCDSegmentData( MsgCDSegmentData *pMsg )
-{
-    ShSegment_t segData;
-    segData.endTime.timestamp32 = pMsg->endTime;
-    segData.endTime.timestamp40 = (pMsg->endTime >> 32) & 0xFF;
-    segData.duration.timestamp32 = pMsg->duration;
-    segData.duration.timestamp40 = 0;
-    segData.type = pMsg->type;
-
-    SlaveRegMap.rd_mem[0] = SH_MSG_TYPE_CD;
-    SlaveRegMap.irq_cause = SH_MSG_IRQCAUSE_NEWMSG;
-    SlaveRegMap.read_len = sizeof(segData) + 1;
-    memcpy( &SlaveRegMap.rd_mem[1], &segData, sizeof(segData) );
     /*  Assert interrupt request to Host */
     SensorHubIntHigh();
     /* Wait for I2C transfer to finish */
@@ -455,23 +404,15 @@ ASF_TASK void I2CCommTask( ASF_TASK_ARG )
         switch (rcvMsg->msgId)
         {
         case MSG_ACC_DATA:
-            SendSensorData(SENSOR_ACCELEROMETER, &rcvMsg->msg.msgAccelData);
+            SendSensorData(SENSOR_ACCELEROMETER_UNCALIBRATED, &rcvMsg->msg.msgAccelData);
             break;
 
         case MSG_MAG_DATA:
-            SendSensorData(SENSOR_MAGNETIC_FIELD, &rcvMsg->msg.msgMagData);
+            SendSensorData(SENSOR_MAGNETIC_FIELD_UNCALIBRATED, &rcvMsg->msg.msgMagData);
             break;
 
         case MSG_GYRO_DATA:
-            SendSensorData(SENSOR_GYROSCOPE, &rcvMsg->msg.msgGyroData);
-            break;
-
-        case MSG_QUATERNION_DATA:
-            SendQuaternionData(&rcvMsg->msg.msgQuaternionData);
-            break;
-
-        case MSG_CD_SEGMENT_DATA:
-            SendCDSegmentData(&rcvMsg->msg.msgCDSegmentData);
+            SendSensorData(SENSOR_GYROSCOPE_UNCALIBRATED, &rcvMsg->msg.msgGyroData);
             break;
 
         default:

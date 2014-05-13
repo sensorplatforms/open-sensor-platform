@@ -123,7 +123,7 @@ static void SensorDataHandler( SensorType_t sensorId, uint32_t timeStamp )
 
     switch (sensorId)
     {
-    case SENSOR_MAGNETIC_FIELD:
+    case SENSOR_MAGNETIC_FIELD_UNCALIBRATED:
         if ((sMagDecimateCount++ % MAG_DECIMATE_FACTOR) == 0 )
         {
             /* Read mag Data - reading would clear interrupt also */
@@ -149,7 +149,7 @@ static void SensorDataHandler( SensorType_t sensorId, uint32_t timeStamp )
         }
         break;
 
-    case SENSOR_GYROSCOPE:
+    case SENSOR_GYROSCOPE_UNCALIBRATED:
         if ((gyroSampleCount++ % GYRO_SAMPLE_DECIMATE) == 0)
         {
             /* Read Gyro Data - reading typically clears interrupt as well */
@@ -175,7 +175,7 @@ static void SensorDataHandler( SensorType_t sensorId, uint32_t timeStamp )
         }
         break;
 
-    case SENSOR_ACCELEROMETER:
+    case SENSOR_ACCELEROMETER_UNCALIBRATED:
 #if defined TRIGGERED_MAG_SAMPLING
         if (accSampleCount % MAG_TRIGGER_RATE_DECIMATE == 0)
         {

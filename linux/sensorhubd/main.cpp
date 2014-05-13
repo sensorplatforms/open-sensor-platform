@@ -82,9 +82,9 @@ static const char* _sensorNames[SENSORHUBD_RESULT_INDEX_COUNT] = {
     "accel", "mag", "gyro", /*"sig-motion", "step-count"*/};
 
 static SensorType_t _ospResultCodes[SENSORHUBD_RESULT_INDEX_COUNT]= {
-    SENSOR_ACCELEROMETER,
-    SENSOR_MAGNETIC_FIELD,
-    SENSOR_GYROSCOPE,
+    SENSOR_ACCELEROMETER_UNCALIBRATED,
+    SENSOR_MAGNETIC_FIELD_UNCALIBRATED,
+    SENSOR_GYROSCOPE_UNCALIBRATED,
     //SENSOR_CONTEXT_DEVICE_MOTION,
     //SENSOR_STEP_COUNTER
 };
@@ -212,7 +212,7 @@ static void _onTriAxisSensorResultDataUpdate(SensorType_t sensorType, void* pDat
 
     switch(sensorType)  {
 
-    case SENSOR_ACCELEROMETER:
+    case SENSOR_ACCELEROMETER_UNCALIBRATED:
         uinputCompatibleDataFormat[0] = pSensorData->data[0].i;
         uinputCompatibleDataFormat[1] = pSensorData->data[1].i;
         uinputCompatibleDataFormat[2] = pSensorData->data[2].i;
@@ -230,7 +230,7 @@ static void _onTriAxisSensorResultDataUpdate(SensorType_t sensorType, void* pDat
         break;
 
 
-    case SENSOR_MAGNETIC_FIELD:
+    case SENSOR_MAGNETIC_FIELD_UNCALIBRATED:
         uinputCompatibleDataFormat[0] = pSensorData->data[0].i;
         uinputCompatibleDataFormat[1] = pSensorData->data[1].i;
         uinputCompatibleDataFormat[2] = pSensorData->data[2].i;
@@ -241,7 +241,7 @@ static void _onTriAxisSensorResultDataUpdate(SensorType_t sensorType, void* pDat
                     pSensorData->timestamp.ll);
         break;
 
-    case SENSOR_GYROSCOPE:
+    case SENSOR_GYROSCOPE_UNCALIBRATED:
         uinputCompatibleDataFormat[0] = pSensorData->data[0].i;
         uinputCompatibleDataFormat[1] = pSensorData->data[1].i;
         uinputCompatibleDataFormat[2] = pSensorData->data[2].i;
@@ -279,13 +279,13 @@ static void _subscribeToAllResults()
     osp_status_t status;
     LOGT("%s:%d\r\n", __FUNCTION__, __LINE__);
 
-    status = OSPD_SubscribeResult(SENSOR_ACCELEROMETER, _onTriAxisSensorResultDataUpdate);
+    status = OSPD_SubscribeResult(SENSOR_ACCELEROMETER_UNCALIBRATED, _onTriAxisSensorResultDataUpdate);
     _logErrorIf(status != OSP_STATUS_OK, "error subscribing to SENSOR_ACCELEROMETER");
 
-    status = OSPD_SubscribeResult(SENSOR_MAGNETIC_FIELD, _onTriAxisSensorResultDataUpdate);
+    status = OSPD_SubscribeResult(SENSOR_MAGNETIC_FIELD_UNCALIBRATED, _onTriAxisSensorResultDataUpdate);
     _logErrorIf(status != OSP_STATUS_OK, "error subscribing to SENSOR_MAGNETIC_FIELD");
 
-    status = OSPD_SubscribeResult(SENSOR_GYROSCOPE, _onTriAxisSensorResultDataUpdate);
+    status = OSPD_SubscribeResult(SENSOR_GYROSCOPE_UNCALIBRATED, _onTriAxisSensorResultDataUpdate);
     _logErrorIf(status != OSP_STATUS_OK, "error subscribing to SENSOR_GYROSCOPE");
 
     //    status = OSPD_SubscribeResult(SENSOR_CONTEXT_DEVICE_MOTION, _onTriAxisSensorResultDataUpdate);
@@ -344,14 +344,14 @@ static void _stopAllResults()
 {
     LOGT("%s\r\n", __FUNCTION__);
 
-    osp_status_t status= OSPD_UnsubscribeResult(SENSOR_ACCELEROMETER);
-    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to SENSOR_ACCELEROMETER");
+    osp_status_t status= OSPD_UnsubscribeResult(SENSOR_ACCELEROMETER_UNCALIBRATED);
+    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to SENSOR_ACCELEROMETER_UNCALIBRATED");
 
-    status= OSPD_UnsubscribeResult(SENSOR_MAGNETIC_FIELD);
-    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to SENSOR_MAGNETIC_FIELD");
+    status= OSPD_UnsubscribeResult(SENSOR_MAGNETIC_FIELD_UNCALIBRATED);
+    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to SENSOR_MAGNETIC_FIELD_UNCALIBRATED");
 
-    status= OSPD_UnsubscribeResult(SENSOR_GYROSCOPE);
-    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to SENSOR_GYROSCOPE");
+    status= OSPD_UnsubscribeResult(SENSOR_GYROSCOPE_UNCALIBRATED);
+    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to SENSOR_GYROSCOPE_UNCALIBRATED");
 
     //    status= OSPD_UnsubscribeResult(SENSOR_CONTEXT_DEVICE_MOTION);
     //    _logErrorIf(status != OSP_STATUS_OK, "error unsubscribing to SENSOR_CONTEXT_DEVICE_MOTION");

@@ -103,7 +103,7 @@ static void _sensorDataPublish(uint32_t sensorIndex, OSPD_ThreeAxisData_t *pSens
 
     switch(sensorIndex) {
     case ACCEL_INDEX:
-        sensorType = SENSOR_ACCELEROMETER;
+        sensorType = SENSOR_ACCELEROMETER_UNCALIBRATED;
         LOG_Info("RA %.3f, %.3f, %.3f, %lld\n",
              pSensData->data[0].f,
              pSensData->data[1].f,
@@ -112,7 +112,7 @@ static void _sensorDataPublish(uint32_t sensorIndex, OSPD_ThreeAxisData_t *pSens
         break;
 
     case GYRO_INDEX:
-        sensorType = SENSOR_GYROSCOPE;
+        sensorType = SENSOR_GYROSCOPE_UNCALIBRATED;
         //LOG_Info("RG %.3f, %.3f, %.3f, %lld\n",
         //     pSensData->data[0].f,
         //     pSensData->data[1].f,
@@ -121,7 +121,7 @@ static void _sensorDataPublish(uint32_t sensorIndex, OSPD_ThreeAxisData_t *pSens
         break;
 
     case MAG_INDEX:
-        sensorType = SENSOR_MAGNETIC_FIELD;
+        sensorType = SENSOR_MAGNETIC_FIELD_UNCALIBRATED;
         //LOG_Info("RM %.3f, %.3f, %.3f, %lld\n",
         //     pSensData->data[0].f,
         //     pSensData->data[1].f,
