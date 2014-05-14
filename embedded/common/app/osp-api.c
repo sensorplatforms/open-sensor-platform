@@ -1183,7 +1183,7 @@ osp_status_t OSP_DoForegroundProcessing(void)
             ConvertSensorData(
                 &data,
                 &AndoidProcessedData,
-                QFIXEDPOINTPRECISE,
+                QFIXEDPOINTEXTENDED,
                 &_sensorLastForegroundTimeStamp,
                 &_sensorLastForegroundTimeStampExtension);
         } else {

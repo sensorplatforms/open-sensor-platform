@@ -28,9 +28,9 @@
 #define OSP_MODULE_NAME                 "Open Sensor Platform"
 #define OSP_VERSION_MAJOR               0
 #define OSP_VERSION_MINOR               9
-#define OSP_VERSION_PATCH               0
+#define OSP_VERSION_PATCH               1
 
-#define OSP_VERSION_STRING              "0.9.0"
+#define OSP_VERSION_STRING              "0.9.1"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
