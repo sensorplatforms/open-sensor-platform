@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Open-sensor-platform by sensorplatforms</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Open-sensor-platform</h1>
+        <p>Open Sensor Platform project</p>
+        <p class="view"><a href="https://github.com/sensorplatforms/open-sensor-platform">View the Project on GitHub <small>sensorplatforms/open-sensor-platform</small></a></p>
+        <ul>
+          <li><a href="https://github.com/sensorplatforms/open-sensor-platform/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/sensorplatforms/open-sensor-platform/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/sensorplatforms/open-sensor-platform">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a name="open-sensor-platform" class="anchor" href="#open-sensor-platform"><span class="octicon octicon-link"></span></a>open-sensor-platform</h1>
+
+<p>Open Sensor Platform (OSP) is open source software built to enable
+systems with sensor hubs.  It is a framework specifically for sensor
+data acquisition, communication, and interpretation.  The embedded
+code is in C to allow easy compatibility with any CPU architecture or
+real-time operating system.  The linux code allows easy implementation
+of sensor hub data up to an Application Processor (AP) an Android
+Hardware Abstraction Layer (HAL).  The framework is simple and
+flexible enough to be extended to more use-cases.</p>
+
+<p>This project can be used to support various embedded sensor
+applications such as:</p>
+
+<ul>
+<li>Android KitKat compliant buffering sensor hubs,</li>
+<li>always-on context aware hubs,</li>
+<li>multi-function wearable devices.</li>
+</ul><h3>
+<a name="community-contributions" class="anchor" href="#community-contributions"><span class="octicon octicon-link"></span></a>Community Contributions</h3>
+
+<p>OSP encourages developers to focus on creating low-level applications
+for sensors rather than reinventing the wheel on the sensor interface.
+By open sourcing this software, community contributions can continue
+to develop this framework.  Ports of OSP to other platforms can be
+contributed to this project.</p>
+
+<p>OSP is released by Sensor Platforms Inc. under the Apache 2.0 license.</p>
+
+<h3>
+<a name="trying-it-out" class="anchor" href="#trying-it-out"><span class="octicon octicon-link"></span></a>Trying it out</h3>
+
+<p>A reference sensor hub example is provided for easily available hardware: </p>
+
+<ul>
+<li>an STEVAL board with ARM-CortexM3 based microprocessor and 9-axis sensors attached,</li>
+<li>a Nexus7 tablet with KitKat connected over I2C to the STEVAL board as a sensor hub.</li>
+</ul><p>This example can be ported to a Cortex-M0+, or any other MCU or DSP
+architecture.</p>
+
+<p>The example uses the Keil-MDK toolchain, but
+future releases will utilize gcc under Keil as well as full
+gcc/Makefile based build system.</p>
+
+<p>The project uses the Keil RTX Real Time Operating system and will
+eventually leverage the platform agnostic CMSIS APIs.</p>
+
+<h3>
+<a name="additional-questions" class="anchor" href="#additional-questions"><span class="octicon octicon-link"></span></a>Additional Questions</h3>
+
+<p>Refer to the detailed <a href="https://github.com/sensorplatforms/open-sensor-platform/wiki">FAQ</a> on the wiki section of this project.</p>
+
+<h3>
+<a name="project-structure" class="anchor" href="#project-structure"><span class="octicon octicon-link"></span></a>Project Structure</h3>
+
+<ul>
+<li>doc - Doxygen creation</li>
+<li>embedded - sensor hub code </li>
+<li>external - Source code, library, documentation, algorithms, etc. from external sources available under open-source license</li>
+<li>linux - Android application processor code</li>
+</ul>
+      </section>
+    </div>
+    <footer>
+      <p>Project maintained by <a href="https://github.com/sensorplatforms">sensorplatforms</a></p>
+      <p>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></p>
+    </footer>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("open sensor platform, internet of things, iot, wearables, wearable, sensor hub, sensor, sensors, embedded sensor");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
