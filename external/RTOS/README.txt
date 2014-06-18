@@ -1,1 +1,0 @@
-This folder should contain RTOS sources or libraries. Only sources that are known to be provided under open-source licensing should be added.
