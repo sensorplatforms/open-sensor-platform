@@ -156,7 +156,7 @@ typedef struct PortInfoTag
     fpDmaEnables_t EnableDMAChannel;
     fpInputValidate_t   ValidateInput;
     uint32_t       UartBaseAddress;
-    DMA_Channel_TypeDef *DMAChannel;
+    DMAChannel_t   DMAChannel;
 #else
     /** Circular transmit buffer:
      *   txWriteIdx is the next slot to write to

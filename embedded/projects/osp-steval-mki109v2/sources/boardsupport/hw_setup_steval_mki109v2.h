@@ -21,12 +21,11 @@
 \*-------------------------------------------------------------------------------------------------*/
 #include "stm32f10x.h"
 #include "osp-types.h"
-#include <stddef.h>     
+#include <stddef.h>
 
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
-#define RAM_START                               0x20000000
 
 /* ########################################################################## */
 /* #    T I M I N G S                                                       # */
@@ -238,7 +237,9 @@ extern LedsInfo_t DiagLEDs[NUM_LEDS];
 
 #define DBG_IF_UART                             USART1
 #define RCC_Periph_DBG_UART                     RCC_APB2Periph_USART1
+/* TX */
 #define DBG_UART_TX_PIN                         GPIO_Pin_9     ///< PA.09
+/* RX */
 #define DBG_UART_RX_PIN                         GPIO_Pin_10    ///< PA.10
 #define DBG_UART_DR_Base                        USART1_DR_Base
 
@@ -312,7 +313,7 @@ extern LedsInfo_t DiagLEDs[NUM_LEDS];
 /* ########################################################################## */
 /* #    M I S C E L L A N E O U S                                           # */
 /* ########################################################################## */
-/* Device Unique ID register for STM32L series devices */
+/* Device Unique ID register for STM32F series devices */
 #define DEV_UID_OFFSET                          0x1FFFF7E8
 
 /* ########################################################################## */
@@ -335,6 +336,8 @@ typedef union DeviceUidTag
     uint32_t uidWords[3];
     uint8_t  uidBytes[12];
 } DeviceUid_t;
+
+typedef DMA_Channel_TypeDef*  DMAChannel_t;
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
