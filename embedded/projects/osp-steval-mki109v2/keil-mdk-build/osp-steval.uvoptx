@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<ProjectOpt xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_opt.xsd">
+<ProjectOpt xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="project_optx.xsd">
 
   <SchemaVersion>1.0</SchemaVersion>
 
@@ -13,6 +13,7 @@
     <tExt>*.txt; *.h; *.inc</tExt>
     <pExt>*.plm</pExt>
     <CppX>*.cpp</CppX>
+    <nMigrate>0</nMigrate>
   </Extensions>
 
   <DaveTm>
@@ -25,12 +26,13 @@
     <ToolsetNumber>0x4</ToolsetNumber>
     <ToolsetName>ARM-ADS</ToolsetName>
     <TargetOption>
-      <CLKADS>16000000</CLKADS>
+      <CLKADS>12000000</CLKADS>
       <OPTTT>
         <gFlags>1</gFlags>
         <BeepAtEnd>1</BeepAtEnd>
         <RunSim>1</RunSim>
         <RunTarget>0</RunTarget>
+        <RunAbUc>0</RunAbUc>
       </OPTTT>
       <OPTHX>
         <HexSelection>1</HexSelection>
@@ -80,17 +82,17 @@
         <Book>
           <Number>0</Number>
           <Title>Base Board Schematics (MCBSTM32E)</Title>
-          <Path>C:\Keil5\ARM\PACK\Keil\STM32F1xx_DFP\1.0.4\Documents\mcbstm32e-base-board-schematics.pdf</Path>
+          <Path>C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\1.1.0\Documents\mcbstm32e-base-board-schematics.pdf</Path>
         </Book>
         <Book>
           <Number>1</Number>
           <Title>Display Board Schematics (MCBSTM32E)</Title>
-          <Path>C:\Keil5\ARM\PACK\Keil\STM32F1xx_DFP\1.0.4\Documents\mcbstm32e-display-board-schematics.pdf</Path>
+          <Path>C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\1.1.0\Documents\mcbstm32e-display-board-schematics.pdf</Path>
         </Book>
         <Book>
           <Number>2</Number>
           <Title>User Manual (MCBSTM32E)</Title>
-          <Path>C:\Keil5\ARM\PACK\Keil\STM32F1xx_DFP\1.0.4\Documents\mcbstm32e.chm</Path>
+          <Path>C:\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\1.1.0\Documents\mcbstm32e.chm</Path>
         </Book>
         <Book>
           <Number>3</Number>
@@ -98,16 +100,6 @@
           <Path>http://www.keil.com/mcbstm32e/</Path>
         </Book>
       </Books>
-      <DllOpt>
-        <SimDllName>SARMCM3.DLL</SimDllName>
-        <SimDllArguments> -REMAP</SimDllArguments>
-        <SimDlgDllName>DCM.DLL</SimDlgDllName>
-        <SimDlgDllArguments>-pCM3</SimDlgDllArguments>
-        <TargetDllName>SARMCM3.DLL</TargetDllName>
-        <TargetDllArguments></TargetDllArguments>
-        <TargetDlgDllName>TCM.DLL</TargetDlgDllName>
-        <TargetDlgDllArguments>-pCM3</TargetDlgDllArguments>
-      </DllOpt>
       <DebugOpt>
         <uSim>0</uSim>
         <uTrg>1</uTrg>
@@ -130,7 +122,7 @@
         <tRSysVw>1</tRSysVw>
         <sRunDeb>0</sRunDeb>
         <sLrtime>0</sLrtime>
-        <nTsel>8</nTsel>
+        <nTsel>7</nTsel>
         <sDll></sDll>
         <sDllPa></sDllPa>
         <sDlgDll></sDlgDll>
@@ -182,7 +174,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>UL2CM3</Key>
-          <Name>-S0 -C0 -P0 -FD20000000 -FC1000 -FN1 -FF0STM32F10x_512 -FS08000000 -FL080000 -FP0($$Device:STM32F103RE$Flash\STM32F10x_512.FLM))</Name>
+          <Name>-S0 -C0 -P0 ) -FN1 -FC1000 -FD20000000 -FF0STM32F10x_512 -FL080000 -FS08000000 -FP0($$Device:STM32F103RE$Flash\STM32F10x_512.FLM)</Name>
         </SetRegEntry>
       </TargetDriverDllRegistry>
       <Breakpoint/>
@@ -191,6 +183,7 @@
           <WinNumber>1</WinNumber>
           <SubType>8</SubType>
           <ItemText>0x20001424</ItemText>
+          <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow1>
       <Tracepoint>
@@ -224,6 +217,7 @@
       </DebugFlag>
       <LintExecutable></LintExecutable>
       <LintConfigFile></LintConfigFile>
+      <bLintAuto>0</bLintAuto>
     </TargetOption>
   </Target>
 
@@ -238,214 +232,10 @@
       <FileNumber>1</FileNumber>
       <FileType>2</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\external\MCU\STM32F1-CM3\startup_stm32f10x_hd.s</PathWithFileName>
       <FilenameWithoutPath>startup_stm32f10x_hd.s</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-  </Group>
-
-  <Group>
-    <GroupName>CSLib</GroupName>
-    <tvExp>0</tvExp>
-    <tvExpOptDlg>0</tvExpOptDlg>
-    <cbSel>0</cbSel>
-    <RteFlg>0</RteFlg>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>2</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\external\MCU\STM32F1-CM3\CSLib\Src\misc.c</PathWithFileName>
-      <FilenameWithoutPath>misc.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>3</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\external\MCU\STM32F1-CM3\CSLib\Src\stm32f10x_bkp.c</PathWithFileName>
-      <FilenameWithoutPath>stm32f10x_bkp.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>4</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\external\MCU\STM32F1-CM3\CSLib\Src\stm32f10x_dma.c</PathWithFileName>
-      <FilenameWithoutPath>stm32f10x_dma.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>5</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\external\MCU\STM32F1-CM3\CSLib\Src\stm32f10x_exti.c</PathWithFileName>
-      <FilenameWithoutPath>stm32f10x_exti.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>6</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\external\MCU\STM32F1-CM3\CSLib\Src\stm32f10x_flash.c</PathWithFileName>
-      <FilenameWithoutPath>stm32f10x_flash.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>7</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\external\MCU\STM32F1-CM3\CSLib\Src\stm32f10x_gpio.c</PathWithFileName>
-      <FilenameWithoutPath>stm32f10x_gpio.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>8</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\external\MCU\STM32F1-CM3\CSLib\Src\stm32f10x_i2c.c</PathWithFileName>
-      <FilenameWithoutPath>stm32f10x_i2c.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>9</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\external\MCU\STM32F1-CM3\CSLib\Src\stm32f10x_pwr.c</PathWithFileName>
-      <FilenameWithoutPath>stm32f10x_pwr.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>10</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\external\MCU\STM32F1-CM3\CSLib\Src\stm32f10x_rcc.c</PathWithFileName>
-      <FilenameWithoutPath>stm32f10x_rcc.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>11</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\external\MCU\STM32F1-CM3\CSLib\Src\stm32f10x_rtc.c</PathWithFileName>
-      <FilenameWithoutPath>stm32f10x_rtc.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>12</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\external\MCU\STM32F1-CM3\CSLib\Src\stm32f10x_tim.c</PathWithFileName>
-      <FilenameWithoutPath>stm32f10x_tim.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>2</GroupNumber>
-      <FileNumber>13</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\external\MCU\STM32F1-CM3\CSLib\Src\stm32f10x_usart.c</PathWithFileName>
-      <FilenameWithoutPath>stm32f10x_usart.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -458,15 +248,11 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
     <File>
-      <GroupNumber>3</GroupNumber>
-      <FileNumber>14</FileNumber>
+      <GroupNumber>2</GroupNumber>
+      <FileNumber>2</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\external\MCU\STM32F1-CM3\Retarget\Retarget.c</PathWithFileName>
       <FilenameWithoutPath>Retarget.c</FilenameWithoutPath>
@@ -482,15 +268,11 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
     <File>
-      <GroupNumber>4</GroupNumber>
-      <FileNumber>15</FileNumber>
+      <GroupNumber>3</GroupNumber>
+      <FileNumber>3</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\asf\asf_messages.c</PathWithFileName>
       <FilenameWithoutPath>asf_messages.c</FilenameWithoutPath>
@@ -498,15 +280,11 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>4</GroupNumber>
-      <FileNumber>16</FileNumber>
+      <GroupNumber>3</GroupNumber>
+      <FileNumber>4</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\asf\asf_taskinit.c</PathWithFileName>
       <FilenameWithoutPath>asf_taskinit.c</FilenameWithoutPath>
@@ -514,15 +292,11 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>4</GroupNumber>
-      <FileNumber>17</FileNumber>
+      <GroupNumber>3</GroupNumber>
+      <FileNumber>5</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\asf\asf_timers.c</PathWithFileName>
       <FilenameWithoutPath>asf_timers.c</FilenameWithoutPath>
@@ -538,15 +312,11 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
     <File>
-      <GroupNumber>5</GroupNumber>
-      <FileNumber>18</FileNumber>
+      <GroupNumber>4</GroupNumber>
+      <FileNumber>6</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>26</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\sources\config\rtx_conf_cm.c</PathWithFileName>
       <FilenameWithoutPath>rtx_conf_cm.c</FilenameWithoutPath>
@@ -554,15 +324,11 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>5</GroupNumber>
-      <FileNumber>19</FileNumber>
+      <GroupNumber>4</GroupNumber>
+      <FileNumber>7</FileNumber>
       <FileType>4</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\external\RTOS\RTX\lib\RTX_CM3.lib</PathWithFileName>
       <FilenameWithoutPath>RTX_CM3.lib</FilenameWithoutPath>
@@ -578,15 +344,11 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
     <File>
-      <GroupNumber>6</GroupNumber>
-      <FileNumber>20</FileNumber>
+      <GroupNumber>5</GroupNumber>
+      <FileNumber>8</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\alg\osp_embeddedalgcalls.c</PathWithFileName>
       <FilenameWithoutPath>osp_embeddedalgcalls.c</FilenameWithoutPath>
@@ -594,15 +356,11 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>6</GroupNumber>
-      <FileNumber>21</FileNumber>
+      <GroupNumber>5</GroupNumber>
+      <FileNumber>9</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\alg\stepdetector.c</PathWithFileName>
       <FilenameWithoutPath>stepdetector.c</FilenameWithoutPath>
@@ -610,15 +368,11 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>6</GroupNumber>
-      <FileNumber>22</FileNumber>
+      <GroupNumber>5</GroupNumber>
+      <FileNumber>10</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\alg\stepsegmenter.c</PathWithFileName>
       <FilenameWithoutPath>stepsegmenter.c</FilenameWithoutPath>
@@ -626,18 +380,26 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>6</GroupNumber>
-      <FileNumber>23</FileNumber>
+      <GroupNumber>5</GroupNumber>
+      <FileNumber>11</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\common\alg\stepsignalgenerator.c</PathWithFileName>
-      <FilenameWithoutPath>stepsignalgenerator.c</FilenameWithoutPath>
+      <PathWithFileName>..\..\..\common\alg\signalgenerator.c</PathWithFileName>
+      <FilenameWithoutPath>signalgenerator.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>5</GroupNumber>
+      <FileNumber>12</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\..\..\common\alg\significantmotiondetector.c</PathWithFileName>
+      <FilenameWithoutPath>significantmotiondetector.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -650,15 +412,11 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
     <File>
-      <GroupNumber>7</GroupNumber>
-      <FileNumber>24</FileNumber>
+      <GroupNumber>6</GroupNumber>
+      <FileNumber>13</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\app\algorithm_t.c</PathWithFileName>
       <FilenameWithoutPath>algorithm_t.c</FilenameWithoutPath>
@@ -666,15 +424,11 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>7</GroupNumber>
-      <FileNumber>25</FileNumber>
+      <GroupNumber>6</GroupNumber>
+      <FileNumber>14</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\app\cmdhandler_t.c</PathWithFileName>
       <FilenameWithoutPath>cmdhandler_t.c</FilenameWithoutPath>
@@ -682,15 +436,11 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>7</GroupNumber>
-      <FileNumber>26</FileNumber>
+      <GroupNumber>6</GroupNumber>
+      <FileNumber>15</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\app\debugprint.c</PathWithFileName>
       <FilenameWithoutPath>debugprint.c</FilenameWithoutPath>
@@ -698,15 +448,11 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>7</GroupNumber>
-      <FileNumber>27</FileNumber>
+      <GroupNumber>6</GroupNumber>
+      <FileNumber>16</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\app\instrmgr_t.c</PathWithFileName>
       <FilenameWithoutPath>instrmgr_t.c</FilenameWithoutPath>
@@ -714,15 +460,11 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>7</GroupNumber>
-      <FileNumber>28</FileNumber>
+      <GroupNumber>6</GroupNumber>
+      <FileNumber>17</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\app\instrmgr_user.c</PathWithFileName>
       <FilenameWithoutPath>instrmgr_user.c</FilenameWithoutPath>
@@ -730,15 +472,11 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>7</GroupNumber>
-      <FileNumber>29</FileNumber>
+      <GroupNumber>6</GroupNumber>
+      <FileNumber>18</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\app\osp-api.c</PathWithFileName>
       <FilenameWithoutPath>osp-api.c</FilenameWithoutPath>
@@ -746,15 +484,11 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>7</GroupNumber>
-      <FileNumber>30</FileNumber>
+      <GroupNumber>6</GroupNumber>
+      <FileNumber>19</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>36</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>1</TopLine>
-      <CurrentLine>18</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\app\sensoracq_t.c</PathWithFileName>
       <FilenameWithoutPath>sensoracq_t.c</FilenameWithoutPath>
@@ -770,15 +504,11 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
     <File>
-      <GroupNumber>8</GroupNumber>
-      <FileNumber>31</FileNumber>
+      <GroupNumber>7</GroupNumber>
+      <FileNumber>20</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\sources\app\console_util.c</PathWithFileName>
       <FilenameWithoutPath>console_util.c</FilenameWithoutPath>
@@ -786,15 +516,11 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>8</GroupNumber>
-      <FileNumber>32</FileNumber>
+      <GroupNumber>7</GroupNumber>
+      <FileNumber>21</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\sources\app\i2c_slavecomm_t.c</PathWithFileName>
       <FilenameWithoutPath>i2c_slavecomm_t.c</FilenameWithoutPath>
@@ -802,15 +528,11 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>8</GroupNumber>
-      <FileNumber>33</FileNumber>
+      <GroupNumber>7</GroupNumber>
+      <FileNumber>22</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\sources\app\main.c</PathWithFileName>
       <FilenameWithoutPath>main.c</FilenameWithoutPath>
@@ -818,15 +540,11 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>8</GroupNumber>
-      <FileNumber>34</FileNumber>
+      <GroupNumber>7</GroupNumber>
+      <FileNumber>23</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\sources\app\taskinit_user.c</PathWithFileName>
       <FilenameWithoutPath>taskinit_user.c</FilenameWithoutPath>
@@ -842,15 +560,11 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
     <File>
-      <GroupNumber>9</GroupNumber>
-      <FileNumber>35</FileNumber>
+      <GroupNumber>8</GroupNumber>
+      <FileNumber>24</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\Sources\BoardSupport\hw_setup.c</PathWithFileName>
       <FilenameWithoutPath>hw_setup.c</FilenameWithoutPath>
@@ -858,15 +572,11 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>9</GroupNumber>
-      <FileNumber>36</FileNumber>
+      <GroupNumber>8</GroupNumber>
+      <FileNumber>25</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\Sources\BoardSupport\stm32f10x_it.c</PathWithFileName>
       <FilenameWithoutPath>stm32f10x_it.c</FilenameWithoutPath>
@@ -874,15 +584,11 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>9</GroupNumber>
-      <FileNumber>37</FileNumber>
+      <GroupNumber>8</GroupNumber>
+      <FileNumber>26</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\Sources\BoardSupport\system_stm32f10x.c</PathWithFileName>
       <FilenameWithoutPath>system_stm32f10x.c</FilenameWithoutPath>
@@ -898,15 +604,11 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
     <File>
-      <GroupNumber>10</GroupNumber>
-      <FileNumber>38</FileNumber>
+      <GroupNumber>9</GroupNumber>
+      <FileNumber>27</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\modules\bus-drivers\stm32f1-cm3\i2c_driver.c</PathWithFileName>
       <FilenameWithoutPath>i2c_driver.c</FilenameWithoutPath>
@@ -922,15 +624,11 @@
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
     <File>
-      <GroupNumber>11</GroupNumber>
-      <FileNumber>39</FileNumber>
+      <GroupNumber>10</GroupNumber>
+      <FileNumber>28</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\modules\sensor-drivers\acc_lsm303dlhc_i2c.c</PathWithFileName>
       <FilenameWithoutPath>acc_lsm303dlhc_i2c.c</FilenameWithoutPath>
@@ -938,15 +636,11 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>11</GroupNumber>
-      <FileNumber>40</FileNumber>
+      <GroupNumber>10</GroupNumber>
+      <FileNumber>29</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\modules\sensor-drivers\gyro_l3gd20_i2c.c</PathWithFileName>
       <FilenameWithoutPath>gyro_l3gd20_i2c.c</FilenameWithoutPath>
@@ -954,21 +648,33 @@
       <bShared>0</bShared>
     </File>
     <File>
-      <GroupNumber>11</GroupNumber>
-      <FileNumber>41</FileNumber>
+      <GroupNumber>10</GroupNumber>
+      <FileNumber>30</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <Focus>0</Focus>
-      <ColumnNumber>0</ColumnNumber>
       <tvExpOptDlg>0</tvExpOptDlg>
-      <TopLine>0</TopLine>
-      <CurrentLine>0</CurrentLine>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\modules\sensor-drivers\mag_lsm303dlhc_i2c.c</PathWithFileName>
       <FilenameWithoutPath>mag_lsm303dlhc_i2c.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
+  </Group>
+
+  <Group>
+    <GroupName>::CMSIS</GroupName>
+    <tvExp>0</tvExp>
+    <tvExpOptDlg>0</tvExpOptDlg>
+    <cbSel>0</cbSel>
+    <RteFlg>1</RteFlg>
+  </Group>
+
+  <Group>
+    <GroupName>::Device</GroupName>
+    <tvExp>0</tvExp>
+    <tvExpOptDlg>0</tvExpOptDlg>
+    <cbSel>0</cbSel>
+    <RteFlg>1</RteFlg>
   </Group>
 
 </ProjectOpt>
