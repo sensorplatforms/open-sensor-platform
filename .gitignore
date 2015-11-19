@@ -10,11 +10,21 @@
 *.lnp
 *.dep
 *.uvguix.*
+*.uvgui.*
 *.lst
+*.sct
+*.iex
+*.__i
+*.*~
+*.TMP
+*.tmp
+*.uvproj.saved_uv4
+*.build_log.*
 
 # Libraries
 *.lib
 *.a
+*.zip
 
 # Shared objects (inc. Windows DLLs)
 *.dll
@@ -27,4 +37,13 @@
 *.out
 *.app
 *.axf
+*.bin
+*.hex
+
+# Visual Studio
+*.suo
+*.ipch
+*.vcxproj.*
+*.sdf
+*.sln.*
 
