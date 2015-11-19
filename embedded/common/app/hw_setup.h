@@ -54,7 +54,6 @@ void SystemInterruptConfig( void );
 void DebugPortInit( void );
 void DebugUARTConfig( uint32_t baud, uint32_t dataLen, uint32_t stopBits, uint32_t parity );
 void RTC_Configuration( void );
-uint8_t GetContext( void );
 
 
 #endif /* HW_SETUP_H */

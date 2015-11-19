@@ -122,9 +122,6 @@ union Message
 #define ASFReceiveMessagePoll( id, pm )    \
     _ASFReceiveMessagePoll( id, pm, __MODULE__, __LINE__ )
 
-#define ASFDeleteMessage( pm )  \
-    _ASFDeleteMessage( pm, __MODULE__, __LINE__ )
-
 
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
@@ -179,7 +176,6 @@ void ASFMessagingInit( void );
 AsfResult_t _ASFCreateMessage( MessageId msgId, uint16_t msgSize, MessageBuffer **pMbuf, char *_file, int _line );
 AsfResult_t _ASFSendMessage ( TaskId destTask, MessageBuffer *pMbuf, char *_file, int _line );
 void _ASFReceiveMessage ( TaskId rcvTask, MessageBuffer **pMbuf, char *_file, int _line );
-void _ASFDeleteMessage ( MessageBuffer **pMbuf, char *_file, int _line );
 osp_bool_t _ASFReceiveMessagePoll ( TaskId rcvTask, MessageBuffer **pMbuf, char *_file, int _line );
 
 

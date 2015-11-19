@@ -90,7 +90,7 @@ const uint32_t TotalStkNeeded =
 );
 
 /* Heap Area defined here */
-U64 NewHeap[TotalStkNeeded/8] = {0};
+uint64_t NewHeap[TotalStkNeeded/8] = {0};
 
 
 /*-------------------------------------------------------------------------------------------------*\

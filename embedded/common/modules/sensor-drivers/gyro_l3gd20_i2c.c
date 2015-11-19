@@ -288,7 +288,7 @@ void Gyro_TriggerDataAcq( void )
  *          Waits until data is ready to be read
  *
  ***************************************************************************************************/
-void Gyro_WaitDataReady( U16 timeOut )
+void Gyro_WaitDataReady( uint16_t timeOut )
 {
     /* Not used in this manner */
 }
