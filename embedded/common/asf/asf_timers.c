@@ -23,6 +23,8 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+extern void *AsfTimerList[];
+extern U32 const os_timernum;
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
@@ -31,9 +33,6 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E   C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
-#ifndef RAM_START
-# define RAM_START           NVIC_VectTab_RAM
-#endif
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E   T Y P E   D E F I N I T I O N S
@@ -42,6 +41,8 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+/* Maintain the list of registered timer currently running */
+static AsfTimer **_pAsfTimerList = (AsfTimer**)&AsfTimerList[0];
 
 /*-------------------------------------------------------------------------------------------------*\
  |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
@@ -50,6 +51,59 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E     F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+static uint16_t AddTimerToList(AsfTimer *pTimer)
+{
+    uint16_t i;
+    const uint16_t numTimers = os_timernum & 0xFFFF;
+
+    for ( i = 0; i < numTimers; i++ )
+    {
+        if ( _pAsfTimerList[i] == NULL )
+        {
+            _pAsfTimerList[i] = pTimer;
+            return i;
+        }
+    }
+
+    /* More timers created than declared in rtx_conf_cm.c */
+    ASF_assert(FALSE);
+}
+
+static AsfTimer*  GetTimerAndRemoveFromList( uint16_t info)
+{
+    const uint16_t numTimers = os_timernum & 0xFFFF;
+    AsfTimer *pTimer;
+
+    if ( info < numTimers )
+    {
+        pTimer = _pAsfTimerList[info];
+        _pAsfTimerList[info] = NULL;
+        return pTimer;
+    }
+
+    return (AsfTimer*)NULL;
+}
+
+
+static void RemoveTimerFromList(AsfTimer *pTimer)
+{
+    uint16_t i;
+    const uint16_t numTimers = os_timernum & 0xFFFF;
+
+    for ( i = 0; i < numTimers; i++ )
+    {
+        if ( _pAsfTimerList[i] == pTimer )
+        {
+            _pAsfTimerList[i] = NULL;
+        }
+        return;
+    }
+
+    /* Timer not found! */
+    ASF_assert(FALSE);
+}
+
+
 /****************************************************************************************************
  * @fn      SendTimerExpiry
  *          Sends the timer expiry message to the owner of the timer
@@ -84,10 +138,12 @@ static void SendTimerExpiry ( AsfTimer *pTimer )
  ***************************************************************************************************/
 static void _TimerStart ( AsfTimer *pTimer, char *_file, int _line )
 {
-    uint16_t info = (uint16_t)((uint32_t)pTimer); //We only need to store the LSB16 of the pointer as the system RAM is < 64K
+    uint16_t info;
+
     ASF_assert( pTimer != NULLP );
     ASF_assert( pTimer->sysUse != TIMER_SYS_ID ); //In case we are trying to restart a running timer
     pTimer->sysUse = TIMER_SYS_ID;
+    info = AddTimerToList(pTimer); // Add timer to list & get index
     pTimer->timerId = os_tmr_create( pTimer->ticks, info );
     ASF_assert( pTimer->timerId != NULL );
 }
@@ -150,11 +206,12 @@ void _ASFTimerExpiry ( uint16_t info, char *_file, int _line )
 {
     AsfTimer *pTimer;
     int wasMasked = __disable_irq();
-    pTimer = (AsfTimer *)(RAM_START + info);
+    pTimer = GetTimerAndRemoveFromList(info);
+
     //Look for our magic number to be sure we got the right pointer
     ASF_assert_var( pTimer->sysUse == TIMER_SYS_ID,  pTimer->ticks, pTimer->userValue, pTimer->owner);
-    SendTimerExpiry( pTimer );
     pTimer->sysUse = (uint32_t)-1; //Timer no longer in use
+    SendTimerExpiry( pTimer );
     if (!wasMasked) __enable_irq();
 }
 
@@ -177,6 +234,7 @@ void _ASFKillTimer ( AsfTimer *pTimer, char *_file, int _line )
     ret = os_tmr_kill( pTimer->timerId );
     ASF_assert( ret == NULL );
     pTimer->sysUse = (uint32_t)-1; //Timer no longer in use
+    RemoveTimerFromList( pTimer );
 }
 
 
