@@ -363,7 +363,7 @@
             <wLevel>2</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
-            <uC99>0</uC99>
+            <uC99>1</uC99>
             <useXO>0</useXO>
             <v6Lang>0</v6Lang>
             <v6LangP>0</v6LangP>
@@ -373,7 +373,7 @@
               <MiscControls></MiscControls>
               <Define>ANDROID_DEMO,HSE_VALUE=16000000,USE_STDPERIPH_DRIVER,STM32F10X_HD,DEBUG_BUILD,DEBUG_OUTPUT,STEVAL_MKI109V2,UART_DMA_ENABLE,ASF_PROFILING,ON_DEMAND_PROFILING</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\..\..\include;..\..\..\common\app;..\..\..\common\asf;..\..\..\common\alg;..\sources\app;..\sources\config;..\sources\boardsupport;..\..\..\common\modules\sensor-drivers;..\..\..\common\modules\bus-drivers;..\..\..\..\external\mcu\stm32f1-cm3\cslib;..\..\..\..\external\mcu\stm32f1-cm3\cslib\inc;..\..\..\..\external\rtos\rtx\inc;..\..\..\..\external\mcu\cmsis\device\st\stm32f10x\include;..\..\..\..\external\rtos\rtx\cm</IncludePath>
+              <IncludePath>..\..\..\..\include;..\..\..\common\app;..\..\..\common\asf;..\..\..\common\alg;..\sources\app;..\sources\config;..\sources\boardsupport;..\..\..\common\modules\sensor-drivers;..\..\..\common\modules\bus-drivers;..\..\..\..\external\mcu\stm32f1-cm3\cslib;..\..\..\..\external\mcu\stm32f1-cm3\cslib\inc;..\..\..\..\external\rtos\rtx\inc;..\..\..\..\external\mcu\cmsis\device\st\stm32f10x\include;..\..\..\..\external\rtos\rtx\cm;..\..\..\..\algorithm\osp</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -536,29 +536,9 @@
           <GroupName>Alg</GroupName>
           <Files>
             <File>
-              <FileName>osp_embeddedalgcalls.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\alg\osp_embeddedalgcalls.c</FilePath>
-            </File>
-            <File>
-              <FileName>stepdetector.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\alg\stepdetector.c</FilePath>
-            </File>
-            <File>
-              <FileName>stepsegmenter.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\alg\stepsegmenter.c</FilePath>
-            </File>
-            <File>
-              <FileName>signalgenerator.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\alg\signalgenerator.c</FilePath>
-            </File>
-            <File>
-              <FileName>significantmotiondetector.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\alg\significantmotiondetector.c</FilePath>
+              <FileName>osp_algs_CM3.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>..\..\..\..\algorithm\osp\lib\osp_algs_CM3.lib</FilePath>
             </File>
           </Files>
         </Group>
@@ -589,11 +569,6 @@
               <FileName>instrmgr_user.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\common\app\instrmgr_user.c</FilePath>
-            </File>
-            <File>
-              <FileName>osp-api.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\app\osp-api.c</FilePath>
             </File>
             <File>
               <FileName>sensoracq_t.c</FileName>
