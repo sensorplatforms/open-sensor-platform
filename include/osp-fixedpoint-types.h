@@ -71,6 +71,12 @@ extern "C" {
 #define CONST_EXTENDED(x) ((NTEXTENDED)(((osp_float_t)x) * (osp_float_t)(1UL << QFIXEDPOINTEXTENDED) ))
 #define TOFIX_EXTENDED(x) ((NTEXTENDED)(((osp_float_t)x) * (osp_float_t)(1UL << QFIXEDPOINTEXTENDED) ))
 
+/* fixed point to fixed point precise  */
+#define NT_TO_NTPRECISE(A) (((NTPRECISE)(A) << (QFIXEDPOINTPRECISE-QFIXEDPOINT)))
+#define NTPRECISE_TO_NT(A) ((NT)(((NTPRECISE)(A) + FIXEDPOINT_ROUNDING_VALUE) >> (QFIXEDPOINTPRECISE-QFIXEDPOINT)))
+#define NT_TO_NTEXTENDED(A) ((NTEXTENDED)((A))  >> (QFIXEDPOINT-QFIXEDPOINTEXTENDED))
+#define NTEXTENDED_TO_NT(A) ((NT)((A) << (QFIXEDPOINT-QFIXEDPOINTEXTENDED)))
+
 /* fixed point number of arbitrary q to a floating point number  */
 #define TOFLT_CUSTOM(x,q) ((osp_float_t)(x) / (osp_float_t)(1UL << (q)))
 

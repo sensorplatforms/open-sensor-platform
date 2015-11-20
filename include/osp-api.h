@@ -67,26 +67,11 @@ typedef enum {
 } AxisMapType_t ;
 
 
-//! use to specify the type and units of sensor data
-/*!
- *  e.g. for an input sensor usually you use  DATA_CONVENTION_RAW and pass in conversion info via InputSensorSpecificData_t
- *  e.g When choosing FORMAT_WIN8 the ORIENTATION output will be as requested for INCLINOMETER: three int32 values in tenths of a degree
- *
- *
- * \sa SensorDescriptor_t
- */
-typedef enum {
-    DATA_CONVENTION_RAW     = 0,    //!< Sensor values are in raw counts (LSB units) as per datasheet
-    DATA_CONVENTION_ANDROID = 1,    //!< Sensor values are in Android defined units
-    DATA_CONVENTION_WIN8    = 2,    //!< Sensor values are in Windows-8 defined units
-    DATA_CONVENTION_ENUM_COUNT
-} SensorDataConvention_t ;
-
-//! handle type returned by OSP_RegisterInputSensor() necessary when calling OSP_SetForegroundData() or OSP_SetBackgroundData()
+//! handle type returned by OSP_RegisterInputSensor()
 typedef void* InputSensorHandle_t;
 
-//! handle type returned by OSP_SubscribeOutputSensor() or OSP_UnsubscribeOutputSensor()
-typedef void* OutputSensorHandle_t;
+//! handle type returned by OSP_SubscribeSensorResult() or OSP_UnsubscribeSensorResult()
+typedef void* ResultHandle_t;
 
 //! data passed back via OSP_SensorControlCallback_t to tell the sensor driver to change the operation of its physical sensors
 typedef enum {
@@ -101,101 +86,95 @@ typedef enum {
 
 //! how enable/disable/setDelay type commands and data are passed back to the sensor driver
 typedef struct  {
-    InputSensorHandle_t Handle;                 //!< handle that was returned from OSP_RegisterInputSensor()
-    uint16_t Command;                           //!< command to sensor (power on/off, change rate, etc...)
-    int32_t Data;                               //!< as need and appropriate for each command: e.g. high pass frequency in Hz
+    InputSensorHandle_t Handle;     //!< handle that was returned from OSP_RegisterInputSensor()
+    SensorControlCommand_t Command; //!< command to sensor (power on/off, change rate, etc...)
+    int32_t Data;                   //!< as need and appropriate for each command: e.g. high pass frequency in Hz
 } SensorControl_t;
 
 // Gesture results
 
 //! Used for all gesture results in conjunction with the enum GestureType_t
 typedef struct {
-    NTTIME TimeStamp;                  //!< Time in seconds
-    NT *Probability;                   //!< Probability vector.  index into this with the appropriate GestureType_t enum
+    NTTIME TimeStamp;              //!< Time in seconds
+    NT *Probability;               //!< Probability vector.  index into this with the appropriate GestureType_t enum
 } GestureEventOutputData_t;
 
 // Context results
-
-//! Used for all context results in conjunction with the enums ContextMotionType_t, ContextPostureType_t, ContextCarryType_t
+//! Used for all context results. \sa ContextMotionType_t, ContextPostureType_t, ContextCarryType_t
 typedef struct {
-    NTTIME TimeStamp;                           //!< Time in seconds
-    NT *Probability;                            //!< Probability vector. index into this with the appropriate Context*Type_t enum
-} ContextOutputData_t;
+    NTTIME TimeStamp;              //!< Time in seconds
+    int32_t Len;                   //! length of probability vector.
+    NT *Probability;               //!< Probability vector. Num elements corresponds to each context type
+} ContextResultData_t;
 
-//! calibrated acceleration in m/s^2. Note positive Z when flat on table.
+//! Use to represent any tri-axis sensor data with NTPRECISE format
 typedef struct {
     NTTIME TimeStamp;              //!< Time in seconds
     NTPRECISE X;                   //!< X axis 32Q24 fixed point data
     NTPRECISE Y;                   //!< Y axis 32Q24 fixed point data
     NTPRECISE Z;                   //!< Z axis 32Q24 fixed point data
-} Android_CalibratedAccelOutputData_t;
+} Android_TriAxisPreciseData_t;
 
-//! calibrated magnetometer in uT.  Note positive Y when top edge points towards magnetic North.
+//! Use to represent any tri-axis sensor data with NTEXTENDED format
 typedef struct {
     NTTIME TimeStamp;              //!< Time in seconds
     NTEXTENDED X;                  //!< X axis 32Q12 fixed point data
     NTEXTENDED Y;                  //!< Y axis 32Q12 fixed point data
     NTEXTENDED Z;                  //!< Z axis 32Q12 fixed point data
-} Android_CalibratedMagOutputData_t;
+} Android_TriAxisExtendedData_t;
 
-//! calibrated rotation rate in rad/s.  Note positive Z when spin counter-clockwise on the table (right handed).
+//! Use to represent any uncalibrated tri-axis sensor data with NTPRECISE format
 typedef struct {
     NTTIME TimeStamp;              //!< Time in seconds
     NTPRECISE X;                   //!< X axis 32Q24 fixed point data
     NTPRECISE Y;                   //!< Y axis 32Q24 fixed point data
     NTPRECISE Z;                   //!< Z axis 32Q24 fixed point data
-} Android_CalibratedGyroOutputData_t;
+    NTPRECISE X_bias;              //!< 32Q24 fixed point data
+    NTPRECISE Y_bias;              //!< 32Q24 fixed point data
+    NTPRECISE Z_bias;              //!< 32Q24 fixed point data
+} Android_UncalibratedTriAxisPreciseData_t;
 
-//! uncalibrated acceleration in m/s^2. note positive Z when flat on table.
+//! Use to represent any uncalibrated tri-axis sensor data with NTEXTENDED format
 typedef struct {
     NTTIME TimeStamp;              //!< Time in seconds
-    NTPRECISE X;                   //!< 32Q24 fixed point data representing rad/sec.
-    NTPRECISE Y;                   //!< 32Q24 fixed point data representing rad/sec.
-    NTPRECISE Z;                   //!< 32Q24 fixed point data representing rad/sec.
-    NTPRECISE X_offset;            //!< 32Q24 fixed point data representing rad/sec.
-    NTPRECISE Y_offset;            //!< 32Q24 fixed point data representing rad/sec.
-    NTPRECISE Z_offset;            //!< 32Q24 fixed point data representing rad/sec.
-} Android_UncalibratedAccelOutputData_t;
+    NTEXTENDED X;                  //!< 32Q12 fixed point data
+    NTEXTENDED Y;                  //!< 32Q12 fixed point data
+    NTEXTENDED Z;                  //!< 32Q12 fixed point data
+    NTEXTENDED X_bias;             //!< 32Q12 fixed point data
+    NTEXTENDED Y_bias;             //!< 32Q12 fixed point data
+    NTEXTENDED Z_bias;             //!< 32Q12 fixed point data
+} Android_UncalibratedTriAxisExtendedData_t;
 
-//! uncalibrated magnetometer in uT.  Note positive Y when top edge points towards magnetic North.
+//! Use to represent raw tri-axis and one axis sensor data.
+typedef struct {
+    uint32_t TimeStamp;            //! raw time stamp
+    int32_t  data[3];              //! Use first element for one axis sensor
+} Android_TriAxisRawSensorData_t;
+
+//! yaw pitch roll
 typedef struct {
     NTTIME TimeStamp;              //!< Time in seconds
-    NTEXTENDED X;                  //!< 32Q12 fixed point data representing uT.
-    NTEXTENDED Y;                  //!< 32Q12 fixed point data representing uT.
-    NTEXTENDED Z;                  //!< 32Q12 fixed point data representing uT.
-    NTEXTENDED X_hardIron_offset;  //!< 32Q12 fixed point data representing uT.
-    NTEXTENDED Y_hardIron_offset;  //!< 32Q12 fixed point data representing uT.
-    NTEXTENDED Z_hardIron_offset;  //!< 32Q12 fixed point data representing uT.
-} Android_UncalibratedMagOutputData_t;
+    NTEXTENDED Yaw;                //!< yaw in degrees
+    NTEXTENDED Pitch;              //!< pitch in degrees
+    NTEXTENDED Roll;               //!< roll in degrees
+} Android_OrientationResultData_t;
 
-//! uncalibrated rotation rate in rad/s.  Note positive Z when spin counter-clockwise on the table (right handed).
+//! Use to report result that has boolean output such as significant
+//! motion, significant stillness, mag-anomaly etc...
 typedef struct {
     NTTIME TimeStamp;              //!< Time in seconds
-    NTPRECISE X;                   //!< 32Q24 fixed point data representing rad/sec.
-    NTPRECISE Y;                   //!< 32Q24 fixed point data representing rad/sec.
-    NTPRECISE Z;                   //!< 32Q24 fixed point data representing rad/sec.
-    NTPRECISE X_drift_offset;      //!< 32Q24 fixed point data representing rad/sec.
-    NTPRECISE Y_drift_offset;      //!< 32Q24 fixed point data representing rad/sec.
-    NTPRECISE Z_drift_offset;      //!< 32Q24 fixed point data representing rad/sec.
-} Android_UncalibratedGyroOutputData_t;
+    osp_bool_t data;
+} Android_BooleanResultData_t;
 
-//! time at the start of a motion which is likely to lead to a change in position
+
+//! Android style step counter, but note that host driver must bookkeep between
+//! sensor hub power on/off to to meet android requirement
 typedef struct {
     NTTIME TimeStamp;              //!< Time in seconds
-    osp_bool_t significantMotionDetected;//!< always set to true when this result fires
-} Android_SignificantMotionOutputData_t;
-
-//! indicates when each step is taken
-typedef struct {
-    NTTIME TimeStamp;              //!< Time in seconds
-    osp_bool_t StepDetected;             //!< always set to true, indicating a step was taken
-} Android_StepDetectorOutputData_t;
-
-//! Android style step counter, but note that the host driver must bookkeep between sensorhub power on/off to meet android requirement 
-typedef struct {
-    NTTIME TimeStamp;              // timestamp
-    uint32_t StepCount;            //!< steps since power on of the sensorhub (this is an important distinction from the full android requirement!)
-} Android_StepCounterOutputData_t;
+    uint32_t StepCount;            //!< steps since sensorhub power on.
+                                   //!< this is an important distinction from
+                                   //!< full android requirement
+} Android_StepCounterResultData_t;
 
 //! positive, normalized quaternion used for the various flavors of ROTATION_VECTOR
 typedef struct {
@@ -204,9 +183,32 @@ typedef struct {
     NTPRECISE Y;                   //!< Y component of normalized quaternion in 32Q24 fixed point
     NTPRECISE Z;                   //!< Z component of normalized quaternion in 32Q24 fixed point
     NTPRECISE W;                   //!< W component of normalized quaternion in 32Q24 fixed point
-    NTPRECISE ErrorEst;            //!< estimated heading Accuracy in radians in 32Q24 fixed point (-1 if unavailable)
-} Android_RotationVectorOutputData_t;
+    NTPRECISE HeadingErrorEst;     //!< estimated heading Accuracy in radians in 32Q24 fixed point (-1 if unavailable)
+    NTPRECISE TiltErrorEst;        //!< estimated of tilt accuracy in radians 32Q24 fixed point
+} Android_RotationVectorResultData_t;
 
+//! Context change detector result structure
+typedef struct {
+    NTTIME startTime;
+    NTTIME endTime;
+    NTDELTATIME duration;
+    uint32_t type;                 // 0=transition, 1=steady state, 2=transition step, 3=steady state step, 4=event
+    uint32_t flags;                // What is flags?
+    uint32_t sequenceNumber;       // What is the purpose of this sequence number? Who provides this?
+} ContextChangeDetectorResultData_t;
+
+//! Union structure to encapsulate various data types to library algorithm.
+typedef union {
+    Android_TriAxisRawSensorData_t rawdata;
+    Android_TriAxisPreciseData_t q24data;
+    Android_TriAxisExtendedData_t q12data;
+    Android_UncalibratedTriAxisPreciseData_t uncal_q24data;
+    Android_UncalibratedTriAxisExtendedData_t uncal_q12data;
+    Android_OrientationResultData_t orientdata;
+    Android_BooleanResultData_t booldata;
+    Android_StepCounterResultData_t stepcount;
+    Android_RotationVectorResultData_t rotvec;
+} OSP_InputSensorData_t;
 
 //! callback type used when the library needs to do an atomic operation
 /*!
@@ -215,7 +217,7 @@ typedef struct {
 typedef void (*OSP_CriticalSectionCallback_t)(void);
 
 //! Callback type used for controlling sensor operation (e.g. on/off/sleep control)
-typedef uint16_t (* OSP_SensorControlCallback_t)(SensorControl_t* SensorControlCommand);
+typedef OSP_STATUS_t (* OSP_SensorControlCallback_t)(SensorControl_t* SensorControlCommand);
 
 
 //! describes system wide settings
@@ -231,30 +233,42 @@ typedef struct  {
     TIMECOEFFICIENT TstampConversionToSeconds;   //!< 1 count = this many seconds
     OSP_CriticalSectionCallback_t EnterCritical; //!< callback for entering a critical section of code (i.e. no task switch), NULL if not implemented
     OSP_CriticalSectionCallback_t ExitCritical;  //!< callback for exiting a critical section of code (i.e. task switch ok now), NULL if not implemented
-    OSP_SensorControlCallback_t SensorsControl;  //!< if setup, used to request control of multiple sensors at once
+    OSP_SensorControlCallback_t SensorsControl;  //!< callback (NULL if not used) used to request sensor control (i.e. On/Off, rate, etc...).
 } SystemDescriptor_t;
 
 
-//! called by calibration routines when there is new calibration coefficients that should be written to non-volatile memory.
+//! called by calibration routines when there is new calibration coefficients
+//! available for the registered physical sensor. Typically these coefficients
+//! should be stored in a non-volatile memory and retreive when the system
+//! reboot.
 /*!
- *  \warning SensorHandle can change from run to run. Do store the SensorHandle value into NVM to tag this cal data
+ *  If a generic callback function is used to service multiple sensor types
+ *  then cast the SensorHandle to SensorDescriptor_t to obtain the sensor type.
  *
  *  \param SensorHandle INPUT the sensor this cal data belongs to.
  *  \param CalData      INPUT array of bytes
+ *  \param Size         INPUT size of CalData buffer in bytes.
  *  \param TimeStamp    INPUT timestamp of when this calibration was calculated
  */
-typedef void  (* OSP_WriteCalDataCallback_t)(InputSensorHandle_t SensorHandle, void * CalData, NTTIME TimeStamp);
+typedef void  (* OSP_WriteCalDataCallback_t)(InputSensorHandle_t SensorHandle, void * CalData, uint32_t Size, NTTIME TimeStamp);
 
-//! called by the algorithms to notify the sensor hub that there is a new data item ready
+//! called by the algorithms to notify the sensor hub that there is a new data
+//! available for the subscribed sensor.
 /*!
- *  Cast the pData to the expected result type (e.g. ).  If you have a general callback handler use the 
- *  OutputHandle to lookup what result type this should be cast to.
+ *  If a generic callback function is used for subscribing sensors, then the
+ *  parameter ResultHandle can be used to identify the reporting sensor result.
+ *  Cast the ResultHandle to ResultDescriptor_t type and the SensorType field
+ *  is the reporting sensor type. Then cast the pData using this sensor result
+ *  data structure type to access its sensor data.
  *
- * \warning the data pointed to by pData is only guaranteed to be valid during the lifetime of this callback
- * \param OutputHandle a handle returned from OSP_SubscribeOutputSensor()
- * \param pData the computed value you are interested in.  Cast as appropriate for each result, e.g. TriAxisData for CALIBRATED_GYRO_DATA,
+ * \warning the data pointed to by pData is only valid during the lifetime of
+ * \this callback.
+ *
+ * \param ResultHandle a handle returned from OSP_SubscribeSensorResult()
+ * \param pData the computed value you are interested in.  Cast as appropriate
+ * \      for each result, e.g. Android_CalibratedAccelResultData_t
  */
-typedef void  (* OSP_OutputReadyCallback_t)(OutputSensorHandle_t OutputHandle, void* pData);
+typedef void  (* OSP_ResultReadyCallback_t)(ResultHandle_t ResultHandle, void* pData);
 
 
 //! describes either a physical or logical sensor and its configuration
@@ -263,57 +277,81 @@ typedef void  (* OSP_OutputReadyCallback_t)(OutputSensorHandle_t OutputHandle, v
  * data is converted are applied in the order of AxisMapping, ConversionOffset, and ConversionScale.
  * Allows conversion from LHS sensor to RHS sensor hub system.
  * Must re-register sensors to change orientation.
- * Sensor conversions convert native binary format into units dictated by DataConvention.
- * There is no callback for the library to read calibration. The sensor hub must read its calibration
-   from NVM before registering/re-registering this sensor. If there is no stored calibration data available,
-   pass a NULL.
-  When the the Open-Sensor-Platform library has computed new calibration data, it will update the data structure and call
-  pOptionalWriteDataCallback(), if it is available, so that the sensor hub can store the updated calibration data to NVM.
+
+ * Sensor conversions convert native binary format into the following units:
+      - Accelerometer        - Units are in m/sec/sec
+      - Magnetic field       - Units are in uT
+      - Gyroscope            - Units are in radians/sec
+      - Pressure             - Units are in hPa
+      - Temperature          - Units are in degrees Celsius
+      - Light (Illumination) - Units are in lux
+      - Proximity            - Units are in cm
+      - Relative Humidity    - Units are in Percent R.H. (%RH)
+
+ * There is no callback for the library to read stored calibration parameters for
+   each of the physical sensors Accel, Gyro and Mag. The sensor hub is responsible
+   to read these calibrations from NVM before registering/re-registering this
+   sensor. If there is no stored calibration data available on the sensor hub,
+   then pass a NULL value for the field pCalibrationData.
+   When the fusion library computed a new calibration data, it will update the
+   data structure and call the function pointer pOptionalWriteDataCallback() if
+   it is not a NULL pointer.  Sensor hub is responsible to store the updated
+   calibration data to NVM.
 */
 
 typedef struct  {
-    SensorType_t SensorType;                    //!< accelerometer, gyro, etc
-    SensorDataConvention_t DataConvention;      //!< none, Android, Win8, etc,...
-    OSP_OutputReadyCallback_t pOutputReadyCallback; //!<  called only when a new output result is ready (usually NULL for input sensors)
-    OSP_WriteCalDataCallback_t pOptionalWriteCalDataCallback; //!<  called when calibration data is ready to write to NVM (NULL if not used)
-    OSP_SensorControlCallback_t pOptionalSensorControlCallback; //!< Optional callback (NULL if not used) to request sensor control (on/off, low rate, etc...)
-    NTEXTENDED OutputDataRatesHz[4];            //!< for output sensor: desired output data rate in element 0; for input sensor: low to high list rates this sensor can operate at: e.g. 5Hz, 50Hz, 100Hz, 200Hz
-    uint16_t Flags;                             //!< defined on a per sensor type basis
-    void* pSensorSpecificData;                  //!< used in conjunction with Flags
+    InputSensor_t SensorType;                   //!< physical sensor accel, gyro, etc input to fusion algorithm
+    char* SensorName;                           //!< short human readable description, Null terminated
+    uint32_t DataWidthMask;                     //!< how much of the data word that is sent significant
+    AxisMapType_t AxisMapping[3];               //!< e.g. use to switch from left handed sensor to right handed system  or swap X and Y axes of a two axis sensor
+    int32_t ConversionOffset[3];                //!< an offset for X,Y & Z to compensate for sensor origin (0,0,0)
+    NTPRECISE ConversionScale[3];               //!< multipliers to convert the raw sensor data into physical unit ( e.g. m/s^2 for accel).
+    NTEXTENDED MaxValue;                        //!< in engineering units. i.e. a +/- 2000 dps gyro would have a max value of 34.907 rad/sec
+    NTEXTENDED MinValue;                        //!< in engineering units. i.e. a +/- 2000 dps gyro would have a min value of -34.907 rad/sec
+    void * pCalibrationData;                    //!< pointer to stored sensor calibration data (can be NULL if no store calibration is implemented )
+    OSP_WriteCalDataCallback_t pOptionalWriteDataCallback; //!< this routine will be called when new cal data is ready to write to NVM (NULL if not used)
+    NTPRECISE Noise[3];                         //!< noise based on Power Spectral Density test results
+    NTPRECISE NominalSamplePeriodInSeconds;     //!< rate in which data is sent to the library (for accel, 50Hz and 100 Hz are the only supported rates)
+    NTPRECISE factoryskr[3][3];                 //!< linear factory cal, default is {{TOFIX_PRECISE(1.0f),0,0},{0,TOFIX_PRECISE(1.0f),0},{0,0,TOFIX_PRECISE(1.0f)}
+    int32_t   factoryoffset[3];                 //!< linear factory cal, default is {0,0,0}
+    NTPRECISE biasStability[3];                 //!< how badly the bias wanders in time,
+                                                //!< default to {0,0,0} for mag and accel
+                                                //!< default for gyro is {TOFIX_PRECISE(DEFAULT_GYRO_BIAS_STABILITY),
+                                                //!< TOFIX_PRECISE(DEFAULT_GYRO_BIAS_STABILITY),TOFIX_PRECISE(DEFAULT_GYRO_BIAS_STABILITY)}
+                                                //!< set DEFAULT_GYRO_BIAS_STABILITY to 5e-3 for a poor performing gyro such as the Panasonic
+    NTPRECISE repeatability[3];                 //!< bias repeatability, in sensor units.  Default is {0,0,0}.
+    NT tempco[3][2];                            //!< 2 temperature coefficients on each axis.  Default is {{0,0},{0,0},{0,0}}
+    NT shake[3];                                //!< susceptability to shaking.  Default to 0.
+                                                //!< Poorer performing gyroscopes such as the ST gyroscope
+                                                //!< should get a value of {TOFIX(0.0085f),TOFIX(0.0085f),TOFIX(0.0085f)}
+
+    NTEXTENDED expectednorm;                    //!< TOFIX_EXTENDED(EXPECTED_MAG_NORM)  for magnetometer,
+                                                //!< TOFIX_EXTENDED(9.805f) for accel,
+                                                //!< and 0 for gyro
+
+    void* ptrSensorSpecificData;                //!< used in conjunction with Flags
 } SensorDescriptor_t;
 
-//! detailed data describing an input sensor, passed through pSensorSpecificData in a SensorDescriptor_t
-typedef struct {
-    uint32_t DataWidthMask;                     //!< how much of the data word that is sent significant
-    AxisMapType_t AxisMapping[3];               //!< swap or flip axes as necessary before conversion
-    int32_t ConversionOffset[3];                //!< offset of incoming data before data is scaled
-    NTPRECISE ConversionScale[3];               //!< conversion from raw to dimensional units based on data convention e.g. 9.81/1024,  200dps/count
-    NTEXTENDED MaxValue;                        //!< max value possible after conversion
-    NTEXTENDED MinValue;                        //!< min value possible after conversion
-    NTPRECISE Noise[3];                         //!< sensor noise based on Power Spectral Density in conversion units per sqrt(Hz)
-    void * pCalibrationData;                    //!< a per sensor calibration data structure (can be NULL if not needed)
-    char* SensorName;                           //!< short human readable description, Null terminated
-    uint32_t VendorId;                          //!< sensor vendor ID, as assigned by OSP
-    uint32_t ProdId;                            //!< sensor product ID, as defined by each vendor
-    uint32_t Version;                           //!< sensor version, as defined by each vendor
-    uint32_t PlatformId;                        //!< platform ID, as defined by each vendor
-    NTPRECISE xyzPositionFromPlatformOrigin[3]; //!< in meters (NTPRECISE gives us sub-micron resolution)
-} InputSensorSpecificData_t;
 
-//! use to send raw sensor data from a driver into this API
-/*!
- *  \note even if you have single axis or 2 axis data this is the type to use
- */
+//! Use to configure format and notifications when requesting a sensor fusion result via OSP_SubscribeResult()
 typedef struct  {
-    uint32_t TimeStamp;                         //!< Raw time stamp
-    int32_t Data[3];                            //!< Raw sensor data
-} TriAxisSensorRawData_t;
+    ASensorType_t SensorType;                        //!<  sensor type from either the ASensorType_t or PSensorType_t list
+    OSP_ResultReadyCallback_t pResultReadyCallback; //!<  Callback function when new result is ready
+    NTPRECISE OutputRateInSeconds;              //!<  0 = Output ASAP when new data is available
+    NTPRECISE NotifySensitivityPositive;        //!<  positive change sensitivity, plus and minus allows asymmetry, but does not require it
+    NTPRECISE NotifySensitivityNegative;        //!<  negative change sensitivity
+    uint16_t OptionFlags;                       //!<  defined on a result specific basis
+    void* OptionData;                           //!<  used in conjunction with Flags
+} ResultDescriptor_t;
 
 
-//! numeric and string formated version data, used with OSP_GetVersion()  
+
+
+//! numeric and string formated version data, used with OSP_GetLibraryVersion()
 typedef struct  {
     uint32_t VersionNumber;                     //!< x.x.x.x one byte for major, minor, bugfix, and stamp
     char *VersionString;                        //!< Human readable null terminated string
+    char *buildTime;                            //!< Build date and time string (null terminated)
 } OSP_Library_Version_t;
 
 
@@ -329,133 +367,182 @@ typedef struct  {
  |    A P I   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 
-//! Call immediately at startup to initialize the Open-Sensor-Platform Library and inform it of system characteristics
+//! Call immediately at startup to initialize the Open-Sensor-Platform algorithm
+//! library and inform it of system characteristics
 /*!
-*  It is imperative to call this at cold boot, or after any time RAM has been lost, and before calling anything else.
+*  It is imperative to call this at cold boot, or after any time RAM has been
+*  lost, and before calling anything else.
 *
 *  Does internal initializations that the library requires.
 *
-*  \param pSystemDesc - INPUT pointer to a struct that describes things like time tick conversion value. This must not change
-*         but may reside in read only memory.
+*  \param pSystemDescriptor - INPUT pointer to a struct that describes things like
+*         time tick conversion value. This must not change but may reside in read
+*         only memory.
 *
 *  \return status as specified in OSP_Types.h
 */
-osp_status_t     OSP_Initialize(const SystemDescriptor_t* pSystemDesc);
 
+OSP_STATUS_t     OSP_Initialize(const SystemDescriptor_t* pSystemDesc);
 
-//! Call at startup for each physical sensor in the system that will feed data into OSP
+//! Call at startup for each input sensor in the system that will feed data
+//! into OSP
 /*!
- *  Tells the Open-Sensor-Platform Library what kind of sensor inputs it has to work with so its Resource Manager
- *  can choose the most appropriate algorithms to execute.
+ *  Tells the Open-Sensor-Platform Library what kind of sensor inputs it has to
+ *  work with so its Resource Manager can choose the most appropriate algorithms
+ *  to execute.
  *
- *  In a standard sensorhub use case input sensors are registered once.
- *  In a convertible tablet use case where a sensor's physical location changes, this will be called as the physical placement changes.
+ *  In a standard sensor hub use case input sensors are registered once.
+ *  In a convertible tablet use case where a sensor's physical location changes,
+ *  this will be called as the physical placement changes.
  *
- *  \note it is not necessary to register/unregister input sensors when the host requests a change in output data rate.  
+ *  \note it is not necessary to register/unregister input sensors when the host
+ *      requests a change in output data rate.
  *
- *  \warning the caller must preserve the data pointed to by pSensorDescriptor after this call
+ *  \warning the caller must preserve the data pointed to by pSensorDescriptor
+ *      after this call
  *
- *  \param pSensorDescriptor INPUT pointer to data which describes all the details of this sensor and its
- *      current operating mode; e.g. sensor type, SI unit conversion factor
- *  \param pReturnedHandle OUTPUT a handle to use when feeding data in via OSP_SetData()
+ *  \param pSensorDescriptor INPUT pointer to data which describes all the
+ *      details of this sensor and its current operating mode; e.g. sensor type,
+ *      SI unit conversion factor
+ *  \param pReturnedHandle OUTPUT a handle to use when feeding data in via
+ *      OSP_SetInputData()
  *
  *  \return status as specified in OSP_Types.h
 */
-osp_status_t     OSP_RegisterInputSensor(SensorDescriptor_t *pSensorDescriptor, InputSensorHandle_t *pReturnedHandle);
+OSP_STATUS_t     OSP_RegisterInputSensor(SensorDescriptor_t *pSensorDescriptor,
+                     InputSensorHandle_t *pReturnedHandle);
 
-//! Call to remove an sensor from OSP's known set of inputs
+//! use to change a sensors operating mode (output rate, position, etc...)
 /*!
- *  In a standard sensorhub use case input sensors are registered once this API is not needed.
- *  In a convertible tablet use case where a sensor's physical location changes, this will be called as the physical placement changes.
+ *  Tells the Fusion Library to use this sensor instead of the previously
+ *  registered sensor of the same type
  *
- *  \note it is not necessary to register/unregister input sensors when the host requests a change in output data rate.  
+ *  Use Case: Standard Sensor Hub
+ *     - after a change request interval/setDelay command from the host, create
+ *       a new sensor descriptor with the updated sensor data rate and pass it
+ *       OSP_ReplaceSensor()
  *
- *  \param handle INPUT a handle to the input sensor you want to unregister
- *  \return status as specified in OSP_Types.h
- */
-osp_status_t     OSP_UnregisterInputSensor(InputSensorHandle_t handle);
+ *  Use Case: Transformer Ultra Book
+ *     - when the host detects a change in device configuration (Tablet Mode -->
+ *       Laptop Mode) which could change sensor position (e.g. sensors in screen
+ *       have been rotated 180 degrees) or sensor environment (e.g. screen now
+ *       interferes with magnetometer)
+ *
+ *  \warning the caller must preserve the data pointed to by pSensorDescriptor
+ *       after this call
+ *
+ *  \param pSensorDescriptor IN pointer to data which describes all the details
+ *      of the new sensor and its current operating mode; e.g. sensor type, SI
+ *      unit conversion factor
+*/
+OSP_STATUS_t     OSP_ReplaceInputSensor(SensorDescriptor_t *pSensorDescriptor,
+                    InputSensorHandle_t *pSensorHandle);
 
-
-//! queues sensor data which will be processed by OSP_DoForegroundProcessing() and OSP_DoBackgroundProcessing()
+//! queues sensor data which will be processed by OSP_DoForegroundProcessing()
+//! and OSP_DoBackgroundProcessing()
 /*!
  *
- *  Queuing data for un-registered sensors (or as sensors that). 
- *  Queue size defaults to 8, though is implementation dependent and available via SENSOR_FG_DATA_Q_SIZE.
+ *  Queuing data for un-registered sensors (or as sensors that).
+ *  Queue size defaults to 8, though is implementation dependent and available
+ *  via SENSOR_FG_DATA_Q_SIZE.
  *
- *  \param sensorHandle INPUT requires a valid handle as returned by OSP_RegisterInputSensor()
+ *  \param sensorHandle INPUT requires a valid handle as returned by
+ *      OSP_RegisterInputSensor()
  *  \param data INPUT pointer to timestamped raw sensor data
  *
- *  \return status. Will always be OSP_STATUS_OK. If there is no room in the queue,
- *   The last data will be overwritten and a warning will be triggered if you subscribe to RESULT_WARNING
+ *  \return status. OSP_STATUS_OK if no error.
 */
-osp_status_t     OSP_SetData(InputSensorHandle_t sensorHandle, TriAxisSensorRawData_t *data);
+OSP_STATUS_t     OSP_SetInputData(InputSensorHandle_t SensorHandle, OSP_InputSensorData_t *data);
 
 
 //! triggers computation for primary algorithms  e.g ROTATION_VECTOR
 /*!
- *  Separating OSP_DoForegroundProcessing and OSP_DoBackgroundProcessing calls allows for computation to happen in different thread contexts
+ *  Separating OSP_DoForegroundProcessing and OSP_DoBackgroundProcessing calls
+ *  allows for computation to happen in different thread contexts
  *  - Call at least as often as your fastest registered result output rate
- *  - Call from a medium priority task to ensure computation happens in a reasonable time
- *  
- *  Guideline: the foreground task should not compute for more than 10ms on any platform
+ *  - Call from a medium priority task to ensure computation happens in a
+ *    reasonable time
  *
- *  \note What algorithms get computed in the foreground versus the background are implementation dependent
+ *  Guideline: the foreground task should not compute for more than 10ms on any
+ *             platform
+ *
+ *  \note What algorithms get computed in the foreground versus the background
+ *    are implementation dependent
  *
  *  \return status as specified in OSP_Types.h
 */
-osp_status_t     OSP_DoForegroundProcessing(void);
+OSP_STATUS_t     OSP_DoForegroundProcessing(void);
 
 
-//! triggers computation for less time critical background algorithms, e.g. sensor calibration
+//! triggers computation for less time critical background algorithms, e.g.
+//! sensor calibration
 /*!
- *  Separating OSP_DoForegroundProcessing and OSP_DoBackgroundProcessing calls allows for computation to happen in different thread contexts
+ *  Separating OSP_DoForegroundProcessing() and OSP_DoBackgroundProcessing()
+ *  calls allows for computation to happen in different thread contexts
  *  - Call at least as often as your slowest registered sensor input
- *  - Call from the lowest priority task to ensure that more time critical functions can happen.
+ *  - Call from the lowest priority task to ensure that more time critical
+ *    functions can happen.
  *
- *  \warning may execute for tens of milliseconds (depending on clock rate and results chosen)
- *  \note What algorithms get computed in the foreground versus the background are implementation dependent
+ *  \warning may execute for tens of milliseconds (depending on clock rate and
+ *      results chosen)
+ *  \note What algorithms get computed in the foreground versus the background
+ *      are implementation dependent
  *
  *  \return status as specified in OSP_Types.h
  */
-osp_status_t     OSP_DoBackgroundProcessing(void);
+OSP_STATUS_t     OSP_DoBackgroundProcessing(void);
 
-//! call for each Open-Sensor-Platform result (STEP_COUNT, ROTATION_VECTOR, etc) you want computed and output
+//! call for each Open-Sensor-Platform result (STEP_COUNT, ROTATION_VECTOR, etc)
+//! you want computed and output
 /*!
  *  Use Case: Standard Sensor Hub
- *     - after each enable or setDelay command from the host, create a new descriptor with
- *       the desired result type and output data rate and pass it to OSP_SubscribeOutputSensor()
- *     
+ *  - after each enable or setDelay command from the host, create a new
+ *    descriptor with the desired sensor type result and output data rate and
+ *    pass it to OSP_SubscribeSensorResult()
  *
  *  Use Case: Sensor augmented GPS + Android Sensor Hub
- *     - as GPS requires it, create result descriptors requesting RESULT_UNCALIBRATED_ACCELEROMETER, 
- *       RESULT_UNCALIBRATED_MAGNETOMETER, RESULT_UNCALIBRATED_GYROSCOPE
- *     - as host requests come in, create result descriptors per a standard Sensor Hub
+ *     - as GPS requires it, create result descriptors requesting
+ *       SENSOR_ACCELEROMETER, SENSOR_MAGNETOMETER, SENSOR_GYROSCOPE
+ *     - as host requests come in, create result descriptors per a standard
+ *       Sensor Hub
  *
+ *  \sa OSP_SubscribeSensorResult
  *
- *  \sa OSP_UnsubscribeOutputSensor
+ *  \param pResultDescriptor INPUT pointer to data which describes the details of
+ *        how the fusion should be computed: e.g output rate, sensors to use, etc.
  *
- *  \param pSensorDescriptor INPUT pointer to data which describes the details of how the fusion should be
- *         computed: e.g output rate, sensors to use, etc.
- *  \param pOutputHandle OUTPUT a handle to be used for OSP_UnsubscribeOutputSensor()
+ *  \param pResultHandle OUTPUT a handle to be used for OSP_UnsubscribeSensorResult()
  *
- *  \return status as specified in OSP_Types.h. OSP_UNSUPPORTED_FEATURE for results that aren't available or licensed
+ *  \return status as specified in OSP_Types.h. OSP_UNSUPPORTED_FEATURE for
+ *          results that aren't available or licensed
  */
-osp_status_t     OSP_SubscribeOutputSensor(SensorDescriptor_t *pSensorDescriptor, OutputSensorHandle_t *pOutputHandle);
-
+OSP_STATUS_t     OSP_SubscribeSensorResult(ResultDescriptor_t *pResultDescriptor,
+                       ResultHandle_t *pResultHandle);
 
 //! stops the chain of computation for a registered result
 /*!
  *  Use Case: Standard Sensor Hub
  *      - assume you are currently subscribed to ROTATION_VECTOR at 100Hz
  *      - a change request interval from the host for ROTATION_VECTOR at 50Hz
- *      - call OSP_UnsubscribeOutputSensor with the current result handle
- *      - modify the descriptor with the 50Hz output data rate and pass it to OSP_SubscribeOutputSensor()
+ *      - call OSP_UnsubscribeSensorResult() with the current result handle
+ *      - modify the descriptor with the 50Hz output data rate and pass it to
+ *        OSP_SubscribeSensorResult()
  *
- *  \param OutputHandle INPUT OutputSensorHandle_t that was received from OSP_SubscribeOutputSensor()
+ *  \param ResultHandle INPUT that was received from OSP_SubscribeSensorResult()
  *
  *  \return status as specified in OSP_Types.h
  */
-osp_status_t     OSP_UnsubscribeOutputSensor(OutputSensorHandle_t OutputHandle);
+OSP_STATUS_t     OSP_UnsubscribeSensorResult(ResultHandle_t ResultHandle);
+
+//! To enable customization of the calibration module in the
+//! algorithm library. If the calibration module does not require any
+//! customization then it should implement just a skeleton function.
+/*
+ *  \param config setting
+ *
+ * \return OSP_STATUS_OK
+ */
+OSP_STATUS_t     OSP_SetCalibrationConfig( uint32_t config );
 
 //! provides version number and version string of the library implementation
 /*!
@@ -464,7 +551,7 @@ osp_status_t     OSP_UnsubscribeOutputSensor(OutputSensorHandle_t OutputHandle);
  *
  *  \return status as specified in OSP_Types.h
  */
-osp_status_t     OSP_GetVersion(const OSP_Library_Version_t **pVersionStruct);
+OSP_STATUS_t     OSP_GetLibraryVersion(const OSP_Library_Version_t **ppVersionStruct);
 
 
 #ifdef __cplusplus
@@ -472,7 +559,6 @@ osp_status_t     OSP_GetVersion(const OSP_Library_Version_t **pVersionStruct);
 #endif
 
 #endif // OSP_API_H__
-
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/

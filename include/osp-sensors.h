@@ -18,126 +18,229 @@
 #if !defined (OSP_SENSORS_H)
 #define   OSP_SENSORS_H
 
+/* This file is meant to provide a common definition of sensor related enumerations/defines and
+ * generally should not depend on any other includes
+ */
+
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
-  /* This file is meant to provide a common definition of sensor related enumerations/defines and
-   * generally should not depend on any other includes
-   */
+#include <stdint.h>
+
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
+#define SENSOR_SUBTYPE_UNUSED               0   //!< Subtype is not used for the sensor type
+#define SENSOR_SUBTYPE_START                1   //!< Subtype enumeration starts with 1
+#define SENSOR_DEVICE_PRIVATE_BASE          0x10000 //!< Android defined private sensor type base
+
+#define M_PSensorToAndroidBase(type)        ((type) | SENSOR_DEVICE_PRIVATE_BASE)
+#define M_AndroidToPSensorBase(type)        ( type & 0xFFFF)
 
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-//! use to specify the kind of sensor input or output 
-/*! 
- * \sa OSP_RegisterInputSensor
- * \sa OSP_SubscribeOutputSensor
+//! use to specify the kind of sensor output result
+/*!
+ * \sa OSP_SubscribeSensorResult
  *
  *  Final units of input/outputs are defined by the sensor data convention field of the sensor descriptor.
  *  Flags in the descriptor specify if sensor is calibrated/uncalibrated and/or used as input
  *  If a sensor type not is supported by the library implementation, an error will be returned on its usage
  */
-typedef enum {
-    SENSOR_MESSAGE                         =  0, //!< warnings from the library: e.g. excessive timestamp jitter, need calibration
-    SENSOR_ACCELEROMETER_UNCALIBRATED      =  1, //!< calibrated accelerometer data
-    SENSOR_ACCELEROMETER_CALIBRATED        =  2, //!< uncalibrated accelerometer data
-    SENSOR_MAGNETIC_FIELD_UNCALIBRATED     =  3, //!< calibrated magnetometer data
-    SENSOR_MAGNETIC_FIELD_CALIBRATED       =  4, //!< uncalibrated magnetometer data
-    SENSOR_GYROSCOPE_UNCALIBRATED          =  5, //!< calibrated gyroscope data
-    SENSOR_GYROSCOPE_CALIBRATED            =  6, //!< uncalibrated gyroscope data
-    SENSOR_LIGHT                           =  7, //!< light data
-    SENSOR_PRESSURE                        =  8, //!< barometer pressure data
-    SENSOR_PROXIMITY                       =  9, //!< proximity data
-    SENSOR_RELATIVE_HUMIDITY               = 10, //!< relative humidity data
-    SENSOR_AMBIENT_TEMPERATURE             = 11, //!< ambient temperature data
-    SENSOR_GRAVITY                         = 12, //!< gravity part of acceleration in body frame 
-    SENSOR_LINEAR_ACCELERATION             = 13, //!< dynamic acceleration 
-    SENSOR_ORIENTATION                     = 14, //!< yaw, pitch, roll (also use this for Win8 Inclinometer)
-    SENSOR_AUG_REALITY_COMPASS             = 15, //!< heading which switches to aug-reality mode when camera towards horizon (Win8 compass)
-    SENSOR_ROTATION_VECTOR                 = 16, //!< accel+mag+gyro quaternion
-    SENSOR_GEOMAGNETIC_ROTATION_VECTOR     = 17, //!< accel+mag quaternion
-    SENSOR_GAME_ROTATION_VECTOR            = 18, //!< accel+gyro quaternion
-    SENSOR_VIRTUAL_GYROSCOPE               = 19, //!< virtual gyroscope data from accel+mag
-    SENSOR_STEP_DETECTOR                   = 20, //!< precise time a step occured
-    SENSOR_STEP_COUNTER                    = 21, //!< count of steps
-    SENSOR_CONTEXT_DEVICE_MOTION           = 22, //!< context of device relative to world frame
-    SENSOR_CONTEXT_CARRY                   = 23, //!< context of device relative to user
-    SENSOR_CONTEXT_POSTURE                 = 24, //!< context of user relative to world frame
-    SENSOR_CONTEXT_TRANSPORT               = 25, //!< context of environment relative to world frame
-    SENSOR_CONTEXT_CHANGE_DETECTOR         = 26, //!< low compute trigger for seeing if context may have changed
-    SENSOR_STEP_SEGMENT_DETECTOR           = 27, //!< low compute trigger for analyzing if step may have occured
-    SENSOR_GESTURE_EVENT                   = 28, //!< gesture event such as a double-tap or shake
-    SENSOR_RGB_LIGHT                       = 29, //!< RGB light data
-    SENSOR_UV_LIGHT                        = 30, //!< UV light data
-    SENSOR_HEART_RATE                      = 31, //!< heart-rate data
-    SENSOR_ENUM_COUNT
-} SensorType_t ;
+/* Android sensor types - this should match the defines/enumeration in Android's sensors.h */
+/* Note that these are defined as SENSOR_ instead of SENSOR_TYPE_ to avoid clash with Android defines in
+ * situations where this header in included for packet processing in Sensor HAL
+ */
+typedef enum _ASensorType {
+    SENSOR_META_DATA                        = 0,
+    SENSOR_ACCELEROMETER                    = 1,
+    SENSOR_GEOMAGNETIC_FIELD                = 2,
+    SENSOR_MAGNETIC_FIELD                   = SENSOR_GEOMAGNETIC_FIELD,
+    SENSOR_ORIENTATION                      = 3,
+    SENSOR_GYROSCOPE                        = 4,
+    SENSOR_LIGHT                            = 5,
+    SENSOR_PRESSURE                         = 6,
+    SENSOR_TEMPERATURE                      = 7,
+    SENSOR_PROXIMITY                        = 8,
+    SENSOR_GRAVITY                          = 9,
+    SENSOR_LINEAR_ACCELERATION              = 10,
+    SENSOR_ROTATION_VECTOR                  = 11,
+    SENSOR_RELATIVE_HUMIDITY                = 12,
+    SENSOR_AMBIENT_TEMPERATURE              = 13,
+    SENSOR_MAGNETIC_FIELD_UNCALIBRATED      = 14,
+    SENSOR_GAME_ROTATION_VECTOR             = 15,
+    SENSOR_GYROSCOPE_UNCALIBRATED           = 16,
+    SENSOR_SIGNIFICANT_MOTION               = 17,
+    SENSOR_STEP_DETECTOR                    = 18,
+    SENSOR_STEP_COUNTER                     = 19,
+    SENSOR_GEOMAGNETIC_ROTATION_VECTOR      = 20,
+    SENSOR_HEART_RATE                       = 21,
+    SENSOR_WAKE_UP_TILT_DETECTOR            = 22,
+    SENSOR_TILT_DETECTOR                    = 23,
+    SENSOR_WAKE_GESTURE                     = 24,
+    SENSOR_GLANCE_GESTURE                   = 25,
+    SENSOR_PICK_UP_GESTURE                  = 26,
 
-//! Use these enums as indices into the probability vector of a ContextOutputData_t in a CONTEXT_DEVICE_MOTION result callback
-typedef enum {
-    CONTEXT_DEVICE_MOTION_STILL                 = 0,
-    CONTEXT_DEVICE_MOTION_ACCELERATING          = 1,
-    CONTEXT_DEVICE_MOTION_ROTATING              = 2,
-    CONTEXT_DEIVCE_MOTION_TRANSLATING           = 3,
-    CONTEXT_DEVICE_MOTION_FREE_FALLING          = 4,
-    CONTEXT_DEVICE_MOTION_SIGNIFICANT_MOTION    = 5, //!< significant motion (as specified by Android HAL 1.0)
-    CONTEXT_DEVICE_MOTION_SIGNIFICANT_STILLNESS = 6, //!< complement to significant motion
-    CONTEXT_DEVICE_MOTION_ENUM_COUNT
-} ContextMotionType_t;
+    NUM_ANDROID_SENSOR_TYPE,                      //!< Total number of Android sensor type
 
-//! Use these enums as indices into the probability vector of a ContextOutputData_t in a CONTEXT_POSTURE result callback
-typedef enum {
-    CONTEXT_POSTURE_WALKING     = 0,
-    CONTEXT_POSTURE_STANDING    = 1,
-    CONTEXT_POSTURE_SITTING     = 2,
-    CONTEXT_POSTURE_JOGGING     = 3,
-    CONTEXT_POSTURE_RUNNING     = 4,
-    CONTEXT_POSTURE_ENUM_COUNT
-} ContextPostureType_t;
+    /* Private Sensor types (translates to Android SENSOR_TYPE_DEVICE_PRIVATE_BASE start) */
 
-//! Use these enums as indices into the probability vector of a ContextOutputData_t in a CONTEXT_CARRY result callback
-typedef enum {
-    CONTEXT_CARRY_IN_POCKET     = 0,
-    CONTEXT_CARRY_IN_HAND       = 1,
-    CONTEXT_CARRY_NOT_ON_PERSON = 2,
-    CONTEXT_CARRY_IN_HAND_FRONT = 3,
-    CONTEXT_CARRY_IN_HAND_SIDE  = 4,
-    CONTEXT_CARRY_ENUM_COUNT
-} ContextCarryType_t;
+    PSENSOR_ENUM_FIRST_SENSOR                =  NUM_ANDROID_SENSOR_TYPE,
 
-//! Use these enums as indices into the probability vector of a ContextOutputData_t in a CONTEXT_TRANSPORT result callback
-typedef enum {
-    CONTEXT_TRANSPORT_VEHICLE        = 0,
-    CONTEXT_TRANSPORT_CAR            = 1,
-    CONTEXT_TRANSPORT_TRAIN          = 2,
-    CONTEXT_TRANSPORT_AIRPLANE       = 3,
-    CONTEXT_TRANSPORT_UP_STAIRS      = 4,
-    CONTEXT_TRANSPORT_DOWN_STAIRS    = 5,
-    CONTEXT_TRANSPORT_UP_ELEVATOR    = 6,
-    CONTEXT_TRANSPORT_DOWN_ELEVATOR  = 7,
-    CONTEXT_TRANSPORT_UP_ESCALATOR   = 8,
-    CONTEXT_TRANSPORT_DOWN_ESCALATOR = 9,
-    CONTEXT_TRANSPORT_MOVING_WALKWAY = 10,
-    CONTEXT_TRANSPORT_ON_BIKE        = 11,
-    CONTEXT_TRANSPORT_ENUM_COUNT
-} ContextTransportType_t;
+    PSENSOR_DEBUG_TUNNEL                     =  PSENSOR_ENUM_FIRST_SENSOR, //!< Debug message pipe to host
+    PSENSOR_ACCELEROMETER_RAW,              //!< raw accelerometer data (direct from sensor)
+    PSENSOR_MAGNETIC_FIELD_RAW ,            //!< magnetometer data (direct from sensor)
+    PSENSOR_GYROSCOPE_RAW,                  //!< calibrated gyroscope data (direct from sensor)
+    PSENSOR_LIGHT_UV,                       //!< UV light sensor data (Android Units)
+    PSENSOR_LIGHT_RGB,                      //!< RGB light sensor data (Android Units)
+    PSENSOR_STEP,                           //!< step data
+    PSENSOR_ACCELEROMETER_UNCALIBRATED,     //!< uncalibrated accelerometer data (Android Units)
+    PSENSOR_ORIENTATION,                    //!< yaw, pitch, roll (also use this for Win8 Inclinometer)
+    PSENSOR_MOTION_SIGNIFICANT_STILLNESS,   //!< Significant stillness detected
+    PSENSOR_CONTEXT_DEVICE_MOTION,          //!< context of device relative to world frame
+    PSENSOR_CONTEXT_CARRY,                  //!< context of device relative to user
+    PSENSOR_CONTEXT_POSTURE,                //!< context of user relative to world frame
+    PSENSOR_CONTEXT_TRANSPORT,              //!< context of environment relative to world frame
+    PSENSOR_CONTEXT_GESTURE_EVENT,          //!< gesture event such as a double-tap or shake
+    PSENSOR_HEART_RATE,                     //!< heart-rate data
+    PSENSOR_CONTEXT_SEGMENT_DETECTOR,       //!< Intermediate results for context calculations
+    SYSTEM_REAL_TIME_CLOCK,                 //!< Real time clock used for time stamp
+    PSENSOR_MAGNETIC_FIELD_ANOMALY,         //!< Indication for magnetic field anomaly detected
 
-//! Use these enums as indices into the probability vector of a ContextOutputData_t in a STEP result callback
-typedef enum {
-    CONTEXT_STEP = 0,              //!< only one kind of step now
-    CONTEXT_STEP_ENUM_COUNT
-} ContextStepType_t;
+    NUM_SENSOR_TYPE,                        //!< Total number of sensor type
+    NUM_PRIVATE_SENSOR_TYPE = ( NUM_SENSOR_TYPE - NUM_ANDROID_SENSOR_TYPE ),    //!< Total number of Private sensor type
 
-//! Use these enums as indices into the probability vector of a GestureEventOutputData_t in a GESTURE_EVENT result callback
-typedef enum {
-    GESTURE_TAP         = 0,
-    GESTURE_DOUBLE_TAP  = 1,
-    GESTURE_SHAKE       = 2,
-    GESTURE_ENUM_COUNT
-} GestureType_t;
+    AP_PSENSOR_DEBUG_TUNNEL                 =  M_PSensorToAndroidBase(PSENSOR_DEBUG_TUNNEL),
+    AP_PSENSOR_ACCELEROMETER_RAW            =  M_PSensorToAndroidBase(PSENSOR_ACCELEROMETER_RAW),
+    AP_PSENSOR_MAGNETIC_FIELD_RAW           =  M_PSensorToAndroidBase(PSENSOR_MAGNETIC_FIELD_RAW),
+    AP_PSENSOR_GYROSCOPE_RAW                =  M_PSensorToAndroidBase(PSENSOR_GYROSCOPE_RAW),
+    AP_PSENSOR_LIGHT_UV                     =  M_PSensorToAndroidBase(PSENSOR_LIGHT_UV),
+    AP_PSENSOR_LIGHT_RGB                    =  M_PSensorToAndroidBase(PSENSOR_LIGHT_RGB),
+    AP_PSENSOR_STEP                         =  M_PSensorToAndroidBase(PSENSOR_STEP),
+    AP_PSENSOR_ACCELEROMETER_UNCALIBRATED   =  M_PSensorToAndroidBase(PSENSOR_ACCELEROMETER_UNCALIBRATED),
+    AP_PSENSOR_ORIENTATION                  =  M_PSensorToAndroidBase(PSENSOR_ORIENTATION),
+    AP_PSENSOR_MOTION_SIGNIFICANT_STILLNESS =  M_PSensorToAndroidBase(PSENSOR_MOTION_SIGNIFICANT_STILLNESS),
+    AP_PSENSOR_CONTEXT_DEVICE_MOTION        =  M_PSensorToAndroidBase(PSENSOR_CONTEXT_DEVICE_MOTION),
+    AP_PSENSOR_CONTEXT_CARRY                =  M_PSensorToAndroidBase(PSENSOR_CONTEXT_CARRY),
+    AP_PSENSOR_CONTEXT_POSTURE              =  M_PSensorToAndroidBase(PSENSOR_CONTEXT_POSTURE),
+    AP_PSENSOR_CONTEXT_TRANSPORT            =  M_PSensorToAndroidBase(PSENSOR_CONTEXT_TRANSPORT),
+    AP_PSENSOR_CONTEXT_GESTURE_EVENT        =  M_PSensorToAndroidBase(PSENSOR_CONTEXT_GESTURE_EVENT),
+    AP_PSENSOR_HEART_RATE                   =  M_PSensorToAndroidBase(PSENSOR_HEART_RATE),
+    AP_PSENSOR_CONTEXT_SEGMENT_DETECTOR     =  M_PSensorToAndroidBase(PSENSOR_CONTEXT_SEGMENT_DETECTOR),
+    AP_SYSTEM_REAL_TIME_CLOCK               =  M_PSensorToAndroidBase(SYSTEM_REAL_TIME_CLOCK),
+    AP_PSENSOR_MAG_FIELD_ANOMALY            =  M_PSensorToAndroidBase(PSENSOR_MAGNETIC_FIELD_ANOMALY),
+
+} ASensorType_t;
+
+
+
+/* Sensor Parameter Identifiers */
+typedef enum _SensorParamId {
+    SENSOR_PARAM_ERROR_CODE                 = 0, //!< Used to convey error code instead of parameter value
+    SENSOR_PARAM_OFFSET                     = 1, //!< Offset or bias of a sensor
+    SENSOR_PARAM_DATA_RATE                  = 2, //!< Datarate for the sensor
+    SENSOR_PARAM_BAND_WIDTH                 = 3, //!< Bandwidth setting for the sensor
+    SENSOR_PARAM_HP_FILTER                  = 4, //!< High Pass filter setting for the sensor
+    SENSOR_PARAM_LP_FILTER                  = 5, //!< Low Pass filter setting for the sensor
+    SENSOR_PARAM_ENABLE                     = 6, //!< Sensor Enable control
+
+    NUM_SENSOR_PARAM
+} SensorParamId_t;
+
+
+/* Enumeration for the input sensors. */
+typedef enum _InputSensor
+{
+    ACCEL_INPUT_SENSOR,
+    MAG_INPUT_SENSOR,
+    GYRO_INPUT_SENSOR,
+    LIGHT_INPUT_SENSOR,
+    PRESSURE_INPUT_SENSOR,
+    TEMPERATURE_INPUT_SENSOR,
+    PROXIMITY_INPUT_SENSOR,
+    RELATIVE_HUMIDITY_INPUT_SENSOR,
+    AMBIENT_TEMPERATURE_INPUT_SENSOR,
+
+    NUM_INPUT_SENSORS,
+    UNKNOWN_INPUT_SENSOR = 0xFF
+} InputSensor_t;
+
+// TODO:  Need more description how these are use.
+//! Segment detector subtypes
+typedef enum _SegmentSubType{
+    CONTEXT_CHANGE_DETECT,
+    CONTEXT_STEP_SEGMENT_DETECT,
+    CONTEXT_TILT_DETECT,
+
+    NUM_PSENSOR_CONTEXT_SEGMENT_DETECTOR_SUBTYPE
+} SegmentSubType_t;
+
+//!  Use these values as a sub-type for  STEP result
+typedef enum _StepSubType {
+    CONTEXT_STEP  = SENSOR_SUBTYPE_START,  //! Please proper description for this subtype
+    STEP_SEGMENT_DETECTOR,                 //!< low compute trigger for analyzing if step may have occured
+
+    NUM_PSENSOR_STEP_SUBTYPE
+} StepSubType_t;
+
+//! Use these values as a sub-type for CONTEXT_DEVICE_MOTION result
+typedef enum _ContextDeviceMotionSubType {
+    CONTEXT_DEVICE_MOTION_STILL  = SENSOR_SUBTYPE_START,
+    CONTEXT_DEVICE_MOTION_ACCELERATING,
+    CONTEXT_DEVICE_MOTION_ROTATING,
+    CONTEXT_DEIVCE_MOTION_TRANSLATING,
+    CONTEXT_DEVICE_MOTION_FREE_FALLING,
+
+    NUM_PSENSOR_CONTEXT_DEVICE_MOTION_SUBTYPE
+} ContextDeviceMotionSubType_t;
+
+//!  Use these values as a sub-type for  CONTEXT_CARRY result
+typedef enum _ContextCarrySubType {
+    CONTEXT_CARRY_IN_POCKET     = SENSOR_SUBTYPE_START,
+    CONTEXT_CARRY_IN_HAND,
+    CONTEXT_CARRY_NOT_ON_PERSON,
+    CONTEXT_CARRY_IN_HAND_FRONT,
+    CONTEXT_CARRY_IN_HAND_SIDE,
+
+    NUM_PSENSOR_CONTEXT_CARRY_SUBTYPE
+} ContextCarrySubType_t;
+
+//!  Use these values as a sub-type for CONTEXT_POSTURE result
+typedef enum _ContextPostureSubType {
+    CONTEXT_POSTURE_WALKING     = SENSOR_SUBTYPE_START,
+    CONTEXT_POSTURE_STANDING,
+    CONTEXT_POSTURE_SITTING,
+    CONTEXT_POSTURE_JOGGING,
+    CONTEXT_POSTURE_RUNNING,
+
+    NUM_PSENSOR_CONTEXT_POSTURE_SUBTYPE
+} ContextPostureSubType_t;
+
+
+//!  Use these values as a sub-type for  CONTEXT_TRANSPORT result
+typedef enum _ContextTransportSubType {
+    CONTEXT_TRANSPORT_VEHICLE   = SENSOR_SUBTYPE_START,
+    CONTEXT_TRANSPORT_CAR,
+    CONTEXT_TRANSPORT_TRAIN,
+    CONTEXT_TRANSPORT_UP_STAIRS,
+    CONTEXT_TRANSPORT_DOWN_STAIRS,
+    CONTEXT_TRANSPORT_UP_ELEVATOR,
+    CONTEXT_TRANSPORT_DOWN_ELEVATOR,
+    CONTEXT_TRANSPORT_ON_BIKE,
+
+    NUM_PSENSOR_CONTEXT_TRANSPORT_SUBTYPE
+} ContextTransportSubType_t;
+
+//!  Use these values as a sub-type for  GESTURE_EVENT result
+typedef enum _GestureSubType {
+    SENSOR_GESTURE_TAP          = SENSOR_SUBTYPE_START,
+    SENSOR_GESTURE_DOUBLE_TAP,
+    SENSOR_GESTURE_SHAKE,
+
+    NUM_PSENSOR_GESTURE_SUBTYPE
+} GestureSubType_t;
+
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S

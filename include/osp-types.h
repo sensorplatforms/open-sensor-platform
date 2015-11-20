@@ -42,23 +42,35 @@
 # define FALSE (!TRUE)
 #endif
 
+typedef signed char OSP_STATUS_t;
+
 /* Error codes (corresponding to osp_status_t) */
-#define OSP_STATUS_OK                    0
-#define OSP_STATUS_IDLE                  1
-#define OSP_STATUS_ERROR                -1
-#define OSP_STATUS_DESCRIPTOR_INVALID   -2
-#define OSP_STATUS_ALREADY_REGISTERED   -3
-#define OSP_STATUS_NO_MORE_HANDLES      -4
-#define OSP_STATUS_NULL_POINTER         -5
-#define OSP_STATUS_CAL_NOT_VALID        -6
-#define OSP_STATUS_NOT_REGISTERED       -7
-#define OSP_STATUS_ALREADY_SUBSCRIBED   -8
-#define OSP_STATUS_UNKNOWN_REQUEST      -9
-#define OSP_STATUS_INVALID_HANDLE       -10
-#define OSP_STATUS_NOT_SUBSCRIBED       -11
-#define OSP_STATUS_QUEUE_FULL           -12
-#define OSP_STATUS_NOT_IMPLEMENTED      -13
-#define OSP_STATUS_UNKNOWN_INPUT        -14
+
+#define OSP_STATUS_IDLE                           ((OSP_STATUS_t)  1)
+#define OSP_STATUS_OK                             ((OSP_STATUS_t)  0)
+#define OSP_STATUS_UNSPECIFIED_ERROR              ((OSP_STATUS_t) -1)
+#define OSP_STATUS_UNKNOWN_INPUT                  ((OSP_STATUS_t) -2)
+#define OSP_STATUS_UNKNOWN_REQUEST                ((OSP_STATUS_t) -3)
+#define OSP_STATUS_RESULT_NOT_POSSIBLE            ((OSP_STATUS_t) -4)
+#define OSP_STATUS_INVALID_TIMESTAMP              ((OSP_STATUS_t) -5)
+#define OSP_STATUS_BUFFER_TOO_SMALL               ((OSP_STATUS_t) -6)
+#define OSP_STATUS_STORED_CAL_NOT_VALID           ((OSP_STATUS_t) -7)
+#define OSP_STATUS_QUEUE_FULL                     ((OSP_STATUS_t) -8)
+#define OSP_STATUS_ALREADY_SUBSCRIBED             ((OSP_STATUS_t) -9)
+#define OSP_STATUS_NOT_SUBSCRIBED                 ((OSP_STATUS_t) -10)
+#define OSP_STATUS_SENSOR_IN_USE                  ((OSP_STATUS_t) -11)
+#define OSP_STATUS_SENSOR_ALREADY_REGISTERED      ((OSP_STATUS_t) -12)
+#define OSP_STATUS_SENSOR_NOT_REGISTERED          ((OSP_STATUS_t) -13)
+#define OSP_STATUS_SENSOR_INVALID_DESCRIPTOR      ((OSP_STATUS_t) -14)
+#define OSP_STATUS_SENSOR_INVALID_TYPE            ((OSP_STATUS_t) -15)
+#define OSP_STATUS_SENSOR_UNSUPPORTED_SAMPLE_RATE ((OSP_STATUS_t)-16)
+#define OSP_STATUS_RESULT_IN_USE                  ((OSP_STATUS_t) -17)
+#define OSP_STATUS_RESULT_INVALID_DESCRIPTOR      ((OSP_STATUS_t) -18)
+#define OSP_STATUS_NO_MORE_HANDLES                ((OSP_STATUS_t) -19)
+#define OSP_STATUS_NULL_POINTER                   ((OSP_STATUS_t) -20)
+#define OSP_STATUS_INVALID_HANDLE                 ((OSP_STATUS_t) -21)
+#define OSP_STATUS_SYSTEM_INVALID_DESCRIPTOR      ((OSP_STATUS_t) -22)
+#define OSP_STATUS_SENSOR_UNSUPPORTED             ((OSP_STATUS_t) -23)   
 
 
 /*-------------------------------------------------------------------------------------------------*\
