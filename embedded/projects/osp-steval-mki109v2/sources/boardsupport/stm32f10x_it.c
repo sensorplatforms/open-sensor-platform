@@ -170,7 +170,7 @@ void EXTI3_IRQHandler(void)
         /* Clear the EXTI line pending bit */
         EXTI_ClearFlag(EXTI_LINE_ACCEL_INT);
         /* Send indication to Sensor task */
-        SendDataReadyIndication(SENSOR_ACCELEROMETER_UNCALIBRATED, RTC_GetCounter());
+        SendDataReadyIndication(ACCEL_INPUT_SENSOR, RTC_GetCounter());
         /* NOTE: No I2C transactions (rd/wr) allowed from ISR */
     }
 }
@@ -321,7 +321,7 @@ void EXTI15_10_IRQHandler(void)
     {
         /* Clear the EXTI line pending bit */
         EXTI_ClearFlag(MAG_RDY_INT_EXTI_LINE);
-        SendDataReadyIndication(SENSOR_MAGNETIC_FIELD_UNCALIBRATED, RTC_GetCounter());
+        SendDataReadyIndication(MAG_INPUT_SENSOR, RTC_GetCounter());
         /* NOTE: No I2C transactions (rd/wr) allowed from ISR */
     }
 
@@ -330,7 +330,7 @@ void EXTI15_10_IRQHandler(void)
         /* Clear the EXTI line pending bit */
         EXTI_ClearFlag(GYRO_RDY_INT_EXTI_LINE);
         /* Send indication to Sensor task */
-        SendDataReadyIndication(SENSOR_GYROSCOPE_UNCALIBRATED, RTC_GetCounter());
+        SendDataReadyIndication(GYRO_INPUT_SENSOR, RTC_GetCounter());
         /* NOTE: No I2C transactions (rd/wr) allowed from ISR */
     }
 }

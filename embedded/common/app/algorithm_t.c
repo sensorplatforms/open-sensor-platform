@@ -33,6 +33,7 @@
  |    P R I V A T E   C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
 #define M_SI_EARTH_GRAVITY              (9.805f)
+#define EXPECTED_MAG_NORM               (50.0f)
 
 #define ACCEL_SENSITIVITY_4G            0.002f      //2mg/LSB
 #define ACCEL_SCALING_FACTOR            TOFIX_PRECISE(ACCEL_SENSITIVITY_4G * M_SI_EARTH_GRAVITY)
@@ -50,15 +51,11 @@
 #define MAG_NOISE                       TOFIX_PRECISE(0.2f)
 #define GYRO_NOISE                      TOFIX_PRECISE(0.006f)
 
-#define XYZ_FROM_ORIGIN                 TOFIX_PRECISE(0.0f)
-#define ACCEL_INPUT_RATES               TOFIX_EXTENDED(12.5f),TOFIX_EXTENDED(25.0f),TOFIX_EXTENDED(50.0f),TOFIX_EXTENDED(100.0f)
-#define MAG_INPUT_RATES                 TOFIX_EXTENDED(12.5f),TOFIX_EXTENDED(25.0f),TOFIX_EXTENDED(50.0f),TOFIX_EXTENDED(100.0f)
-#define GYRO_INPUT_RATES                TOFIX_EXTENDED(12.5f),TOFIX_EXTENDED(25.0f),TOFIX_EXTENDED(50.0f),TOFIX_EXTENDED(100.0f)
-#define STEP_COUNT_OUTPUT_RATE          TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f)
-#define SIG_MOTION_OUTPUT_RATE          TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f)
-#define ACCEL_OUTPUT_RATES              TOFIX_EXTENDED(50.0f),TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f)
-#define MAG_OUTPUT_RATES                TOFIX_EXTENDED(50.0f),TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f)
-#define GYRO_OUTPUT_RATES               TOFIX_EXTENDED(50.0f),TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f),TOFIX_EXTENDED(0.0f)
+#define STEP_COUNT_OUTPUT_RATE          TOFIX_PRECISE(0.0f)
+#define SIG_MOTION_OUTPUT_RATE          TOFIX_PRECISE(0.0f)
+#define ACCEL_OUTPUT_RATES              TOFIX_PRECISE(0.02f)    // 50Hz in seconds
+#define MAG_OUTPUT_RATES                TOFIX_PRECISE(0.02f)    // 50Hz in seconds
+#define GYRO_OUTPUT_RATES               TOFIX_PRECISE(0.02f)    // 50Hz in seconds
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E   T Y P E   D E F I N I T I O N S
@@ -67,167 +64,144 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-static InputSensorSpecificData_t _AccInputSensor =
-{
-    0xffffffff,                             // 32 bits of raw data are significant
-    AXIS_MAP_POSITIVE_X,AXIS_MAP_POSITIVE_Y,AXIS_MAP_POSITIVE_Z, // X,Y,Z  sensor orientation
-    0,0,0,                                  // raw data offset (where is zero?)
-    ACCEL_SCALING_FACTOR,ACCEL_SCALING_FACTOR,ACCEL_SCALING_FACTOR, //scale factor (raw to dimensional units)
-    ACCEL_RANGE_MAX,                        // max value that is valid (e.g. +/- 4G sensor in M/Sec*Sec)
-    -ACCEL_RANGE_MAX,                       // min value that is valid
-    ACCEL_NOISE,ACCEL_NOISE,ACCEL_NOISE,    // noise
-    (void *) NULL,                          // calibration data structure
-    "Acc LSM303DLHC",                       // Sensor name
-    0,                                      // Sensor Vendor ID
-    0,                                      // Sensor Product ID (defined by vendor)
-    0,                                      // Sensor version (defined by vendor)
-    0,                                      // Platform id  (defined by vendor)
-    XYZ_FROM_ORIGIN,XYZ_FROM_ORIGIN,XYZ_FROM_ORIGIN, // X,Y,Z position from origin (in meters)
+static SensorDescriptor_t _AccSensDesc = {
+    ACCEL_INPUT_SENSOR,                // Input sensor type
+    "Acc LSM303DLHC",                  // a short human readable description of sensor, Null terminated
+    0xffffffff,                        // 32 bit of raw data are significant
+    {AXIS_MAP_POSITIVE_X,AXIS_MAP_POSITIVE_Y,AXIS_MAP_POSITIVE_Z}, // X,Y,Z  sensor orientation
+    {0,0,0},                                      // raw sensor data offset (where is zero?)
+    {ACCEL_SCALING_FACTOR,ACCEL_SCALING_FACTOR,ACCEL_SCALING_FACTOR}, //scale factor (raw to dimensional units)
+    ACCEL_RANGE_MAX,                   // max value that is valid (e.g. +/- 4G sensor in M/Sec*Sec)
+    -ACCEL_RANGE_MAX,                  // min value that is valid
+    (void *) NULL,                     // pointer to calibration data structure. NULL if not available
+    (OSP_WriteCalDataCallback_t) NULL, // callback function pointer output calibration data. NULL is not use.
+    {ACCEL_NOISE,ACCEL_NOISE,ACCEL_NOISE}, // noise
+    TOFIX_PRECISE(0.02f),              // sensor acquisition period in unit of second
+    {{TOFIX_PRECISE(1.0f),0,0},{0,TOFIX_PRECISE(1.0f),0},{0,0,TOFIX_PRECISE(1.0f)}}, //linear factory cal factoryskr[3][3]
+    {0,0,0},                           // linear factor cal offset.
+    {0,0,0},                           // Bias
+    {0,0,0},                           // bias repeatability
+    {{0,0},{0,0},{0,0}},               // two temperature coeff for each axis
+    {0,0,0},                           // susceptability to shaking
+    TOFIX_EXTENDED(M_SI_EARTH_GRAVITY), // expected norminal value
+    (void *) NULL                      //  used in conjunction with Flags
 };
 
-static SensorDescriptor_t _AccSensDesc =
-{
-    SENSOR_ACCELEROMETER_UNCALIBRATED,
-    DATA_CONVENTION_RAW,
-    OSP_NO_OUTPUT_READY_CALLBACK,
-    OSP_NO_NVM_WRITE_CALLBACK,
-    OSP_NO_SENSOR_CONTROL_CALLBACK,
-    ACCEL_INPUT_RATES,
-    OSP_FLAGS_INPUT_SENSOR,
-    &_AccInputSensor
+
+static SensorDescriptor_t _MagSensDesc = {
+    MAG_INPUT_SENSOR,                  // Input sensor type
+    "Mag LSM303DLHC",                  // a short human readable description of sensor, Null terminated
+    0xffffffff,                        // 32 bit of raw data are significant
+    {AXIS_MAP_POSITIVE_X,AXIS_MAP_POSITIVE_Y,AXIS_MAP_POSITIVE_Z}, // X,Y,Z  sensor orientation
+    0,0,0,                                      // raw sensor data offset (where is zero?)
+    {MAG_SCALING_XY,MAG_SCALING_XY,MAG_SCALING_Z}, //scale factor (raw to dimensional units)
+    MAG_RANGE_MAX,                     // max value that is valid (e.g. +/- 4G sensor in M/Sec*Sec)
+    -MAG_RANGE_MAX,                    // min value that is valid
+    (void *) NULL,                     // pointer to calibration data structure. NULL if not available
+    (OSP_WriteCalDataCallback_t) NULL, // callback function pointer output calibration data. NULL is not use.
+    {MAG_NOISE,MAG_NOISE,MAG_NOISE},   // noise
+    TOFIX_PRECISE(0.02f),              // sensor acquisition period in unit of second
+    {{TOFIX_PRECISE(1.0f),0,0},{0,TOFIX_PRECISE(1.0f),0},{0,0,TOFIX_PRECISE(1.0f)}}, //linear factory cal factoryskr[3][3]
+    {0,0,0},                           // linear factor cal offset.
+    {0,0,0},                           // Bias
+    {0,0,0},                           // bias repeatability
+    {{0,0},{0,0},{0,0}},               // two temperature coeff for each axis
+    {0,0,0},                           // susceptability to shaking
+    TOFIX_EXTENDED(EXPECTED_MAG_NORM), // expected norminal value
+    (void *) NULL                      //  used in conjunction with Flags
 };
 
-static InputSensorSpecificData_t _MagInputSensor =
-{
-    0xffffffff,                             // 32 bits of raw data are significant
-    AXIS_MAP_POSITIVE_X,AXIS_MAP_POSITIVE_Y,AXIS_MAP_POSITIVE_Z, // X,Y,Z  sensor orientation
-    0,0,0,                                  // raw data offset (where is zero?)
-    MAG_SCALING_XY,MAG_SCALING_XY,MAG_SCALING_Z, //scale factor (raw to dimensional units)
-    MAG_RANGE_MAX,                          // max value that is valid (e.g. +/- 4G sensor in M/Sec*Sec)
-    -MAG_RANGE_MAX,                         // min value that is valid
-    MAG_NOISE,MAG_NOISE,MAG_NOISE,          // noise
-    (void *) NULL,                          // calibration data structure
-    "Mag LSM303DLHC",                       // Sensor name
-    0,                                      // Sensor Vendor ID
-    0,                                      // Sensor Product ID (defined by vendor)
-    0,                                      // Sensor version (defined by vendor)
-    0,                                      // Platform id  (defined by vendor)
-    XYZ_FROM_ORIGIN,XYZ_FROM_ORIGIN,XYZ_FROM_ORIGIN, // X,Y,Z position from origin (in meters)
+
+static SensorDescriptor_t _GyroSensDesc = {
+    GYRO_INPUT_SENSOR,                 // Input sensor type
+    "Gyro L3GD20",                     // a short human readable description of sensor, Null terminated
+    0xffffffff,                        // 32 bit of raw data are significant
+    {AXIS_MAP_POSITIVE_X,AXIS_MAP_POSITIVE_Y,AXIS_MAP_POSITIVE_Z}, // X,Y,Z  sensor orientation
+    0,0,0,                                      // raw sensor data offset (where is zero?)
+    {GYRO_SCALING_FACTOR,GYRO_SCALING_FACTOR,GYRO_SCALING_FACTOR}, //scale factor (raw to dimensional units)
+    GYRO_RANGE_MAX,                    // max value that is valid (e.g. +/- 4G sensor in M/Sec*Sec)
+    -GYRO_RANGE_MAX,                   // min value that is valid
+    (void *) NULL,                     // pointer to calibration data structure. NULL if not available
+    (OSP_WriteCalDataCallback_t) NULL, // callback function pointer output calibration data. NULL is not use.
+    {GYRO_NOISE,GYRO_NOISE,GYRO_NOISE},  // noise
+    TOFIX_PRECISE(0.02f),              // sensor acquisition period in unit of second
+    {{TOFIX_PRECISE(1.0f),0,0},{0,TOFIX_PRECISE(1.0f),0},{0,0,TOFIX_PRECISE(1.0f)}}, //linear factory cal factoryskr[3][3]
+    {0,0,0},                           // linear factor cal offset.
+    {0,0,0},                           // Bias
+    {0,0,0},                           // bias repeatability
+    {{0,0},{0,0},{0,0}},               // two temperature coeff for each axis
+    {0,0,0},                           // susceptability to shaking
+    TOFIX_EXTENDED(0.0f),              // expected norminal value
+    (void *) NULL                      //  used in conjunction with Flags
 };
 
-static SensorDescriptor_t _MagSensDesc =
-{
-    SENSOR_MAGNETIC_FIELD_UNCALIBRATED,
-    DATA_CONVENTION_RAW,
-    OSP_NO_OUTPUT_READY_CALLBACK,
-    OSP_NO_NVM_WRITE_CALLBACK,
-    OSP_NO_SENSOR_CONTROL_CALLBACK,
-    MAG_INPUT_RATES,
-    OSP_FLAGS_INPUT_SENSOR,
-    &_MagInputSensor
-};
 
-static InputSensorSpecificData_t _GyroInputSensor =
-{
-    0xffffffff,                             // 32 bits of raw data are significant
-    AXIS_MAP_POSITIVE_X,AXIS_MAP_POSITIVE_Y,AXIS_MAP_POSITIVE_Z, // X,Y,Z  sensor orientation
-    0,0,0,                                  // raw data offset (where is zero?)
-    GYRO_SCALING_FACTOR,GYRO_SCALING_FACTOR,GYRO_SCALING_FACTOR, //scale factor (raw to dimensional units)
-    GYRO_RANGE_MAX,                         // max value that is valid (e.g. +/- 4G sensor in M/Sec*Sec)
-    -GYRO_RANGE_MAX,                        // min value that is valid
-    GYRO_NOISE,GYRO_NOISE,GYRO_NOISE,       // noise
-    (void *) NULL,                          // calibration data structure
-    "Gyro L3GD20",                          // Sensor name
-    0,                                      // Sensor Vendor ID
-    0,                                      // Sensor Product ID (defined by vendor)
-    0,                                      // Sensor version (defined by vendor)
-    0,                                      // Platform id  (defined by vendor)
-    XYZ_FROM_ORIGIN,XYZ_FROM_ORIGIN,XYZ_FROM_ORIGIN, // X,Y,Z position from origin (in meters)
-};
+static void stepCounterOutputCallback(ResultHandle_t outputHandle,
+    Android_StepCounterResultData_t* pOutput);
 
-static SensorDescriptor_t _GyroSensDesc =
-{
-    SENSOR_GYROSCOPE_UNCALIBRATED,
-    DATA_CONVENTION_RAW,
-    OSP_NO_OUTPUT_READY_CALLBACK,
-    OSP_NO_NVM_WRITE_CALLBACK,
-    OSP_NO_SENSOR_CONTROL_CALLBACK,
-    GYRO_INPUT_RATES,
-    OSP_FLAGS_INPUT_SENSOR,
-    &_GyroInputSensor
-};
+static void sigMotionOutputCallback(ResultHandle_t outputHandle,
+    Android_BooleanResultData_t* pOutput);
 
-static void stepCounterOutputCallback(OutputSensorHandle_t outputHandle,
-    Android_StepCounterOutputData_t* pOutput);
+static void UnCalAccelDataResultCallback(ResultHandle_t outputHandle,
+    Android_UncalibratedTriAxisPreciseData_t* pOutput);
 
-static void sigMotionOutputCallback(OutputSensorHandle_t outputHandle,
-    Android_SignificantMotionOutputData_t* pOutput);
+static void UnCalMagDataResultCallback(ResultHandle_t outputHandle,
+    Android_UncalibratedTriAxisExtendedData_t* pOutput);
 
-static void UnCalAccelDataResultCallback(OutputSensorHandle_t outputHandle,
-    Android_UncalibratedAccelOutputData_t* pOutput);
-
-static void UnCalMagDataResultCallback(OutputSensorHandle_t outputHandle,
-    Android_UncalibratedMagOutputData_t* pOutput);
-
-static void UnCalGyroDataResultCallback(OutputSensorHandle_t outputHandle,
-    Android_UncalibratedGyroOutputData_t* pOutput);
+static void UnCalGyroDataResultCallback(ResultHandle_t outputHandle,
+    Android_UncalibratedTriAxisPreciseData_t* pOutput);
 
 /* Output result descriptor for subscribing to step counts */
-static SensorDescriptor_t  stepCounterRequest = {
+static ResultDescriptor_t  stepCounterRequest = {
     SENSOR_STEP_COUNTER,
-    DATA_CONVENTION_ANDROID,
-    (OSP_OutputReadyCallback_t)stepCounterOutputCallback,
-    OSP_NO_NVM_WRITE_CALLBACK,
-    OSP_NO_SENSOR_CONTROL_CALLBACK,
+    (OSP_ResultReadyCallback_t)stepCounterOutputCallback,
     STEP_COUNT_OUTPUT_RATE,
+    0,
+    0,
     OSP_NO_FLAGS,
     OSP_NO_OPTIONAL_DATA
 };
 
 /* Output result descriptor for subscribing to significant motion */
-static SensorDescriptor_t  sigMotionRequest = {
-    SENSOR_CONTEXT_DEVICE_MOTION,
-    DATA_CONVENTION_ANDROID,
-    (OSP_OutputReadyCallback_t)sigMotionOutputCallback,
-    OSP_NO_NVM_WRITE_CALLBACK,
-    OSP_NO_SENSOR_CONTROL_CALLBACK,
+static ResultDescriptor_t  sigMotionRequest = {
+    SENSOR_SIGNIFICANT_MOTION,
+    (OSP_ResultReadyCallback_t)sigMotionOutputCallback,
     SIG_MOTION_OUTPUT_RATE,
+    0,
+    0,
     OSP_NO_FLAGS,
     OSP_NO_OPTIONAL_DATA
 };
 
 /* Output result descriptor for subscribing to uncalibrated accelerometer data */
-static SensorDescriptor_t UnCalAccelRequest = {
-    SENSOR_ACCELEROMETER_UNCALIBRATED,
-    DATA_CONVENTION_ANDROID,
-    (OSP_OutputReadyCallback_t)UnCalAccelDataResultCallback,
-    OSP_NO_NVM_WRITE_CALLBACK,
-    OSP_NO_SENSOR_CONTROL_CALLBACK,
+static ResultDescriptor_t UnCalAccelRequest = {
+    AP_PSENSOR_ACCELEROMETER_UNCALIBRATED,
+    (OSP_ResultReadyCallback_t)UnCalAccelDataResultCallback,
     ACCEL_OUTPUT_RATES,
+    0,
+    0,
     OSP_NO_FLAGS,
     OSP_NO_OPTIONAL_DATA
 };
 
 /* Output result descriptor for subscribing to uncalibrated magnetometer data */
-static SensorDescriptor_t UnCalMagRequest = {
+static ResultDescriptor_t UnCalMagRequest = {
     SENSOR_MAGNETIC_FIELD_UNCALIBRATED,
-    DATA_CONVENTION_ANDROID,
-    (OSP_OutputReadyCallback_t)UnCalMagDataResultCallback,
-    OSP_NO_NVM_WRITE_CALLBACK,
-    OSP_NO_SENSOR_CONTROL_CALLBACK,
+    (OSP_ResultReadyCallback_t)UnCalMagDataResultCallback,
     MAG_OUTPUT_RATES,
+    0,
+    0,
     OSP_NO_FLAGS,
     OSP_NO_OPTIONAL_DATA
 };
 
 /* Output result descriptor for subscribing to uncalibrated gyroscope data */
-static SensorDescriptor_t UnCalGyroRequest = {
+static ResultDescriptor_t UnCalGyroRequest = {
     SENSOR_GYROSCOPE_UNCALIBRATED,
-    DATA_CONVENTION_ANDROID,
-    (OSP_OutputReadyCallback_t)UnCalGyroDataResultCallback,
-    OSP_NO_NVM_WRITE_CALLBACK,
-    OSP_NO_SENSOR_CONTROL_CALLBACK,
+    (OSP_ResultReadyCallback_t)UnCalGyroDataResultCallback,
     GYRO_OUTPUT_RATES,
+    0,
+    0,
     OSP_NO_FLAGS,
     OSP_NO_OPTIONAL_DATA
 };
@@ -236,11 +210,11 @@ static InputSensorHandle_t _AccHandle;
 static InputSensorHandle_t _MagHandle;
 static InputSensorHandle_t _GyroHandle;
 static const OSP_Library_Version_t* version;
-static OutputSensorHandle_t _stepCounterHandle;
-static OutputSensorHandle_t _sigMotionHandle;
-static OutputSensorHandle_t _unCalAccelHandle;
-static OutputSensorHandle_t _unCalMagHandle;
-static OutputSensorHandle_t _unCalGyroHandle;
+static ResultHandle_t _stepCounterHandle;
+static ResultHandle_t _sigMotionHandle;
+static ResultHandle_t _unCalAccelHandle;
+static ResultHandle_t _unCalMagHandle;
+static ResultHandle_t _unCalGyroHandle;
 
 static OS_MUT mutexCritSection;
 
@@ -253,9 +227,10 @@ static void ExitCriticalSection(void);
 
 SystemDescriptor_t gSystemDesc =
 {
-    TOFIX_TIMECOEFFICIENT(US_PER_RTC_TICK * 0.000001f),        // timestamp conversion factor = 1us / count
+    TOFIX_TIMECOEFFICIENT(US_PER_RTC_TICK * 0.000001f),      // timestamp conversion factor
     (OSP_CriticalSectionCallback_t) EnterCriticalSection,
-    (OSP_CriticalSectionCallback_t) ExitCriticalSection
+    (OSP_CriticalSectionCallback_t) ExitCriticalSection,
+    (OSP_SensorControlCallback_t )  NULL    // Sensor ON/OFF control
 };
 
 
@@ -284,8 +259,8 @@ __inline void ExitCriticalSection(void)
  *          Call back for Uncalibrated accelerometer data
  *
  ***************************************************************************************************/
-static void UnCalAccelDataResultCallback(OutputSensorHandle_t outputHandle,
-    Android_UncalibratedAccelOutputData_t* pOutput)
+static void UnCalAccelDataResultCallback(ResultHandle_t outputHandle,
+    Android_UncalibratedTriAxisPreciseData_t* pOutput)
 {
     if (g_logging & 0x40)  //Uncalibrated data, in Android conventions
     {
@@ -300,8 +275,8 @@ static void UnCalAccelDataResultCallback(OutputSensorHandle_t outputHandle,
  *          Call back for Uncalibrated magnetometer data
  *
  ***************************************************************************************************/
-static void UnCalMagDataResultCallback(OutputSensorHandle_t outputHandle,
-    Android_UncalibratedMagOutputData_t* pOutput)
+static void UnCalMagDataResultCallback(ResultHandle_t outputHandle,
+    Android_UncalibratedTriAxisExtendedData_t* pOutput)
 {
     if (g_logging & 0x40)  //Uncalibrated data, in Android conventions
     {
@@ -316,8 +291,8 @@ static void UnCalMagDataResultCallback(OutputSensorHandle_t outputHandle,
  *          Call back for Uncalibrated gyroscope data
  *
  ***************************************************************************************************/
-static void UnCalGyroDataResultCallback(OutputSensorHandle_t outputHandle,
-    Android_UncalibratedGyroOutputData_t* pOutput)
+static void UnCalGyroDataResultCallback(ResultHandle_t outputHandle,
+    Android_UncalibratedTriAxisPreciseData_t* pOutput)
 {
     if (g_logging & 0x40)  //Uncalibrated data, in Android conventions
     {
@@ -332,8 +307,8 @@ static void UnCalGyroDataResultCallback(OutputSensorHandle_t outputHandle,
  *          Call back for Step Detector results
  *
  ***************************************************************************************************/
-static void stepCounterOutputCallback(OutputSensorHandle_t OutputHandle,
-    Android_StepCounterOutputData_t* pOutput)
+static void stepCounterOutputCallback(ResultHandle_t OutputHandle,
+    Android_StepCounterResultData_t* pOutput)
 {
     Print_LIPS("STC,%+03.4f,%d,0", TOFLT_TIME(pOutput->TimeStamp), pOutput->StepCount);
 }
@@ -344,10 +319,10 @@ static void stepCounterOutputCallback(OutputSensorHandle_t OutputHandle,
  *          Call back for Significant Motion results
  *
  ***************************************************************************************************/
-static void sigMotionOutputCallback(OutputSensorHandle_t outputHandle,
-    Android_SignificantMotionOutputData_t* pOutput)
+static void sigMotionOutputCallback(ResultHandle_t outputHandle,
+    Android_BooleanResultData_t* pOutput)
 {
-    Print_LIPS("SM,%+03.4f,%d",TOFLT_TIME(pOutput->TimeStamp), pOutput->significantMotionDetected);
+    Print_LIPS("SM,%+03.4f,%d",TOFLT_TIME(pOutput->TimeStamp), pOutput->data);
 }
 
 
@@ -359,34 +334,34 @@ static void sigMotionOutputCallback(OutputSensorHandle_t outputHandle,
 static void HandleSensorData( MessageBuffer *pRcvMsg )
 {
     osp_status_t status;
-    TriAxisSensorRawData_t sensorData;
+    OSP_InputSensorData_t sensorData;
 
     switch(pRcvMsg->msgId)
     {
     case MSG_ACC_DATA:
-        sensorData.Data[0] = pRcvMsg->msg.msgAccelData.X;
-        sensorData.Data[1] = pRcvMsg->msg.msgAccelData.Y;
-        sensorData.Data[2] = pRcvMsg->msg.msgAccelData.Z;
-        sensorData.TimeStamp = pRcvMsg->msg.msgAccelData.timeStamp;
-        status = OSP_SetData(_AccHandle, &sensorData);
+        sensorData.rawdata.data[0] = pRcvMsg->msg.msgAccelData.X;
+        sensorData.rawdata.data[1] = pRcvMsg->msg.msgAccelData.Y;
+        sensorData.rawdata.data[2] = pRcvMsg->msg.msgAccelData.Z;
+        sensorData.rawdata.TimeStamp = pRcvMsg->msg.msgAccelData.timeStamp;
+        status = OSP_SetInputData(_AccHandle, &sensorData);
         ASF_assert(status == OSP_STATUS_OK);
         break;
 
     case MSG_MAG_DATA:
-        sensorData.Data[0] = pRcvMsg->msg.msgMagData.X;
-        sensorData.Data[1] = pRcvMsg->msg.msgMagData.Y;
-        sensorData.Data[2] = pRcvMsg->msg.msgMagData.Z;
-        sensorData.TimeStamp = pRcvMsg->msg.msgMagData.timeStamp;
-        status = OSP_SetData(_MagHandle, &sensorData);
+        sensorData.rawdata.data[0] = pRcvMsg->msg.msgMagData.X;
+        sensorData.rawdata.data[1] = pRcvMsg->msg.msgMagData.Y;
+        sensorData.rawdata.data[2] = pRcvMsg->msg.msgMagData.Z;
+        sensorData.rawdata.TimeStamp = pRcvMsg->msg.msgMagData.timeStamp;
+        status = OSP_SetInputData(_MagHandle, &sensorData);
         ASF_assert(status == OSP_STATUS_OK);
         break;
 
     case MSG_GYRO_DATA:
-        sensorData.Data[0] = pRcvMsg->msg.msgGyroData.X;
-        sensorData.Data[1] = pRcvMsg->msg.msgGyroData.Y;
-        sensorData.Data[2] = pRcvMsg->msg.msgGyroData.Z;
-        sensorData.TimeStamp = pRcvMsg->msg.msgGyroData.timeStamp;
-        status = OSP_SetData(_GyroHandle, &sensorData);
+        sensorData.rawdata.data[0] = pRcvMsg->msg.msgGyroData.X;
+        sensorData.rawdata.data[1] = pRcvMsg->msg.msgGyroData.Y;
+        sensorData.rawdata.data[2] = pRcvMsg->msg.msgGyroData.Z;
+        sensorData.rawdata.TimeStamp = pRcvMsg->msg.msgGyroData.timeStamp;
+        status = OSP_SetInputData(_GyroHandle, &sensorData);
         ASF_assert(status == OSP_STATUS_OK);
         break;
 
@@ -428,38 +403,38 @@ static void SendBgTrigger( void )
 ASF_TASK  void AlgorithmTask ( ASF_TASK_ARG )
 {
     MessageBuffer *rcvMsg = NULLP;
-    osp_status_t OSP_Status;
+    OSP_STATUS_t OSP_Status;
 
-    OSP_GetVersion(&version);
+    OSP_GetLibraryVersion(&version);
     D1_printf("OSP Version: %s\r\n", version->VersionString);
 
     OSP_Status = OSP_Initialize(&gSystemDesc);
-    ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "SensorManager: OSP_Initialize Failed");
+    ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "OSP_Initialize Failed");
 
     // Register the input sensors
     OSP_Status = OSP_RegisterInputSensor(&_AccSensDesc, &_AccHandle);
-    ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "SensorManager: OSP_RegisterSensor (accel) Failed");
+    ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "OSP_RegisterInputSensor (accel) Failed");
 
     OSP_Status = OSP_RegisterInputSensor(&_MagSensDesc, &_MagHandle);
-    ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "SensorManager: OSP_RegisterSensor (mag) Failed");
+    ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "OSP_RegisterInputSensor (mag) Failed");
 
     OSP_Status = OSP_RegisterInputSensor(&_GyroSensDesc, &_GyroHandle);
-    ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "SensorManager: OSP_RegisterSensor (gyro) Failed");
+    ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "OSP_RegisterInputSensor (gyro) Failed");
 
     // Register output sensors/results
-    OSP_Status =  OSP_SubscribeOutputSensor(&stepCounterRequest, &_stepCounterHandle);
+    OSP_Status =  OSP_SubscribeSensorResult(&stepCounterRequest, &_stepCounterHandle);
     ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "SensorManager: OSP_SubscribeResult (SENSOR_STEP_COUNTER) Failed");
 
-    OSP_Status =  OSP_SubscribeOutputSensor(&sigMotionRequest, &_sigMotionHandle);
+    OSP_Status =  OSP_SubscribeSensorResult(&sigMotionRequest, &_sigMotionHandle);
     ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "SensorManager: OSP_SubscribeResult (SENSOR_CONTEXT_DEVICE_MOTION) Failed");
 
-    OSP_Status =  OSP_SubscribeOutputSensor(&UnCalAccelRequest, &_unCalAccelHandle);
+    OSP_Status =  OSP_SubscribeSensorResult(&UnCalAccelRequest, &_unCalAccelHandle);
     ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "SensorManager: OSP_SubscribeResult (SENSOR_ACCELEROMETER) Failed");
 
-    OSP_Status =  OSP_SubscribeOutputSensor(&UnCalMagRequest, &_unCalMagHandle);
+    OSP_Status =  OSP_SubscribeSensorResult(&UnCalMagRequest, &_unCalMagHandle);
     ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "SensorManager: OSP_SubscribeResult (SENSOR_MAGNETIC_FIELD) Failed");
 
-    OSP_Status =  OSP_SubscribeOutputSensor(&UnCalGyroRequest, &_unCalGyroHandle);
+    OSP_Status =  OSP_SubscribeSensorResult(&UnCalGyroRequest, &_unCalGyroHandle);
     ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "SensorManager: OSP_SubscribeResult (SENSOR_GYROSCOPE) Failed");
 
     while (1)
@@ -475,7 +450,7 @@ ASF_TASK  void AlgorithmTask ( ASF_TASK_ARG )
             do
             {
                 OSP_Status = OSP_DoForegroundProcessing();
-                ASF_assert(OSP_Status != OSP_STATUS_ERROR);
+                ASF_assert(OSP_Status != OSP_STATUS_UNSPECIFIED_ERROR);
             } while(OSP_Status != OSP_STATUS_IDLE)
                 ; //keep doing foreground computation until its finished
             break;

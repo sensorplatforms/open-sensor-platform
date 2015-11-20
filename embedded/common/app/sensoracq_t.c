@@ -52,13 +52,12 @@ void WaitForHostSync( void );
 /*-------------------------------------------------------------------------------------------------*\
  |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-static void SensorDataHandler( SensorType_t sensorId, uint32_t timeStamp );
+static void SensorDataHandler(InputSensor_t sensorId, uint32_t timeStamp);
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E     F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 
-#ifndef INTERRUPT_BASED_SAMPLING
 /****************************************************************************************************
  * @fn      HandleTimers
  *          Handles the MSG_TIMER_EXPIRY messages
@@ -66,27 +65,28 @@ static void SensorDataHandler( SensorType_t sensorId, uint32_t timeStamp );
  ***************************************************************************************************/
 static void HandleTimers( MsgTimerExpiry *pTimerExp )
 {
-    uint32_t timeStamp;
-
     switch (pTimerExp->userValue)
     {
+#ifndef INTERRUPT_BASED_SAMPLING
+        uint32_t timeStamp;
+
         case TIMER_REF_SENSOR_READ:
-            /* Schedule the next sampling */
-            ASFTimerStart( SENSOR_ACQ_TASK_ID, TIMER_REF_SENSOR_READ, SENSOR_SAMPLE_PERIOD, &sSensorTimer );
+        /* Schedule the next sampling */
+        ASFTimerStart(SENSOR_ACQ_TASK_ID, TIMER_REF_SENSOR_READ,
+                SENSOR_SAMPLE_PERIOD, &sSensorTimer);
 
-            /* Call data handler for each sensors */
-            timeStamp = RTC_GetCounter();
-            SensorDataHandler( SENSOR_TYPE_ACCELEROMETER, timeStamp );
-            SensorDataHandler( SENSOR_TYPE_MAGNETIC_FIELD, timeStamp );
-            SensorDataHandler( SENSOR_TYPE_GYROSCOPE, timeStamp );
-            break;
-
-        default:
-            D1_printf("Unknown Timer! Reference %d\r\n", pTimerExp->userValue);
-            break;
+        /* Call data handler for each sensors */
+        timeStamp = RTC_GetCounter();
+        SensorDataHandler(ACCEL_INPUT_SENSOR, timeStamp);
+        SensorDataHandler(MAG_INPUT_SENSOR, timeStamp);
+        SensorDataHandler(GYRO_INPUT_SENSOR, timeStamp);
+        break;
+#endif
+    default:
+        D1_printf("Unknown Timer! Reference %d\r\n", pTimerExp->userValue);
+        break;
     }
 }
-#endif
 
 
 #ifdef ENABLE_FLASH_STORE
@@ -106,7 +106,7 @@ static void StoreCalibrationData( CalEvent_t event )
  *          Handle data ready indications from ISR for various sensors
  *
  ***************************************************************************************************/
-static void SensorDataHandler( SensorType_t sensorId, uint32_t timeStamp )
+static void SensorDataHandler(InputSensor_t sensorId, uint32_t timeStamp)
 {
     MsgAccelData accelData;
     MsgMagData magData;
@@ -123,7 +123,7 @@ static void SensorDataHandler( SensorType_t sensorId, uint32_t timeStamp )
 
     switch (sensorId)
     {
-    case SENSOR_MAGNETIC_FIELD_UNCALIBRATED:
+    case MAG_INPUT_SENSOR:
         if ((sMagDecimateCount++ % MAG_DECIMATE_FACTOR) == 0 )
         {
             /* Read mag Data - reading would clear interrupt also */
@@ -149,7 +149,7 @@ static void SensorDataHandler( SensorType_t sensorId, uint32_t timeStamp )
         }
         break;
 
-    case SENSOR_GYROSCOPE_UNCALIBRATED:
+    case GYRO_INPUT_SENSOR:
         if ((gyroSampleCount++ % GYRO_SAMPLE_DECIMATE) == 0)
         {
             /* Read Gyro Data - reading typically clears interrupt as well */
@@ -175,7 +175,7 @@ static void SensorDataHandler( SensorType_t sensorId, uint32_t timeStamp )
         }
         break;
 
-    case SENSOR_ACCELEROMETER_UNCALIBRATED:
+    case ACCEL_INPUT_SENSOR:
 #if defined TRIGGERED_MAG_SAMPLING
         if (accSampleCount % MAG_TRIGGER_RATE_DECIMATE == 0)
         {
@@ -242,6 +242,13 @@ void SendDataReadyIndication( uint8_t sensorId, uint32_t timeStamp )
  *          This task is responsible for acquiring data from and controlling the sensors in the
  *          system.
  *
+ *          Sensor data flow:
+ *          1. Sensor interrupts on data ready.
+ *          2. IRQ handler is solely expected to call SendDataReadyIndication.
+ *          3. SensorAcqTask will see a message data is available.
+ *          4. Data is read. Sensor driver is expected to clear
+ *             the interrupt from the read function.
+ *
  * @param   none
  *
  * @return  none
@@ -261,9 +268,12 @@ ASF_TASK void SensorAcqTask( ASF_TASK_ARG )
     /* Setup interface for the Magnetometer */
     Mag_HardwareSetup( true );
     Mag_Initialize();
+    Mag_ClearDataInt();        /* Clear interrupt from previous run that maynot have been acknowledged */
+
     /* Setup interface for the accelerometers */
     Accel_HardwareSetup( true );
     Accel_Initialize( INIT_NORMAL );
+
     /* Setup Gyro */
     Gyro_HardwareSetup( true );
     Gyro_Initialize();
@@ -274,7 +284,6 @@ ASF_TASK void SensorAcqTask( ASF_TASK_ARG )
 #else
     /* Enable Sensor interrupts */
     Mag_ConfigDataInt( true );
-    Mag_ClearDataInt();
     Accel_ConfigDataInt( true );
     Gyro_ConfigDataInt( true );
 # ifdef TRIGGERED_MAG_SAMPLING
@@ -282,37 +291,34 @@ ASF_TASK void SensorAcqTask( ASF_TASK_ARG )
 # endif
 #endif
 
-    while (1)
-    {
-        ASFReceiveMessage( SENSOR_ACQ_TASK_ID, &rcvMsg );
+    while (1) {
+        ASFReceiveMessage(SENSOR_ACQ_TASK_ID, &rcvMsg);
+
         switch (rcvMsg->msgId)
         {
+        case MSG_TIMER_EXPIRY:
+            HandleTimers(&rcvMsg->msg.msgTimerExpiry);
+            break;
 
-            case MSG_TIMER_EXPIRY:
-#ifndef INTERRUPT_BASED_SAMPLING
-                HandleTimers( &rcvMsg->msg.msgTimerExpiry );
-#endif
-                break;
-
-            case MSG_CAL_EVT_NOTIFY:
+        case MSG_CAL_EVT_NOTIFY:
 #ifdef ENABLE_FLASH_STORE
-                StoreCalibrationData( (CalEvent_t)rcvMsg->msg.msgCalEvtNotify.byte );
+            StoreCalibrationData((CalEvent_t)rcvMsg->msg.msgCalEvtNotify.byte);
 #else
-                D0_printf("#### WARNING - NV Storage Not Implemented! #####\r\n");
+            D0_printf("#### WARNING - NV Storage Not Implemented! #####\r\n");
 #endif
-                break;
+            break;
 
-            case MSG_SENSOR_DATA_RDY:
+        case MSG_SENSOR_DATA_RDY:
 #ifdef INTERRUPT_BASED_SAMPLING
-                SensorDataHandler( (SensorType_t)rcvMsg->msg.msgSensorDataRdy.sensorId,
+            SensorDataHandler((InputSensor_t)rcvMsg->msg.msgSensorDataRdy.sensorId,
                     rcvMsg->msg.msgSensorDataRdy.timeStamp);
 #endif
-                break;
+            break;
 
-            default:
-                /* Unhandled messages */
-                D2_printf("Snsr:!!!UNHANDLED MESSAGE:%d!!!\r\n", rcvMsg->msgId);
-                break;
+        default:
+            /* Unhandled messages */
+            D2_printf("SensorAcqTask:!!!UNHANDLED MESSAGE:%d!!!\r\n", rcvMsg->msgId);
+            break;
         }
     }
 }
