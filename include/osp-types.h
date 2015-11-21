@@ -70,8 +70,13 @@ typedef signed char OSP_STATUS_t;
 #define OSP_STATUS_NULL_POINTER                   ((OSP_STATUS_t) -20)
 #define OSP_STATUS_INVALID_HANDLE                 ((OSP_STATUS_t) -21)
 #define OSP_STATUS_SYSTEM_INVALID_DESCRIPTOR      ((OSP_STATUS_t) -22)
-#define OSP_STATUS_SENSOR_UNSUPPORTED             ((OSP_STATUS_t) -23)   
-
+#define OSP_STATUS_SENSOR_UNSUPPORTED             ((OSP_STATUS_t) -23)
+#define OSP_STATUS_INVALID_PARAMETER              ((OSP_STATUS_t) -24)
+#define OSP_STATUS_INVALID_PACKETID               ((OSP_STATUS_t) -25)
+#define OSP_STATUS_UNSUPPORTED_FEATURE            ((OSP_STATUS_t) -26)
+#define OSP_STATUS_QUEUE_LOW_THRESHOLD            ((OSP_STATUS_t) -27)
+#define OSP_STATUS_QUEUE_HIGH_THRESHOLD           ((OSP_STATUS_t) -28)
+#define OSP_STATUS_QUEUE_EMPTY                    ((OSP_STATUS_t) -29)
 
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
