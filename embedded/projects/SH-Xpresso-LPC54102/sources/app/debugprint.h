@@ -1,7 +1,7 @@
 /* Open Sensor Platform Project
  * https://github.com/sensorplatforms/open-sensor-platform
  *
- * Copyright (C) 2013 Sensor Platforms Inc.
+ * Copyright (C) 2015 Audience Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#if !defined (APPMSGSTRUCT_H)
-#define   APPMSGSTRUCT_H
+#if !defined (DEBUGPRINT_H)
+#define   DEBUGPRINT_H
 
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
-#include <stdint.h>
+#include "common.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
@@ -30,72 +30,11 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-#pragma pack(push)  /* push current alignment to stack */
-#pragma pack(4)
-
-/* Generic structure to satisfy most sensor data passing */
-typedef struct MsgSensorDataTag
-{
-    uint32_t    timeStamp;
-    int32_t     X;
-    int32_t     Y;
-    int32_t     Z;
-    int32_t     W;
-    int32_t     HeadingError;
-    int32_t     TiltError;
-} MsgSensorData;
-
-typedef struct MsgSensorBoolTag 
-{
-    uint32_t timeStamp;
-    uint8_t  active;
-} MsgSensorBoolData;
-
-
-typedef MsgSensorData MsgAccelData;
-typedef MsgSensorData MsgMagData;
-typedef MsgSensorData MsgGyroData;
-typedef MsgSensorData MsgQuaternionData;
-typedef MsgSensorData MsgStepData;
-typedef MsgSensorData MsgOrientationData;
-typedef MsgSensorData MsgGenericTriAxisData;
-typedef MsgSensorData MsgPressData;
-typedef MsgSensorBoolData MsgSigMotionData;
-typedef MsgSensorBoolData MsgStepDetData;
-
-typedef struct MsgInclinationDataTag
-{
-    uint32_t    timeStamp;
-    int32_t     yaw;
-    int32_t     pitch;
-    int32_t     roll;   
-}  MsgInclinationData;
-
-typedef struct MsgSensorDataRdyTag
-{
-    uint32_t     timeStamp;
-    uint8_t      sensorId;
-} MsgSensorDataRdy;
-
-typedef struct MsgCDSegmentDataTag
-{
-    uint64_t endTime;
-    uint32_t duration;
-    uint8_t  type;
-} MsgCDSegmentData;
-
-
-typedef struct MsgSensorControlDataTag
-{
-    uint32_t command;
-    int32_t  data;
-    uint8_t  sensorType;
-} MsgSensorControlData;
-
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+extern PortInfo gDbgUartPort;
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
@@ -104,10 +43,70 @@ typedef struct MsgSensorControlDataTag
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+/* Platform/Device dependent macros */
+void UartDMAConfiguration( PortInfo *pPort, uint8_t *pTxBuffer, uint16_t txBufferSize );
 
-#pragma pack(pop)   /* restore original alignment from stack */
+#ifndef UART_DMA_ENABLE
+osp_bool_t GetNextByteToTx( uint8_t* pucByte );
+#else
+void *GetNextBuffer( PortInfo *pPort );
+#endif
 
-#endif /* APPMSGSTRUCT_H */
+/* Support functions for DEBUG Uart */
+static __inline void DisableDbgUartInterrupt( void ) {
+    NVIC_DisableIRQ(DBG_UART_IRQChannel);
+}
+
+static __inline void EnableDbgUartInterrupt( void ) {
+    NVIC_EnableIRQ(DBG_UART_IRQChannel);
+}
+
+#ifdef UART_DMA_ENABLE
+static __inline void EnableDbgUartDMAxferCompleteInt( void ) {
+    Chip_DMA_EnableIntChannel(LPC_DMA, DBG_UART_TX_DMA_Channel);
+}
+
+static __inline void EnableDbgUartDMAChannel( void ) {
+    Chip_DMA_EnableChannel(LPC_DMA, DBG_UART_TX_DMA_Channel);
+    /* Trigger channel to start DMA operation */
+    Chip_DMA_SetTrigChannel(LPC_DMA, DBG_UART_TX_DMA_Channel);
+}
+
+static __inline void DisableDbgUartDMAChannel( void ) {
+    Chip_DMA_DisableChannel(LPC_DMA, DBG_UART_TX_DMA_Channel);
+}
+
+static __inline void EnableDbgUartDMATxRequest( void ) {
+    //Not needed
+}
+#endif
+
+static __inline void DbgUartSendByte( uint8_t byte ) {
+    DBG_IF_UART->TXDAT = (uint32_t)byte;
+}
+
+static __inline uint8_t DbgUartReadByte( void ) {
+    return (uint8_t) (DBG_IF_UART->RXDAT & 0x000000FF);
+}
+
+static __inline osp_bool_t DbgUartTransmitBufferEmpty( void ) {
+    if (DBG_IF_UART->STAT & UART_STAT_TXRDY) {
+        return true;
+    }
+    return false;
+}
+
+static __inline void EnableDbgUartTxBufferEmptyInterrupt( void ) {
+    Chip_UART_IntEnable(DBG_IF_UART,UART_INTEN_TXRDY);
+}
+
+static __inline void DisableDbgUartTxBufferEmptyInterrupt( void ) {
+    Chip_UART_IntDisable(DBG_IF_UART,UART_INTEN_TXRDY);
+}
+
+
+
+#endif /* DEBUGPRINT_H */
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/

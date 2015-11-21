@@ -1,7 +1,7 @@
 /* Open Sensor Platform Project
  * https://github.com/sensorplatforms/open-sensor-platform
  *
- * Copyright (C) 2013 Sensor Platforms Inc.
+ * Copyright (C) 2015 Audience Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,83 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#if !defined (APPMSGSTRUCT_H)
-#define   APPMSGSTRUCT_H
-
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
-#include <stdint.h>
-
-/*-------------------------------------------------------------------------------------------------*\
- |    C O N S T A N T S   &   M A C R O S
-\*-------------------------------------------------------------------------------------------------*/
-
-/*-------------------------------------------------------------------------------------------------*\
- |    T Y P E   D E F I N I T I O N S
-\*-------------------------------------------------------------------------------------------------*/
-#pragma pack(push)  /* push current alignment to stack */
-#pragma pack(4)
-
-/* Generic structure to satisfy most sensor data passing */
-typedef struct MsgSensorDataTag
-{
-    uint32_t    timeStamp;
-    int32_t     X;
-    int32_t     Y;
-    int32_t     Z;
-    int32_t     W;
-    int32_t     HeadingError;
-    int32_t     TiltError;
-} MsgSensorData;
-
-typedef struct MsgSensorBoolTag 
-{
-    uint32_t timeStamp;
-    uint8_t  active;
-} MsgSensorBoolData;
-
-
-typedef MsgSensorData MsgAccelData;
-typedef MsgSensorData MsgMagData;
-typedef MsgSensorData MsgGyroData;
-typedef MsgSensorData MsgQuaternionData;
-typedef MsgSensorData MsgStepData;
-typedef MsgSensorData MsgOrientationData;
-typedef MsgSensorData MsgGenericTriAxisData;
-typedef MsgSensorData MsgPressData;
-typedef MsgSensorBoolData MsgSigMotionData;
-typedef MsgSensorBoolData MsgStepDetData;
-
-typedef struct MsgInclinationDataTag
-{
-    uint32_t    timeStamp;
-    int32_t     yaw;
-    int32_t     pitch;
-    int32_t     roll;   
-}  MsgInclinationData;
-
-typedef struct MsgSensorDataRdyTag
-{
-    uint32_t     timeStamp;
-    uint8_t      sensorId;
-} MsgSensorDataRdy;
-
-typedef struct MsgCDSegmentDataTag
-{
-    uint64_t endTime;
-    uint32_t duration;
-    uint8_t  type;
-} MsgCDSegmentData;
-
-
-typedef struct MsgSensorControlDataTag
-{
-    uint32_t command;
-    int32_t  data;
-    uint8_t  sensorType;
-} MsgSensorControlData;
-
+#include "common.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
@@ -100,14 +27,59 @@ typedef struct MsgSensorControlDataTag
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+/* These are the tasks that will be created on startup. This list allows you to disable creation of
+   one or more tasks in the system if so desired. Allows to have a different run modes with different
+   task selection list */
+const uint8_t NormalModeTaskList[] = {
+    INSTR_MANAGER_TASK_ID,
+    CMD_HNDLR_TASK_ID,
+    SENSOR_ACQ_TASK_ID,
+    I2CSLAVE_COMM_TASK_ID,
+    ALGORITHM_TASK_ID,
+    ALG_BG_TASK_ID
+};
+const uint8_t NormalModeTaskListSize = sizeof(NormalModeTaskList);
 
 /*-------------------------------------------------------------------------------------------------*\
- |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
+ |    P R I V A T E   C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
 
-#pragma pack(pop)   /* restore original alignment from stack */
+/*-------------------------------------------------------------------------------------------------*\
+ |    P R I V A T E   T Y P E   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
 
-#endif /* APPMSGSTRUCT_H */
+/*-------------------------------------------------------------------------------------------------*\
+ |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P R I V A T E     F U N C T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C     F U N C T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/****************************************************************************************************
+ * @fn      GetTaskList
+ *          Returns info on task list table and size based on application mode
+ *
+ * @param   pointer to task list
+ *
+ * @return  task count
+ *
+ ***************************************************************************************************/
+uint8_t GetTaskList( uint8_t **pTaskList )
+{
+    *pTaskList = (uint8_t*)NormalModeTaskList;
+    return NormalModeTaskListSize;
+}
+
+
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/
