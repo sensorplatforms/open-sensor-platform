@@ -21,14 +21,11 @@
 #include "gyro_common.h"
 #include "gyro_bmg160_i2c.h"
 #include "i2c_driver.h"
-#include "bmg160.h"
-#include "bosch_i2c_adapter.h"
 
 #ifndef I2C_DRIVER
 # error Needs I2C_DRIVER to be defined. Check Common.h
 #endif
 
-//#define _DEBUG_
 
 
 /*-------------------------------------------------------------------------------------------------*\
@@ -43,7 +40,6 @@ extern uint32_t GyroTimeExtend;
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E   C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
-#define delay_ms(msec)      os_dly_wait(MSEC_TO_TICS(msec))
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E   T Y P E   D E F I N I T I O N S
@@ -61,64 +57,6 @@ static struct bmg160_t bmg160;
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E     F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-#if 0
-/****************************************************************************************************
- * @fn      WriteGyroReg
- *          Sends data to digital Gyroscope's specified register address
- *
- ***************************************************************************************************/
-static void WriteGyroReg( uint8_t regAddr, uint8_t data )
-{
-    uint8_t result;
-
-    /* Get the transmit going. Rest is handled in the ISR */
-    result = I2C_Start_Transfer( _SENSOR_ADDR_7BIT_, regAddr, &data, 1, I2C_MASTER_WRITE );
-    APP_assert(result == I2C_ERR_OK);
-
-    /* Wait for transfer to finish before returning */
-    I2C_Wait_Completion();
-}
-
-
-/****************************************************************************************************
- * @fn      ReadGyroReg
- *          Reads data from digital Gyroscope's specified register address
- *
- ***************************************************************************************************/
-static uint8_t ReadGyroReg( uint8_t regAddr )
-{
-    uint8_t result;
-    uint8_t retVal;
-
-    /* Get the transfer going. Rest is handled in the ISR */
-    result = I2C_Start_Transfer( _SENSOR_ADDR_7BIT_, regAddr, &retVal, 1, I2C_MASTER_READ );
-    APP_assert(result == I2C_ERR_OK);
-
-    /* Wait for status */
-    I2C_Wait_Completion();
-
-    return retVal;
-}
-
-
-/****************************************************************************************************
- * @fn      ReadGyroMultiByte
- *          Reads data > 1 byte from digital Gyroscope's specified register start address
- *
- ***************************************************************************************************/
-static void ReadGyroMultiByte( uint8_t regAddr, uint8_t *pBuffer, uint8_t count )
-{
-    uint8_t result;
-    regAddr = regAddr | 0x80;     /* For multi-byte read MSB of sub-addr field should be 1 */
-
-    /* Get the transfer going. Rest is handled in the ISR */
-    result = I2C_Start_Transfer( _SENSOR_ADDR_7BIT_, regAddr, pBuffer, count, I2C_MASTER_READ );
-    APP_assert(result == I2C_ERR_OK);
-
-    /* Wait for status */
-    I2C_Wait_Completion();
-}
-#endif
 
 /****************************************************************************************************
  * @fn      Gyro_DumpRegisters
@@ -127,14 +65,7 @@ static void ReadGyroMultiByte( uint8_t regAddr, uint8_t *pBuffer, uint8_t count 
  ***************************************************************************************************/
 static void Gyro_DumpRegisters( void )
 {
-#ifdef _DEBUG_
-    D0_printf("\n------- __SENSOR__ Register Dump -------\r\n");
-    D0_printf("\t CTRL_REG1           (0x20) %02X\r\n", ReadGyroReg( REG1          ));
-    delay_ms(50);
-    D0_printf("\t FIFO_CTRL_REG       (0x2E) %02X\r\n", ReadGyroReg( REG2          ));
-    D0_printf("----------------------------------------------\r\n");
-    delay_ms(50);
-#endif
+    //TODO
 }
 
 
@@ -164,7 +95,7 @@ void Gyro_Initialize( void )
     Gyro_DumpRegisters();
 
     /* Set key registers to default on startup */
-    //Gyro_ResetDevice(); //Causing I2C problems
+    //Gyro_ResetDevice(); //Causing I2C problems- Bosch says its causes SDA to get stuck low
 
     /* Clear any existing interrupts */
     Gyro_ClearDataInt();
@@ -194,53 +125,17 @@ void Gyro_Initialize( void )
  ***************************************************************************************************/
 void Gyro_HardwareSetup( osp_bool_t enable )
 {
-    GPIO_InitTypeDef  GPIO_InitStructure;
-    NVIC_InitTypeDef  NVIC_InitStructure;
-    EXTI_InitTypeDef  EXTI_InitStructure;
-
     if (enable == true)
     {
-        /* Initialize the I2C Driver interface */
-        ASF_assert( true == I2C_HardwareSetup( I2C_SENSOR_BUS ) );
-
-        /* Enable GPIO clocks */
-        RCC_APB2PeriphClockCmd( RCC_Periph_GYRO_INT_GPIO, ENABLE );
-
-        /* Configure INT interrupt Pin */
-        GPIO_InitStructure.GPIO_Pin   = GYRO_INT;
-        GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IN;
-        GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_DOWN;
-        GPIO_InitStructure.GPIO_Speed = GPIO_Speed_400KHz; //Don't care for input mode
-        GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;     //Don't care for input mode
-        GPIO_Init (GYRO_INT_GPIO_GRP, &GPIO_InitStructure);
-
-        /* Enable SYSCFG clock */
-        RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
-        /* Connect the EXTI Line to the port pin */
-        SYSCFG_EXTILineConfig(EXTI_PORT_SRC_GYRO_INT, EXTI_PIN_SRC_GYRO_INT);
-
-        EXTI_ClearFlag(EXTI_LINE_GYRO_INT);
-
-        EXTI_InitStructure.EXTI_Line = EXTI_LINE_GYRO_INT;
-        EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-        EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
-        EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-        EXTI_Init(&EXTI_InitStructure);
-
-        /* NVIC config for INT input */
-        NVIC_ClearPendingIRQ(GYRO_INT_IRQChannel);
-        NVIC_InitStructure.NVIC_IRQChannel = GYRO_INT_IRQChannel;
-        NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = GYRO_INT_PREEMPT_PRIORITY;
-        NVIC_InitStructure.NVIC_IRQChannelSubPriority = GYRO_INT_SUB_PRIORITY;
-        NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-        NVIC_Init(&NVIC_InitStructure);
-        /* Int enabled via Gyro_ConfigDataInt() */
+        /* Initialize the Sensor interface HW (typically I2C or SPI) */
+        Board_SensorIfInit( GYRO_INPUT_SENSOR );
+        /* Note: Int enabled via Accel_ConfigDataInt() */
     }
-    else //TODO: disable interrupts and free GPIOs
+    else
     {
-        //TODO!!
+        /* Disable interrupts and free GPIOs */
+        Board_SensorIfDeinit( GYRO_INPUT_SENSOR );
     }
-
 }
 
 
@@ -252,7 +147,6 @@ void Gyro_HardwareSetup( osp_bool_t enable )
  ***************************************************************************************************/
 void Gyro_ReadData( GyroData_t *pxyzData )
 {
-    static uint32_t lastRtc = 0;
     struct    bmg160_data_t gyro_raw;
 
     bmg160_get_dataXYZ(&gyro_raw);
@@ -261,11 +155,6 @@ void Gyro_ReadData( GyroData_t *pxyzData )
     pxyzData->Z = gyro_raw.dataz;
     //add timestamp here!
     pxyzData->timeStamp = RTC_GetCounter();
-    if (pxyzData->timeStamp < lastRtc)
-    {
-        GyroTimeExtend++; //Rollover counter
-    }
-    lastRtc = pxyzData->timeStamp;
 }
 
 
@@ -276,6 +165,8 @@ void Gyro_ReadData( GyroData_t *pxyzData )
  ***************************************************************************************************/
 void Gyro_ClearDataInt( void )
 {
+    /* Note: DRDY is normally cleared on Data read but otherwise since we don't latch DRDY interrupt,
+       we don't need to do data read to clear any pending interrupts */
 }
 
 
@@ -289,9 +180,13 @@ void Gyro_ConfigDataInt( osp_bool_t enInt )
     if (enInt)
     {
         bmg160_set_data_en(1);
+
+        /* Enable interrupt in the NVIC */
+        NVIC_EnableIRQ(GYRO_PINT_IRQn);
     }
     else
     {
+        NVIC_DisableIRQ(GYRO_PINT_IRQn);
         bmg160_set_data_en(0);
     }
 }
@@ -305,7 +200,7 @@ void Gyro_ConfigDataInt( osp_bool_t enInt )
 void Gyro_ResetDevice( void )
 {
     /* Soft Reset device */
-    bmg160_set_soft_reset(); // Problem with I2C at 1.8V, OK for YS-SH
+    bmg160_set_soft_reset(); // Problem with I2C at 1.8V
     dev_i2c_delay(10);
 }
 
