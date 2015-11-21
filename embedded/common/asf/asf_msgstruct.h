@@ -45,9 +45,11 @@
 /* ASF common message structures */
 typedef struct MsgGenericTag
 {
-    uint32_t dword;
-    uint16_t word;
-    uint8_t  byte;
+    union {
+        uint32_t dword;
+        uint16_t word;
+        uint8_t  byte;
+    } U;
 } MsgGeneric;
 
 typedef struct MsgNoDataTag
