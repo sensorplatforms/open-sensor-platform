@@ -546,11 +546,6 @@
           <GroupName>App-Common</GroupName>
           <Files>
             <File>
-              <FileName>algorithm_t.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\app\algorithm_t.c</FilePath>
-            </File>
-            <File>
               <FileName>cmdhandler_t.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\common\app\cmdhandler_t.c</FilePath>
@@ -570,16 +565,16 @@
               <FileType>1</FileType>
               <FilePath>..\..\..\common\app\instrmgr_user.c</FilePath>
             </File>
-            <File>
-              <FileName>sensoracq_t.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\app\sensoracq_t.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>App</GroupName>
           <Files>
+            <File>
+              <FileName>algorithm_t.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sources\app\algorithm_t.c</FilePath>
+            </File>
             <File>
               <FileName>console_util.c</FileName>
               <FileType>1</FileType>
@@ -594,6 +589,11 @@
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sources\app\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>sensoracq_t.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sources\app\sensoracq_t.c</FilePath>
             </File>
             <File>
               <FileName>taskinit_user.c</FileName>
