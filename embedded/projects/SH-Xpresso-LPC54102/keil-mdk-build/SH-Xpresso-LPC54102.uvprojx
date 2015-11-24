@@ -604,35 +604,20 @@
               <FileType>1</FileType>
               <FilePath>..\..\..\common\app\instrmgr_user.c</FilePath>
             </File>
-            <File>
-              <FileName>algorithm_t.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\app\algorithm_t.c</FilePath>
-            </File>
-            <File>
-              <FileName>sensoracq_t.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\app\sensoracq_t.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>App</GroupName>
           <Files>
             <File>
+              <FileName>algorithm_t.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sources\app\algorithm_t.c</FilePath>
+            </File>
+            <File>
               <FileName>console_util.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sources\app\console_util.c</FilePath>
-            </File>
-            <File>
-              <FileName>taskinit_user.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\sources\app\taskinit_user.c</FilePath>
-            </File>
-            <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\sources\app\main.c</FilePath>
             </File>
             <File>
               <FileName>hostif_i2c.c</FileName>
@@ -643,6 +628,21 @@
               <FileName>i2c_slavecomm_t.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sources\app\i2c_slavecomm_t.c</FilePath>
+            </File>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sources\app\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>sensoracq_t.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sources\app\sensoracq_t.c</FilePath>
+            </File>
+            <File>
+              <FileName>taskinit_user.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sources\app\taskinit_user.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1344,35 +1344,20 @@
               <FileType>1</FileType>
               <FilePath>..\..\..\common\app\instrmgr_user.c</FilePath>
             </File>
-            <File>
-              <FileName>algorithm_t.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\app\algorithm_t.c</FilePath>
-            </File>
-            <File>
-              <FileName>sensoracq_t.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\app\sensoracq_t.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>App</GroupName>
           <Files>
             <File>
+              <FileName>algorithm_t.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sources\app\algorithm_t.c</FilePath>
+            </File>
+            <File>
               <FileName>console_util.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sources\app\console_util.c</FilePath>
-            </File>
-            <File>
-              <FileName>taskinit_user.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\sources\app\taskinit_user.c</FilePath>
-            </File>
-            <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\sources\app\main.c</FilePath>
             </File>
             <File>
               <FileName>hostif_i2c.c</FileName>
@@ -1383,6 +1368,21 @@
               <FileName>i2c_slavecomm_t.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sources\app\i2c_slavecomm_t.c</FilePath>
+            </File>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sources\app\main.c</FilePath>
+            </File>
+            <File>
+              <FileName>sensoracq_t.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sources\app\sensoracq_t.c</FilePath>
+            </File>
+            <File>
+              <FileName>taskinit_user.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sources\app\taskinit_user.c</FilePath>
             </File>
           </Files>
         </Group>
