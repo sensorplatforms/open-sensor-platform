@@ -118,6 +118,21 @@ static uint8_t SerialRead( PortInfo *pPort, int8_t *pBuff, uint16_t length, uint
 }
 
 
+#if defined ON_DEMAND_PROFILING && defined ASF_PROFILING
+/****************************************************************************************************
+ * @fn      SendProfilingReq
+ *          Sends message to the instrumentation task that causes profiling data to be displayed
+ *
+ ***************************************************************************************************/
+static void SendProfilingReq( void )
+{
+    MessageBuffer *pSendMsg = NULLP;
+    ASF_assert( ASFCreateMessage( MSG_PROFILING_REQ, sizeof(MsgNoData), &pSendMsg ) == ASF_OK );
+    ASF_assert( ASFSendMessage( INSTR_MANAGER_TASK_ID, pSendMsg ) == ASF_OK );
+}
+#endif
+
+
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C     F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
@@ -144,7 +159,16 @@ ASF_TASK void CmdHandlerTask( ASF_TASK_ARG )
         retVal = SerialRead( &gDbgUartPort, inputBuffer, COMMAND_LINE_SIZE-1, &bytesRead );
         if (retVal == APP_OK)
         {
-            CmdParse_User( inputBuffer, bytesRead ); //Implemented in application code
+#if defined ON_DEMAND_PROFILING && defined ASF_PROFILING
+            if (inputBuffer[0] == TOKEN_STATS)
+            {
+                SendProfilingReq();
+            }
+            else
+#endif
+            {
+                CmdParse_User( inputBuffer, bytesRead ); //Implemented in application code
+            }
         }
     }
 }

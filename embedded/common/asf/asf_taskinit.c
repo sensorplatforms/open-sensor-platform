@@ -29,6 +29,10 @@
 void ASFMessagingInit( void );
 extern uint8_t GetTaskList( uint8_t **pTaskList );
 
+#ifdef ASF_PROFILING
+ extern const char C_gStackPattern[8];
+#endif
+
 
 #define STACK_INCREASE                  0
 
@@ -75,6 +79,11 @@ const AsfTaskInitDef C_gAsfTaskInitTable[NUMBER_OF_TASKS] =
  * the TaskId for each task. This is initialized during AsfInitialiseTasks()
  */
 AsfTaskHandle asfTaskHandleTable[NUMBER_OF_TASKS];
+
+#ifdef ASF_PROFILING
+ /* Reference start time */
+ uint32_t gSystemRTCRefTime;
+#endif
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E   C O N S T A N T S   &   M A C R O S
@@ -128,6 +137,10 @@ void InitializeTasks( void )
     TaskId tid;
     uint8_t *pTaskTable;
     uint32_t *pU64Aligned;
+#ifdef ASF_PROFILING
+    uint32_t *pStack;
+    uint32_t i;
+#endif
 
     /* Create tasks  based on the mode we are in */
     numTasks = GetTaskList( &pTaskTable );
@@ -143,6 +156,14 @@ void InitializeTasks( void )
             ASF_assert( pU64Aligned != NULL );
             ASF_assert( ((uint32_t)pU64Aligned & 0x7) == 0 ); //Ensure 64-bit aligned
 
+#ifdef ASF_PROFILING
+            pStack = pU64Aligned;
+            for ( i = 0; i < C_gAsfTaskInitTable[tid].stackSize/sizeof(C_gStackPattern); i++)
+            {
+                *pStack++ = *((uint32_t *)C_gStackPattern);
+                *pStack++ = *((uint32_t *)(C_gStackPattern+4));
+            }
+#endif
             asfTaskHandleTable[tid].handle  = os_tsk_create_user( C_gAsfTaskInitTable[tid].entryPoint,
                 C_gAsfTaskInitTable[tid].priority, pU64Aligned, C_gAsfTaskInitTable[tid].stackSize);
             ASF_assert( asfTaskHandleTable[tid].handle != 0 );
@@ -157,8 +178,15 @@ void InitializeTasks( void )
         }
     }
 
+
     /* Initialize the messaging */
     ASFMessagingInit();
+
+
+#ifdef ASF_PROFILING
+    /* Capture the reference time before any other tasks run */
+    gSystemRTCRefTime = RTC_GetCounter();
+#endif
 
     /* Switch the priority to be lowest now */
     os_tsk_prio_self( C_gAsfTaskInitTable[INSTR_MANAGER_TASK_ID].priority );
@@ -179,10 +207,33 @@ void InitializeTasks( void )
 void AsfInitialiseTasks ( void )
 {
     uint32_t *pU64Aligned;
+#ifdef ASF_PROFILING
+    uint32_t *pStack, i;
+    extern uint64_t mp_stk[];
+    extern const uint32_t mp_stk_size;
+#endif
 
     /* NOTE: All mallocs are 8-byte aligned as per ARM stack alignment requirements */
     pU64Aligned = malloc( C_gAsfTaskInitTable[INSTR_MANAGER_TASK_ID].stackSize );
     ASF_assert( ((uint32_t)pU64Aligned & 0x7) == 0 ); //Ensure 64-bit aligned
+
+#ifdef ASF_PROFILING
+    /* Setup the RTX allocated task stack (inc. IDLE task) for profiling purposes */
+    pStack = (uint32_t *)mp_stk;
+    for ( i = 0; i < mp_stk_size/sizeof(C_gStackPattern); i++)
+    {
+        *pStack++ = *((uint32_t *)C_gStackPattern);
+        *pStack++ = *((uint32_t *)(C_gStackPattern+4));
+    }
+
+    /* Profiling for initial task */
+    pStack = pU64Aligned;
+    for ( i = 0; i < C_gAsfTaskInitTable[INSTR_MANAGER_TASK_ID].stackSize/sizeof(C_gStackPattern); i++)
+    {
+        *pStack++ = *((uint32_t *)C_gStackPattern);
+        *pStack++ = *((uint32_t *)(C_gStackPattern+4));
+    }
+#endif
 
     asfTaskHandleTable[INSTR_MANAGER_TASK_ID].handle  = 1; //Initial task always gets this OS_ID
     asfTaskHandleTable[INSTR_MANAGER_TASK_ID].stkSize = C_gAsfTaskInitTable[INSTR_MANAGER_TASK_ID].stackSize;
