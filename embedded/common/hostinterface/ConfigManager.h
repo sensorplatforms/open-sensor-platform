@@ -15,30 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#if !defined (BLOCK_MEMORY_H)
-#define   BLOCK_MEMORY_H
+#if !defined (CONFIG_MANAGER_H)
+#define   CONFIG_MANAGER_H
 
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
-\*-------------------------------------------------------------------------------------------------*/
-#include "common.h"
+ \*-------------------------------------------------------------------------------------------------*/
+#include "SensorPackets.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
-\*-------------------------------------------------------------------------------------------------*/
-#define SETUP_CRITICAL_SECTION()        OS_SETUP_CRITICAL()
-#define ENTER_CRITICAL_SECTION()        OS_ENTER_CRITICAL()
-#define EXIT_CRITICAL_SECTION()         OS_LEAVE_CRITICAL()
-
-/* The DECLARE_BLOCK_POOL macro declares an array of bytes that can be used as a memory pool for fixed
- * block allocation.
- * @param [IN]pool - User defined unique C-Style name of the pool
- * @param [IN]size - Size in bytes of each memory block that will be allocated from the pool
- * @param [IN]cnt - Number of blocks the pool should contain
- */
-#define DECLARE_BLOCK_POOL(pool,size,cnt)     uint32_t pool[(((size)+3)/4)*(cnt) + 5]
-/* Note: +5 is to account for size (in 32-bit values) of local block structure (BlkMem_t) */
-
+ \*-------------------------------------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
@@ -55,13 +42,19 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-int16_t InitBlockPool( void *pPool, uint32_t poolSizeBytes, uint32_t blkSize );
-void *AllocBlock( void *pPool );
-int16_t FreeBlock( void *pPool, void *pBlock );
-void GetPoolStats( void *pPool, uint32_t *pTotalCount, uint32_t *pUsedCount );
 
+/* SHConfigManager_ProcessControlRequest:  Parse serialized Control Request packet, take action as necessary 
+ *
+ *          Parse serialized Control Request packet, take action as necessary 
+ *          (rejecting if action not allowed by current Batch state), make serialized 
+ *          Control Response packet and send to BatchManager Enqueue, if indicated (if 
+ *          Sequence Number field in Request packet is nonzero).  Returns 
+ *          negative error code on non-respondable error, otherwise zero if no response 
+ *          requested, otherwise positive response packet length.
+ */
+int32_t SHConfigManager_ProcessControlRequest( const uint8_t *pRequestPacket, uint16_t requestPacketBufferSize );
 
-#endif /* BLOCK_MEMORY_H */
+#endif /* CONFIG_MANAGER_H */
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/

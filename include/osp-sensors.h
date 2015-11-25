@@ -1,7 +1,7 @@
 /* Open Sensor Platform Project
  * https://github.com/sensorplatforms/open-sensor-platform
  *
- * Copyright (C) 2013 Sensor Platforms Inc.
+ * Copyright (C) 2015 Audience Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,9 +33,10 @@
 #define SENSOR_SUBTYPE_UNUSED               0   //!< Subtype is not used for the sensor type
 #define SENSOR_SUBTYPE_START                1   //!< Subtype enumeration starts with 1
 #define SENSOR_DEVICE_PRIVATE_BASE          0x10000 //!< Android defined private sensor type base
+#define SENSOR_DEVICE_PRIVATE_MASK          0xFFFF  //!< Private sensor type mask
 
 #define M_PSensorToAndroidBase(type)        ((type) | SENSOR_DEVICE_PRIVATE_BASE)
-#define M_AndroidToPSensorBase(type)        ( type & 0xFFFF)
+#define M_ToBaseSensorEnum(type)            ((type) & SENSOR_DEVICE_PRIVATE_MASK)
 
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
@@ -259,3 +260,4 @@ typedef enum _GestureSubType {
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/
+

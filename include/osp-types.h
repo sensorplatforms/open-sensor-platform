@@ -1,7 +1,7 @@
 /* Open Sensor Platform Project
  * https://github.com/sensorplatforms/open-sensor-platform
  *
- * Copyright (C) 2013 Sensor Platforms Inc.
+ * Copyright (C) 2015 Audience Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,6 +77,11 @@ typedef signed char OSP_STATUS_t;
 #define OSP_STATUS_QUEUE_LOW_THRESHOLD            ((OSP_STATUS_t) -27)
 #define OSP_STATUS_QUEUE_HIGH_THRESHOLD           ((OSP_STATUS_t) -28)
 #define OSP_STATUS_QUEUE_EMPTY                    ((OSP_STATUS_t) -29)
+#define OSP_STATUS_UNINITIALIZED                  ((OSP_STATUS_t) -30)
+#define OSP_STATUS_INVALID_CRC                    ((OSP_STATUS_t) -31)
+#define OSP_STATUS_FLUSH_CTRL_RSP_Q_ERR           ((OSP_STATUS_t) -32)
+#define OSP_STATUS_FLUSH_WAKEUP_Q_ERR             ((OSP_STATUS_t) -33)
+#define OSP_STATUS_FLUSH_NONWAKEUP_Q_ERR          ((OSP_STATUS_t) -34)
 
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S

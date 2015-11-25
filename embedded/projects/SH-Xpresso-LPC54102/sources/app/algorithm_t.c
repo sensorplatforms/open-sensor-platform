@@ -1023,7 +1023,7 @@ OSP_STATUS_t Algorithm_SubscribeSensor( ASensorType_t sensor)
 
     // Now subscribe the sensor result
     if ( IsPrivateAndroidSensor(sensor) ) {
-        ASensorType_t PSensor =  (ASensorType_t)M_AndroidToPSensorBase(sensor);
+        ASensorType_t PSensor =  (ASensorType_t)M_ToBaseSensorEnum(sensor);
         status = OSP_SubscribeSensorResult(pResultDesc, &_outPSensorHandles[PSensor]);
     } else {
         status = OSP_SubscribeSensorResult(pResultDesc, &_outSensorHandles[sensor]);
@@ -1054,7 +1054,7 @@ OSP_STATUS_t Algorithm_UnsubscribeSensor( ASensorType_t sensor)
 
     if ( IsPrivateAndroidSensor(sensor) ) {
         // Private Android sensor
-        ASensorType_t PSensor =  (ASensorType_t)M_AndroidToPSensorBase(sensor);
+        ASensorType_t PSensor =  (ASensorType_t)M_ToBaseSensorEnum(sensor);
         if ( _outPSensorHandles[PSensor] != NULL ) {
            status =  OSP_UnsubscribeSensorResult(_outPSensorHandles[PSensor]);
            _outPSensorHandles[PSensor] = NULL;
