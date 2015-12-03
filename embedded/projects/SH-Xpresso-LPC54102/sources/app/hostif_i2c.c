@@ -24,6 +24,7 @@
 #include "i2cs_driver.h"
 #include "hostif_i2c.h"
 #include <string.h>
+#include "Driver_GPIO.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
@@ -62,6 +63,11 @@ typedef struct _HostGCResponse
     uint8_t szMSB;    //data size MSB
     uint8_t szLSB;    //data size LSB
 } HostGCResponse_t;
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+extern ARM_DRIVER_GPIO Driver_GPIO;
 
 typedef struct __HOSTIF_Ctrl_t {
     uint16_t rxCount;            /* Bytes so far received  */
@@ -362,10 +368,10 @@ void Hostif_I2C_Init(void)
     i2c_slave_mode(&slave_i2c_handle,1);
 
     /* init host interrupt pin */
-    Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, HOSTIF_IRQ_PORT, HOSTIF_IRQ_PIN);
+    Driver_GPIO.SetDirection (ENCODE_PORT_PIN(HOSTIF_IRQ_PORT, HOSTIF_IRQ_PIN), ARM_GPIO_DIR_OUTPUT);
     /* de-assert interrupt line to high to indicate Host/AP that
-    * there is no data to receive */
-    Chip_GPIO_SetPinState(LPC_GPIO_PORT, HOSTIF_IRQ_PORT, HOSTIF_IRQ_PIN, 0);
+     * there is no data to receive */
+    Driver_GPIO.WritePin (ENCODE_PORT_PIN(HOSTIF_IRQ_PORT, HOSTIF_IRQ_PIN), false);
 
     /* Enable the interrupt for the I2C */
     NVIC_SetPriority(I2C_HOSTIF_IRQn, HOSTIF_IRQ_PRIORITY);

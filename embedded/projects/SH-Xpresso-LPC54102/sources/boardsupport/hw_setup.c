@@ -21,10 +21,12 @@
 #include "common.h"
 #include "timer_5410x.h"
 #include "i2c_driver.h"
+#include "Driver_GPIO.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+extern ARM_DRIVER_GPIO Driver_GPIO;
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
@@ -41,45 +43,8 @@ const GpioInfo_t DiagLEDs[NUM_LEDS] = {PINS_LEDS};
 \*-------------------------------------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------------------------------------*\
- |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
-\*-------------------------------------------------------------------------------------------------*/
-/* Pin muxing table, only items that need changing from their default pin
-   state are in this table. Not every pin is mapped. */
-//TODO Pin init should be moved to respective modules handling the pin function
-STATIC const PINMUX_GRP_T pinmuxing[] = {
-
-    /* I2C1 standard/fast (bridge) */
-    {0, 27, (IOCON_FUNC1 | IOCON_MODE_INACT | IOCON_DIGITAL_EN | IOCON_STDI2C_EN)},    /* BRIDGE_SCL (SCL) */
-    {0, 28, (IOCON_FUNC1 | IOCON_MODE_INACT | IOCON_DIGITAL_EN | IOCON_STDI2C_EN)},    /* BRIDGE_SDA (SDA) */
-
-    /* Sensor related */
-    {0, 4,  (IOCON_FUNC0 | IOCON_MODE_PULLDOWN | IOCON_DIGITAL_EN)}, /* GYR_INT1 (GPIO input) */
-    {0, 18, (IOCON_FUNC0 | IOCON_MODE_INACT | IOCON_DIGITAL_EN)},    /* CT32B0_MAT0-ACCL_INT1 */
-    {0, 22, (IOCON_FUNC0 | IOCON_MODE_PULLDOWN | IOCON_DIGITAL_EN)}, /* MAG_DRDY_INT (GPIO input) */
-
-};
-
-/*-------------------------------------------------------------------------------------------------*\
  |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-
-/*-------------------------------------------------------------------------------------------------*\
- |    P R I V A T E     F U N C T I O N S
-\*-------------------------------------------------------------------------------------------------*/
-
-/****************************************************************************************************
- * @fn      GPIO_AINConfig
- *          Configures all IOs as AIN to reduce the power consumption.
- *
- * @param   none
- *
- * @return  none
- *
- ***************************************************************************************************/
-static void GPIO_AINConfig(void)
-{
-}
-
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C     F U N C T I O N S
@@ -143,46 +108,11 @@ void LED_Init( void )
         Chip_IOCON_PinMuxSet(LPC_IOCON, DiagLEDs[index].PinDef.port, DiagLEDs[index].PinDef.pin,
             DiagLEDs[index].PinDef.modefunc);
 
-        Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, DiagLEDs[index].PinDef.port, DiagLEDs[index].PinDef.pin);
+        Driver_GPIO.SetDirection (ENCODE_PORT_PIN(DiagLEDs[index].PinDef.port,DiagLEDs[index].PinDef.pin), ARM_GPIO_DIR_OUTPUT);
 
         LED_Off(index);
     }
 }
-
-
-/****************************************************************************************************
- * @fn      SystemGPIOConfig
- *          Configures the various GPIO ports on the chip according to the usage by various
- *          peripherals.
- *
- * @param   none
- *
- * @return  none
- *
- ***************************************************************************************************/
-void SystemGPIOConfig( void )
-{
-    /* Set all GPIOs to analog input mode to begin with */
-    GPIO_AINConfig();
-
-    /* Enable the peripheral clock in the PMC */
-    Chip_GPIO_Init(LPC_GPIO_PORT);
-
-    /* Setup the Sensor Hub interrupt pin as output */
-    //Chip_IOCON_Config(LPC_IOCON, SH_INT_PIN);
-    //Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, SH_INT_GPIO_GRP, SH_INT_GPIO_PIN);
-    //SensorHubIntLow(); //Deassert on startup
-
-    /* TODO: Catch ALL for uninitialized pins... should be moved to respective modules */
-    Chip_IOCON_SetPinMuxing(LPC_IOCON, pinmuxing, sizeof(pinmuxing) / sizeof(PINMUX_GRP_T));
-
-    /* Setup DMA Common here since its not specific to any peripheral */
-    Chip_DMA_Init(LPC_DMA);
-    //Chip_SYSCON_PeriphReset(RESET_DMA);
-    Chip_DMA_Enable(LPC_DMA);
-    Chip_DMA_SetSRAMBase(LPC_DMA, DMA_ADDR(Chip_DMA_Table));
-}
-
 
 /****************************************************************************************************
  * @fn      SystemInterruptConfig

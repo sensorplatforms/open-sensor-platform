@@ -65,6 +65,12 @@
 /* ########################################################################## */
 /* Diagnostic GPIOs */
 #define LPC_GPIO_PORT LPC_GPIO
+#define NC (uint32_t)0xFFFFFFFF
+typedef uint32_t PinName;
+
+#define ENCODE_PORT_PIN(port,pin) (PinName)(((uint32_t)port << 16) + (uint16_t)pin)
+#define DECODE_PORT(X) (((uint32_t)(X) >> 16) & 0xF)
+#define DECODE_PIN(X)  ((uint32_t)(X) & 0xFFFF)
 
 /* Diagnostic LEDs on this board */
 enum _Leds { //Sequence must correspond to PINS_LED definition

@@ -20,6 +20,7 @@
 \*-------------------------------------------------------------------------------------------------*/
 #include "common.h"
 #include "hw_setup.h"
+#include "Driver_GPIO.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
@@ -29,6 +30,7 @@
   extern uint32_t gStackSize;
   extern const char C_gStackPattern[8];
 #endif
+extern ARM_DRIVER_GPIO Driver_GPIO;
 
 void SPISlaveSetup( void );
 
@@ -102,7 +104,7 @@ int main( void )
     SystemCoreClockUpdate();
 
     /* Configure the GPIO ports (non module specific) */
-    SystemGPIOConfig();
+    Driver_GPIO.Initialize();
 
     /* Set startup state of LEDs */
     LED_Init();                   /* Initialize Debug LEDs */
