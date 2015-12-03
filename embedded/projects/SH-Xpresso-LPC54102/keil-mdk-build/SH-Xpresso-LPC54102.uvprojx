@@ -743,6 +743,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\bmm050.c</FilePath>
             </File>
+            <File>
+              <FileName>Driver_Sensor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\Driver_Sensor.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1531,6 +1536,11 @@
               <FileName>bmm050.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\bmm050.c</FilePath>
+            </File>
+            <File>
+              <FileName>Driver_Sensor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\Driver_Sensor.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2321,6 +2331,11 @@
               <FileType>1</FileType>
               <FilePath>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\bmm050.c</FilePath>
             </File>
+            <File>
+              <FileName>Driver_Sensor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\Driver_Sensor.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -3109,6 +3124,11 @@
               <FileName>bmm050.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\bmm050.c</FilePath>
+            </File>
+            <File>
+              <FileName>Driver_Sensor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\Driver_Sensor.c</FilePath>
             </File>
           </Files>
         </Group>
