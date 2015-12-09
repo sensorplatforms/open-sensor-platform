@@ -32,10 +32,14 @@
 #include <stdint.h>
 #include "common.h"
 #include "osp-types.h"
-#include "i2cs_driver.h"
+#include "Driver_I2C.h"
 
 uint8_t process_command(uint8_t *rx_buf, uint16_t length);
-
+/*****************************************************************************
+ * EXTERNAL VARIABLES & FUNCTIONS
+ ****************************************************************************/
+void 	MX_I2C2_IRQHandler ( void );
+extern 	ARM_DRIVER_I2C Driver_I2C2;
 /*****************************************************************************
  * Private types/enumerations/variables
  ****************************************************************************/
@@ -58,7 +62,7 @@ typedef struct __HOSTIF_Ctrl_t {
 } Hostif_Ctrl_t;
 
 static Hostif_Ctrl_t g_hostif;
-static i2c_t slave_i2c_handle;
+static uint32_t      i2c_event = ARM_I2C_EVENT_GENERAL_CALL;
 
 #define I2C_MEM_SZ    64 /* Size of memory for I2C Slave ROM driver */
 
@@ -92,37 +96,59 @@ static void Hostif_TxNext(int magic);
 /*****************************************************************************
  * Public functions
  ****************************************************************************/
+/******************************************************************************
+ * @fn      i2c2_callback
+ *            This function is the registered callback to get the event notifications
+ *
+ * @param   event - I2C event (Transfer or receive)
+ *
+ * @return   None
+ *
+ ******************************************************************************/
+void i2c2_callback( uint32_t event )
+{
+    i2c_event = event;
+}
 
-/* I2CS Interrupt handler.
- * This function is called whenever there is an I2C interrupt service request
- * on the hostif I2C bus.
- */
+/******************************************************************************
+* @fn      I2C_HOSTIF_IRQHandler
+*            Host interface IRQ handler, processes command received from host
+*            Queues the next buffer for transfer after transmit complete operation
+*
+* @param   event - I2C event (Transfer or receive)
+*
+* @return   None
+*
+******************************************************************************/
+
 void I2C_HOSTIF_IRQHandler(void)
 {
-    slave_i2c_handle.i2c_operation = 0;
+    uint8_t rxBuff[RX_LENGTH];
 
-    // This transfer handler will call one of the registered callback to
-    // to service the I2C event.
-    i2c_slave_receive(&slave_i2c_handle);
+    /* This transfer handler will call one of the registered callback
+       to service the I2C event. */
+    i2c_event = ARM_I2C_EVENT_GENERAL_CALL;
+    MX_I2C2_IRQHandler();
 
-    if ( slave_i2c_handle.i2c_operation == 0x1)
+    if ( i2c_event == ARM_I2C_EVENT_SLAVE_RECEIVE )
     {
         uint8_t ret;
-        ret = process_command( slave_i2c_handle.pXfer.rxBuff,
-                                 slave_i2c_handle.pXfer.rxSz);
-        if ( slave_i2c_handle.rxBuff == slave_i2c_handle.pXfer.rxBuff )
-        {
-            slave_i2c_handle.pXfer.rxSz  = ret;
-        }
+        uint8_t read_bytes = 0;
+        read_bytes = Driver_I2C2.GetDataCount();
+        ASF_assert( RX_LENGTH > read_bytes );
+        ASF_assert( ARM_DRIVER_OK == Driver_I2C2.SlaveReceive( rxBuff, read_bytes ));
+        ret = process_command( rxBuff,
+                               read_bytes );
+        ASF_assert( ret == 0 );
     }
 
-    if ( slave_i2c_handle.i2c_operation == 0x2 )
+    if ( i2c_event == ARM_I2C_EVENT_SLAVE_TRANSMIT )
     {
         /* Assume each transmission will transmit all the requested data
          * so no need to keep track how many been transmitted.
          * check if there is any additional data to send
          */
-        Hostif_TxNext(0x0d000000);        // Not sure what the magic number mean?
+        Hostif_TxNext( 0x0d000000 );        // Not sure what the magic number mean?
     }
 }
 
@@ -145,7 +171,7 @@ void Hostif_StartTx(uint8_t *pBuf, uint16_t size, int magic)
      * No actual transmission happens here, but the I2c HAL keeps the buffer for transmission
      * when the master is actually ready to receive.
      */
-    i2c_slave_write(&slave_i2c_handle,(const char *)pBuf,size-1);
+    Driver_I2C2.SlaveTransmit( (const uint8_t *)pBuf, (size-1) );
     g_hostif.txLength_next = 0;
     g_hostif.txBuff_next = 0;
 }
@@ -178,7 +204,7 @@ void Hostif_TxNext(int magic)
      * No actual transmission happens here, but the I2c HAL keeps the buffer for transmission
      * when the master is actually ready to receive.
      */
-    i2c_slave_write(&slave_i2c_handle,(const char *)g_hostif.txBuff,i_tx_size);
+    Driver_I2C2.SlaveTransmit( (const uint8_t *)g_hostif.txBuff, i_tx_size );
 }
 
 void CHostif_StartTxChained(uint8_t *pBuf, uint16_t size,
@@ -202,7 +228,7 @@ void CHostif_StartTxChained(uint8_t *pBuf, uint16_t size,
       * No actual transmission happens here, but the I2c HAL keeps the buffer for transmission
       * when the master is actually ready to receive.
       */
-    i2c_slave_write(&slave_i2c_handle,(const char *)pBuf,size-1);
+    Driver_I2C2.SlaveTransmit( (const uint8_t *)pBuf, (size-1) );
 
    // Note: printf in IRQ tends to crash the system so use only in debugging code
 }
@@ -213,28 +239,13 @@ void Hostif_Init(void)
     /* reset host IF control data structure */
     memset(&g_hostif, 0, sizeof(Hostif_Ctrl_t));
 
-    slave_i2c_handle.pXfer.rxSz = 0;
-    slave_i2c_handle.ui_slave_address = I2C_HOSTIF_ADDR;
-    slave_i2c_handle.uc_slave_index = 0;
-    slave_i2c_handle.i2c = I2C_LPC_2;
     /* I2C slave initialisation */
-    i2c_init(&slave_i2c_handle);
+    Driver_I2C2.Initialize( i2c2_callback );
 
     /* Setup slave address to respond to */
-    i2c_slave_mode(&slave_i2c_handle,1);
+    Driver_I2C2.PowerControl( ARM_POWER_FULL );
     /* init host interrupt pin */
 
-    Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, HOSTIF_IRQ_PORT, HOSTIF_IRQ_PIN);
-    /* de-assert interrupt line to high to indicate Host/AP that
-     * there is no data to receive */
-    Chip_GPIO_SetPinState(LPC_GPIO_PORT, HOSTIF_IRQ_PORT, HOSTIF_IRQ_PIN, 0);
-
-    /* Enable the interrupt for the I2C */
-    NVIC_SetPriority(I2C_HOSTIF_IRQn, HOSTIF_IRQ_PRIORITY);
-    NVIC_EnableIRQ(I2C_HOSTIF_IRQn);
-
-    /* enable I2C hostif to wake-up the sensor hub */
-    Chip_SYSCON_EnableWakeup(I2C_HOSTIF_WAKE);
 
     D0_printf("%s initialization done\r\n", __FUNCTION__);
 }

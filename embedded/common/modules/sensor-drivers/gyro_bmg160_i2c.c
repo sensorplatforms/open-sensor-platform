@@ -20,7 +20,6 @@
 \*-------------------------------------------------------------------------------------------------*/
 #include "gyro_common.h"
 #include "gyro_bmg160_i2c.h"
-#include "i2c_driver.h"
 
 #ifndef I2C_DRIVER
 # error Needs I2C_DRIVER to be defined. Check Common.h

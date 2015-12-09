@@ -10,7 +10,7 @@
       <TargetName>LPC54102 [Debug]</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>5060061::V5.06 update 1 (build 61)::ARMCC</pCCUsed>
+      <pCCUsed>5060020::V5.06 (build 20)::ARMCC</pCCUsed>
       <TargetOption>
         <TargetCommonOption>
           <Device>LPC54101J512BD64:M4</Device>
@@ -373,7 +373,7 @@
               <MiscControls></MiscControls>
               <Define>SYSTEM_CLOCK_FREQ=96000000, __FPU_PRESENT=1, CHIP_LPC5410X, CORE_M4, DEBUG_BUILD, XPRESSO_LPC54102_BOARD, UART_DMA_ENABLE, ANDROID_DEMO</Define>
               <Undefine></Undefine>
-              <IncludePath>..\sources\app;..\sources\config;..\sources\boardsupport;..\..\..\..\include;..\..\..\common\app;..\..\..\common\asf;..\..\..\common\alg;..\..\..\..\external\rtos\rtx\inc;..\..\..\..\external\rtos\rtx\cm;..\..\..\..\external\MCU\NXP-5410x\CSLib\inc;..\..\..\common\modules\bus-drivers;..\..\..\common\modules\sensor-drivers;..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec;..\..\..\common\hostinterface</IncludePath>
+              <IncludePath>..\sources\app;..\sources\config;..\sources\boardsupport;..\..\..\..\include;..\..\..\common\app;..\..\..\common\asf;..\..\..\common\alg;..\..\..\..\external\rtos\rtx\inc;..\..\..\..\external\rtos\rtx\cm;..\..\..\..\external\MCU\NXP-5410x\CSLib\inc;..\..\..\common\modules\sensor-drivers;..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec;..\..\..\common\hostinterface;..\..\..\..\external\CMSIS\Driver\Include;..\..\..\..\embedded\Drivers\CMSIS\Device\NXP\LPC5410x\Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -689,19 +689,9 @@
           <GroupName>BusDrivers</GroupName>
           <Files>
             <File>
-              <FileName>I2C_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\modules\bus-drivers\lpc5410x-cm4\I2C_Driver.c</FilePath>
-            </File>
-            <File>
               <FileName>SPI_SlaveDriver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sources\boardsupport\SPI_SlaveDriver.c</FilePath>
-            </File>
-            <File>
-              <FileName>I2CS_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\modules\bus-drivers\lpc5410x-cm4\I2CS_Driver.c</FilePath>
             </File>
             <File>
               <FileName>Bosch_I2C_Adapter.c</FileName>
@@ -762,6 +752,16 @@
               <FileName>SensorPackets.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\common\hostinterface\SensorPackets.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>CMSIS-HAL</GroupName>
+          <Files>
+            <File>
+              <FileName>Driver_I2C.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Drivers\CMSIS\Device\NXP\LPC5410x\Driver_I2C.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1137,7 +1137,7 @@
               <MiscControls></MiscControls>
               <Define>SYSTEM_CLOCK_FREQ=96000000, __FPU_PRESENT=1, CHIP_LPC5410X, CORE_M4, DEBUG_BUILD, XPRESSO_LPC54102_BOARD, UART_DMA_ENABLE, ANDROID_DEMO, ASF_PROFILING, ON_DEMAND_PROFILING</Define>
               <Undefine></Undefine>
-              <IncludePath>..\sources\app;..\sources\config;..\sources\boardsupport;..\..\..\..\include;..\..\..\common\app;..\..\..\common\asf;..\..\..\common\alg;..\..\..\..\external\rtos\rtx\inc;..\..\..\..\external\rtos\rtx\cm;..\..\..\..\external\MCU\NXP-5410x\CSLib\inc;..\..\..\common\modules\bus-drivers;..\..\..\common\modules\sensor-drivers;..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec;..\..\..\common\hostinterface</IncludePath>
+              <IncludePath>..\sources\app;..\sources\config;..\sources\boardsupport;..\..\..\..\include;..\..\..\common\app;..\..\..\common\asf;..\..\..\common\alg;..\..\..\..\external\rtos\rtx\inc;..\..\..\..\external\rtos\rtx\cm;..\..\..\..\external\MCU\NXP-5410x\CSLib\inc;..\..\..\common\modules\sensor-drivers;..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec;..\..\..\common\hostinterface;..\..\..\..\external\CMSIS\Driver\Include;..\..\..\..\embedded\Drivers\CMSIS\Device\NXP\LPC5410x\Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1453,19 +1453,9 @@
           <GroupName>BusDrivers</GroupName>
           <Files>
             <File>
-              <FileName>I2C_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\modules\bus-drivers\lpc5410x-cm4\I2C_Driver.c</FilePath>
-            </File>
-            <File>
               <FileName>SPI_SlaveDriver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sources\boardsupport\SPI_SlaveDriver.c</FilePath>
-            </File>
-            <File>
-              <FileName>I2CS_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\modules\bus-drivers\lpc5410x-cm4\I2CS_Driver.c</FilePath>
             </File>
             <File>
               <FileName>Bosch_I2C_Adapter.c</FileName>
@@ -1526,6 +1516,16 @@
               <FileName>SensorPackets.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\common\hostinterface\SensorPackets.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>CMSIS-HAL</GroupName>
+          <Files>
+            <File>
+              <FileName>Driver_I2C.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Drivers\CMSIS\Device\NXP\LPC5410x\Driver_I2C.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1901,7 +1901,7 @@
               <MiscControls></MiscControls>
               <Define>SYSTEM_CLOCK_FREQ=96000000, __FPU_PRESENT=1, CHIP_LPC5410X, CORE_M4, DEBUG_BUILD, XPRESSO_LPC54102_BOARD, UART_DMA_ENABLE, ANDROID_DEMO</Define>
               <Undefine></Undefine>
-              <IncludePath>..\sources\app;..\sources\config;..\sources\boardsupport;..\..\..\..\include;..\..\..\common\app;..\..\..\common\asf;..\..\..\common\alg;..\..\..\..\external\rtos\rtx\inc;..\..\..\..\external\rtos\rtx\cm;..\..\..\..\external\MCU\NXP-5410x\CSLib\inc;..\..\..\common\modules\bus-drivers;..\..\..\common\modules\sensor-drivers;..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec;..\..\..\common\hostinterface</IncludePath>
+              <IncludePath>..\sources\app;..\sources\config;..\sources\boardsupport;..\..\..\..\include;..\..\..\common\app;..\..\..\common\asf;..\..\..\common\alg;..\..\..\..\external\rtos\rtx\inc;..\..\..\..\external\rtos\rtx\cm;..\..\..\..\external\MCU\NXP-5410x\CSLib\inc;..\..\..\common\modules\sensor-drivers;..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec;..\..\..\common\hostinterface;..\..\..\..\external\CMSIS\Driver\Include;..\..\..\..\embedded\Drivers\CMSIS\Device\NXP\LPC5410x\Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -2217,19 +2217,9 @@
           <GroupName>BusDrivers</GroupName>
           <Files>
             <File>
-              <FileName>I2C_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\modules\bus-drivers\lpc5410x-cm4\I2C_Driver.c</FilePath>
-            </File>
-            <File>
               <FileName>SPI_SlaveDriver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sources\boardsupport\SPI_SlaveDriver.c</FilePath>
-            </File>
-            <File>
-              <FileName>I2CS_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\modules\bus-drivers\lpc5410x-cm4\I2CS_Driver.c</FilePath>
             </File>
             <File>
               <FileName>Bosch_I2C_Adapter.c</FileName>
@@ -2294,6 +2284,16 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>CMSIS-HAL</GroupName>
+          <Files>
+            <File>
+              <FileName>Driver_I2C.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Drivers\CMSIS\Device\NXP\LPC5410x\Driver_I2C.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>
@@ -2302,7 +2302,7 @@
       <TargetName>LPC54102-MotionQ [Dbg-Profile]</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>5060061::V5.06 update 1 (build 61)::ARMCC</pCCUsed>
+      <pCCUsed>5060020::V5.06 (build 20)::ARMCC</pCCUsed>
       <TargetOption>
         <TargetCommonOption>
           <Device>LPC54101J512BD64:M4</Device>
@@ -2665,7 +2665,7 @@
               <MiscControls></MiscControls>
               <Define>SYSTEM_CLOCK_FREQ=96000000, __FPU_PRESENT=1, CHIP_LPC5410X, CORE_M4, DEBUG_BUILD, XPRESSO_LPC54102_BOARD, UART_DMA_ENABLE, ANDROID_DEMO, ASF_PROFILING, ON_DEMAND_PROFILING</Define>
               <Undefine></Undefine>
-              <IncludePath>..\sources\app;..\sources\config;..\sources\boardsupport;..\..\..\..\include;..\..\..\common\app;..\..\..\common\asf;..\..\..\common\alg;..\..\..\..\external\rtos\rtx\inc;..\..\..\..\external\rtos\rtx\cm;..\..\..\..\external\MCU\NXP-5410x\CSLib\inc;..\..\..\common\modules\bus-drivers;..\..\..\common\modules\sensor-drivers;..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec;..\..\..\common\hostinterface</IncludePath>
+              <IncludePath>..\sources\app;..\sources\config;..\sources\boardsupport;..\..\..\..\include;..\..\..\common\app;..\..\..\common\asf;..\..\..\common\alg;..\..\..\..\external\rtos\rtx\inc;..\..\..\..\external\rtos\rtx\cm;..\..\..\..\external\MCU\NXP-5410x\CSLib\inc;..\..\..\common\modules\sensor-drivers;..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec;..\..\..\common\hostinterface;..\..\..\..\external\CMSIS\Driver\Include;..\..\..\..\embedded\Drivers\CMSIS\Device\NXP\LPC5410x\Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -2981,19 +2981,9 @@
           <GroupName>BusDrivers</GroupName>
           <Files>
             <File>
-              <FileName>I2C_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\modules\bus-drivers\lpc5410x-cm4\I2C_Driver.c</FilePath>
-            </File>
-            <File>
               <FileName>SPI_SlaveDriver.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sources\boardsupport\SPI_SlaveDriver.c</FilePath>
-            </File>
-            <File>
-              <FileName>I2CS_Driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\..\common\modules\bus-drivers\lpc5410x-cm4\I2CS_Driver.c</FilePath>
             </File>
             <File>
               <FileName>Bosch_I2C_Adapter.c</FileName>
@@ -3054,6 +3044,16 @@
               <FileName>SensorPackets.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\common\hostinterface\SensorPackets.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>CMSIS-HAL</GroupName>
+          <Files>
+            <File>
+              <FileName>Driver_I2C.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\Drivers\CMSIS\Device\NXP\LPC5410x\Driver_I2C.c</FilePath>
             </File>
           </Files>
         </Group>
