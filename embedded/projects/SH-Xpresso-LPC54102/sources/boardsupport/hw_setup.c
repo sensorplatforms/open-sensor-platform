@@ -20,12 +20,12 @@
 \*-------------------------------------------------------------------------------------------------*/
 #include "common.h"
 #include "timer_5410x.h"
-#include "i2c_driver.h"
+#include "Driver_I2C.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-
+extern ARM_DRIVER_I2C Driver_I2C0;
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
@@ -335,10 +335,14 @@ void UartDMAConfiguration( PortInfo *pPort, uint8_t *pTxBuffer, uint16_t txBuffe
  ***************************************************************************************************/
 void Board_SensorIfInit( InputSensor_t ifID )
 {
-
-    /* Initialize common interfaces */
-    /* Initialize the I2C Driver interface */
-    ASF_assert( true == I2C_HardwareSetup( I2C_SENSOR_BUS ) );
+    static uint8_t i2c_init_done = 0; /*< Flag to check i2c master init is complete */
+    if ( i2c_init_done == 0 )
+    {
+        /* Initialize the I2C Driver interface */
+        ASF_assert( ARM_DRIVER_OK == Driver_I2C0.Initialize( NULL ));
+        ASF_assert( ARM_DRIVER_OK == Driver_I2C0.PowerControl( ARM_POWER_FULL ));
+        i2c_init_done = 1;
+    }
 
     /* Initialize IOs - interrupts, wakeup, etc. */
     switch (ifID)

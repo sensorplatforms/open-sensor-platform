@@ -20,7 +20,6 @@
 \*-------------------------------------------------------------------------------------------------*/
 #include "acc_common.h"
 #include "acc_bmc150_i2c.h"
-#include "i2c_driver.h"
 
 #ifndef I2C_DRIVER
 # error Needs I2C_DRIVER to be defined. Check Common.h

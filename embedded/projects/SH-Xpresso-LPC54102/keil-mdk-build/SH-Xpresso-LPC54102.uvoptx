@@ -764,6 +764,7 @@
       <FileNumber>1</FileNumber>
       <FileType>2</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\external\MCU\NXP-5410x\startup\keil_startup_lpc5410x.s</PathWithFileName>
@@ -784,6 +785,7 @@
       <FileNumber>2</FileNumber>
       <FileType>4</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\external\MCU\NXP-5410x\CSLib\Libs\lib_chip_5410x.lib</PathWithFileName>
@@ -796,6 +798,7 @@
       <FileNumber>3</FileNumber>
       <FileType>4</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\external\MCU\NXP-5410x\CSLib\Libs\keil_lib_power.lib</PathWithFileName>
@@ -816,6 +819,7 @@
       <FileNumber>4</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\external\MCU\NXP-5410x\Retarget\Retarget.c</PathWithFileName>
@@ -836,6 +840,7 @@
       <FileNumber>5</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\asf\asf_messages.c</PathWithFileName>
@@ -848,6 +853,7 @@
       <FileNumber>6</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\asf\asf_taskinit.c</PathWithFileName>
@@ -860,6 +866,7 @@
       <FileNumber>7</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\asf\asf_timers.c</PathWithFileName>
@@ -880,6 +887,7 @@
       <FileNumber>8</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\sources\config\rtx_conf_cm.c</PathWithFileName>
@@ -892,6 +900,7 @@
       <FileNumber>9</FileNumber>
       <FileType>4</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\external\RTOS\RTX\lib\RTX_CM4F.lib</PathWithFileName>
@@ -904,6 +913,7 @@
       <FileNumber>10</FileNumber>
       <FileType>4</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\external\RTOS\RTX\lib\RTX_CM4F_PROF.lib</PathWithFileName>
@@ -924,6 +934,7 @@
       <FileNumber>11</FileNumber>
       <FileType>4</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\algorithm\osp\lib\osp_algs_CM3.lib</PathWithFileName>
@@ -936,6 +947,7 @@
       <FileNumber>12</FileNumber>
       <FileType>4</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\fmlib\FMLib_Embedded.lib</PathWithFileName>
@@ -956,6 +968,7 @@
       <FileNumber>13</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\app\cmdhandler_t.c</PathWithFileName>
@@ -968,6 +981,7 @@
       <FileNumber>14</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\app\debugprint.c</PathWithFileName>
@@ -980,6 +994,7 @@
       <FileNumber>15</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\app\instrmgr_t.c</PathWithFileName>
@@ -992,6 +1007,7 @@
       <FileNumber>16</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\app\instrmgr_user.c</PathWithFileName>
@@ -1012,6 +1028,7 @@
       <FileNumber>17</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\sources\app\algorithm_t.c</PathWithFileName>
@@ -1024,6 +1041,7 @@
       <FileNumber>18</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\sources\app\console_util.c</PathWithFileName>
@@ -1036,6 +1054,7 @@
       <FileNumber>19</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\sources\app\hostif_i2c.c</PathWithFileName>
@@ -1048,6 +1067,7 @@
       <FileNumber>20</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\sources\app\main.c</PathWithFileName>
@@ -1060,6 +1080,7 @@
       <FileNumber>21</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\sources\app\sensoracq_t.c</PathWithFileName>
@@ -1072,6 +1093,7 @@
       <FileNumber>22</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\sources\app\taskinit_user.c</PathWithFileName>
@@ -1084,6 +1106,7 @@
       <FileNumber>23</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\sources\app\host_interface_t.c</PathWithFileName>
@@ -1104,6 +1127,7 @@
       <FileNumber>24</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\sources\boardsupport\hw_setup.c</PathWithFileName>
@@ -1116,6 +1140,7 @@
       <FileNumber>25</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\sources\boardsupport\lpc54Xxx_it.c</PathWithFileName>
@@ -1136,18 +1161,7 @@
       <FileNumber>26</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\common\modules\bus-drivers\lpc5410x-cm4\I2C_Driver.c</PathWithFileName>
-      <FilenameWithoutPath>I2C_Driver.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>10</GroupNumber>
-      <FileNumber>27</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\sources\boardsupport\SPI_SlaveDriver.c</PathWithFileName>
@@ -1157,21 +1171,10 @@
     </File>
     <File>
       <GroupNumber>10</GroupNumber>
-      <FileNumber>28</FileNumber>
+      <FileNumber>27</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\common\modules\bus-drivers\lpc5410x-cm4\I2CS_Driver.c</PathWithFileName>
-      <FilenameWithoutPath>I2CS_Driver.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>10</GroupNumber>
-      <FileNumber>29</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\modules\sensor-drivers\Bosch_I2C_Adapter.c</PathWithFileName>
@@ -1189,9 +1192,10 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>11</GroupNumber>
-      <FileNumber>30</FileNumber>
+      <FileNumber>28</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\modules\sensor-drivers\acc_bmc150_i2c.c</PathWithFileName>
@@ -1201,9 +1205,10 @@
     </File>
     <File>
       <GroupNumber>11</GroupNumber>
-      <FileNumber>31</FileNumber>
+      <FileNumber>29</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\modules\sensor-drivers\gyro_bmg160_i2c.c</PathWithFileName>
@@ -1213,9 +1218,10 @@
     </File>
     <File>
       <GroupNumber>11</GroupNumber>
-      <FileNumber>32</FileNumber>
+      <FileNumber>30</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\modules\sensor-drivers\mag_bmc150_i2c.c</PathWithFileName>
@@ -1225,9 +1231,10 @@
     </File>
     <File>
       <GroupNumber>11</GroupNumber>
-      <FileNumber>33</FileNumber>
+      <FileNumber>31</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\bma2x2.c</PathWithFileName>
@@ -1237,9 +1244,10 @@
     </File>
     <File>
       <GroupNumber>11</GroupNumber>
-      <FileNumber>34</FileNumber>
+      <FileNumber>32</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\BMG160.c</PathWithFileName>
@@ -1249,9 +1257,10 @@
     </File>
     <File>
       <GroupNumber>11</GroupNumber>
-      <FileNumber>35</FileNumber>
+      <FileNumber>33</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\bmm050.c</PathWithFileName>
@@ -1269,9 +1278,10 @@
     <RteFlg>0</RteFlg>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>36</FileNumber>
+      <FileNumber>34</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\hostinterface\BlockMemory.c</PathWithFileName>
@@ -1281,9 +1291,10 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>37</FileNumber>
+      <FileNumber>35</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\hostinterface\Queue.c</PathWithFileName>
@@ -1293,9 +1304,10 @@
     </File>
     <File>
       <GroupNumber>12</GroupNumber>
-      <FileNumber>38</FileNumber>
+      <FileNumber>36</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
+      <Focus>1</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\hostinterface\BatchManager.c</PathWithFileName>
@@ -1360,6 +1372,27 @@
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\..\common\hostinterface\SensorPackets_Parse.c</PathWithFileName>
       <FilenameWithoutPath>SensorPackets_Parse.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+  </Group>
+
+  <Group>
+    <GroupName>CMSIS-HAL</GroupName>
+    <tvExp>0</tvExp>
+    <tvExpOptDlg>0</tvExpOptDlg>
+    <cbSel>0</cbSel>
+    <RteFlg>0</RteFlg>
+    <File>
+      <GroupNumber>13</GroupNumber>
+      <FileNumber>37</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <Focus>0</Focus>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\..\..\Drivers\CMSIS\Device\NXP\LPC5410x\Driver_I2C.c</PathWithFileName>
+      <FilenameWithoutPath>Driver_I2C.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
