@@ -744,9 +744,19 @@
               <FilePath>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\bmm050.c</FilePath>
             </File>
             <File>
-              <FileName>Driver_Sensor.c</FileName>
+              <FileName>Driver_BMA2X2.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\Driver_Sensor.c</FilePath>
+              <FilePath>..\..\..\..\embedded\Drivers\Sensor\Bosch-Sensortec\Driver_BMA2X2.c</FilePath>
+            </File>
+            <File>
+              <FileName>Driver_BMG160.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\embedded\Drivers\Sensor\Bosch-Sensortec\Driver_BMG160.c</FilePath>
+            </File>
+            <File>
+              <FileName>Driver_BMM050.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\embedded\Drivers\Sensor\Bosch-Sensortec\Driver_BMM050.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1538,9 +1548,19 @@
               <FilePath>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\bmm050.c</FilePath>
             </File>
             <File>
-              <FileName>Driver_Sensor.c</FileName>
+              <FileName>Driver_BMA2X2.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\Driver_Sensor.c</FilePath>
+              <FilePath>..\..\..\..\embedded\Drivers\Sensor\Bosch-Sensortec\Driver_BMA2X2.c</FilePath>
+            </File>
+            <File>
+              <FileName>Driver_BMG160.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\embedded\Drivers\Sensor\Bosch-Sensortec\Driver_BMG160.c</FilePath>
+            </File>
+            <File>
+              <FileName>Driver_BMM050.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\embedded\Drivers\Sensor\Bosch-Sensortec\Driver_BMM050.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2332,9 +2352,19 @@
               <FilePath>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\bmm050.c</FilePath>
             </File>
             <File>
-              <FileName>Driver_Sensor.c</FileName>
+              <FileName>Driver_BMA2X2.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\Driver_Sensor.c</FilePath>
+              <FilePath>..\..\..\..\embedded\Drivers\Sensor\Bosch-Sensortec\Driver_BMA2X2.c</FilePath>
+            </File>
+            <File>
+              <FileName>Driver_BMG160.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\embedded\Drivers\Sensor\Bosch-Sensortec\Driver_BMG160.c</FilePath>
+            </File>
+            <File>
+              <FileName>Driver_BMM050.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\embedded\Drivers\Sensor\Bosch-Sensortec\Driver_BMM050.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2755,7 +2785,7 @@
               <MiscControls></MiscControls>
               <Define>SYSTEM_CLOCK_FREQ=96000000, __FPU_PRESENT=1, CHIP_LPC5410X, CORE_M4, DEBUG_BUILD, XPRESSO_LPC54102_BOARD, UART_DMA_ENABLE, ANDROID_DEMO, ASF_PROFILING, ON_DEMAND_PROFILING</Define>
               <Undefine></Undefine>
-              <IncludePath>..\sources\app;..\sources\config;..\sources\boardsupport;..\..\..\..\include;..\..\..\common\app;..\..\..\common\asf;..\..\..\common\alg;..\..\..\..\external\rtos\rtx\inc;..\..\..\..\external\rtos\rtx\cm;..\..\..\..\external\MCU\NXP-5410x\CSLib\inc;..\..\..\common\modules\bus-drivers;..\..\..\common\modules\sensor-drivers;..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec;..\..\..\common\hostinterface</IncludePath>
+              <IncludePath>..\sources\app;..\sources\config;..\sources\boardsupport;..\..\..\..\include;..\..\..\common\app;..\..\..\common\asf;..\..\..\common\alg;..\..\..\..\external\rtos\rtx\inc;..\..\..\..\external\rtos\rtx\cm;..\..\..\..\external\MCU\NXP-5410x\CSLib\inc;..\..\..\common\modules\bus-drivers;..\..\..\common\modules\sensor-drivers;..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec;..\..\..\common\hostinterface;..\..\..\..\external\CMSIS\Driver\Include;..\..\..\..\embedded\include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -3126,9 +3156,19 @@
               <FilePath>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\bmm050.c</FilePath>
             </File>
             <File>
-              <FileName>Driver_Sensor.c</FileName>
+              <FileName>Driver_BMA2X2.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec\Driver_Sensor.c</FilePath>
+              <FilePath>..\..\..\..\embedded\Drivers\Sensor\Bosch-Sensortec\Driver_BMA2X2.c</FilePath>
+            </File>
+            <File>
+              <FileName>Driver_BMG160.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\embedded\Drivers\Sensor\Bosch-Sensortec\Driver_BMG160.c</FilePath>
+            </File>
+            <File>
+              <FileName>Driver_BMM050.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\..\embedded\Drivers\Sensor\Bosch-Sensortec\Driver_BMM050.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -26,7 +26,7 @@
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 void WaitForHostSync( void );
-extern OSP_DRIVER_SENSOR Driver_Acc;
+extern OSP_DRIVER_SENSOR Driver_Accel;
 extern OSP_DRIVER_SENSOR Driver_Mag;
 extern OSP_DRIVER_SENSOR Driver_Gyro;
 
@@ -130,7 +130,7 @@ static void SensorDataHandler(InputSensor_t sensorId, uint32_t timeStamp)
         if ((sMagDecimateCount++ % MAG_DECIMATE_FACTOR) == 0 )
         {
             /* Read mag Data - reading would clear interrupt also */
-            Driver_Mag.ReadData(&magData,0);
+            Driver_Mag.ReadData(&magData,1);
             /* Replace time stamp with that captured by interrupt handler */
             magData.timeStamp = timeStamp;
 #ifdef ALGORITHM_TASK
@@ -142,7 +142,7 @@ static void SensorDataHandler(InputSensor_t sensorId, uint32_t timeStamp)
         else
         {
             /* Reading would clear interrupt also */
-            Driver_Mag.ReadData(&magData,0);
+            Driver_Mag.ReadData(&magData,1);
         }
         break;
 
@@ -150,7 +150,7 @@ static void SensorDataHandler(InputSensor_t sensorId, uint32_t timeStamp)
         if ((gyroSampleCount++ % GYRO_SAMPLE_DECIMATE) == 0)
         {
             /* Read Gyro Data - reading typically clears interrupt as well */
-            Driver_Gyro.ReadData(&gyroData,0); //Reads also clears DRDY interrupt
+            Driver_Gyro.ReadData(&gyroData,1); //Reads also clears DRDY interrupt
             /* Replace time stamp with that captured by interrupt handler */
             gyroData.timeStamp = timeStamp;
 #ifdef ALGORITHM_TASK
@@ -162,7 +162,7 @@ static void SensorDataHandler(InputSensor_t sensorId, uint32_t timeStamp)
         else
         {
             /* Reading would clear interrupt also */
-            Driver_Gyro.ReadData(&gyroData,0); //Reads also clears DRDY interrupt
+            Driver_Gyro.ReadData(&gyroData,1); //Reads also clears DRDY interrupt
         }
         break;
 
@@ -177,7 +177,7 @@ static void SensorDataHandler(InputSensor_t sensorId, uint32_t timeStamp)
         if (accSampleCount++ % ACCEL_SAMPLE_DECIMATE == 0)
         {
             /* Read Accel Data - reading typically clears interrupt as well */
-            Driver_Acc.ReadData(&accelData,0);
+            Driver_Accel.ReadData(&accelData,1);
             /* Replace time stamp with that captured by interrupt handler */
             accelData.timeStamp = timeStamp;
 #ifdef ALGORITHM_TASK
@@ -190,7 +190,7 @@ static void SensorDataHandler(InputSensor_t sensorId, uint32_t timeStamp)
         else
         {
             /* Reading would clear interrupt also */
-            Driver_Acc.ReadData(&accelData,0);
+            Driver_Accel.ReadData(&accelData,1);
         }
         break;
 
@@ -224,19 +224,19 @@ void SensorControlCmdHandler(MsgSensorControlData *pData)
 #ifdef SENSOR_CONTROL_ENABLE
             // Maybe add a user configurable 'powerMode' setting and here we
             // configure the sensor hardware according to its value.
-            Driver_Acc.Activate(false,0,0,0);         // do not disable accel so watch window input will work
+            Driver_Accel.Deactivate();         // do not disable accel so watch window input will work
 #endif
             break;
 
         case MAG_INPUT_SENSOR:
 #ifdef SENSOR_CONTROL_ENABLE
-            Driver_Mag.Activate(false,0,0,0);
+            Driver_Mag.Deactivate();
 #endif
             break;
 
         case  GYRO_INPUT_SENSOR:
 #ifdef SENSOR_CONTROL_ENABLE
-            Driver_Gyro.Activate(false,0,0,0);
+            Driver_Gyro.Deactivate();
 #endif
             break;
 
@@ -257,19 +257,19 @@ void SensorControlCmdHandler(MsgSensorControlData *pData)
 
         case ACCEL_INPUT_SENSOR:
 #ifdef SENSOR_CONTROL_ENABLE
-            Driver_Acc.Activate(true,0,0,0);
+            Driver_Accel.Activate(SENSOR_FLAG_CONTINUOUS_DATA,NULL /* unused */,NULL /* unused */,NULL /* unused */);
 #endif
             break;
 
         case MAG_INPUT_SENSOR:
 #ifdef SENSOR_CONTROL_ENABLE
-            Driver_Mag.Activate(true,0,0,0);
+            Driver_Mag.Activate(SENSOR_FLAG_ONE_SHOT_MODE,NULL /* unused */,NULL /* unused */,NULL /* unused */);
 #endif
             break;
 
         case GYRO_INPUT_SENSOR:
 #ifdef SENSOR_CONTROL_ENABLE
-            Driver_Gyro.Activate(true,0,0,0);
+            Driver_Gyro.Activate(SENSOR_FLAG_CONTINUOUS_DATA,NULL /* unused */,NULL /* unused */,NULL /* unused */);
 #endif
             break;
 
@@ -352,10 +352,9 @@ ASF_TASK void SensorAcqTask( ASF_TASK_ARG )
 
     /* Setup interface for the Magnetometer */
     Driver_Mag.Initialize(NULL, NULL);
-    Driver_Mag.Deactivate();        /* Clear interrupt from previous run that maynot have been acknowledged */
 
     /* Setup interface for the accelerometers */
-    Driver_Acc.Initialize(NULL, NULL);
+    Driver_Accel.Initialize(NULL, NULL);
 
     /* Setup Gyro */
     Driver_Gyro.Initialize(NULL, NULL);
@@ -365,11 +364,11 @@ ASF_TASK void SensorAcqTask( ASF_TASK_ARG )
     ASFTimerStart( SENSOR_ACQ_TASK_ID, TIMER_REF_SENSOR_READ, SENSOR_SAMPLE_PERIOD, &sSensorTimer );
 #else
     /* Enable Sensor interrupts */
-    Driver_Mag.Activate(true,0,0,0);
-    Driver_Acc.Activate(true,0,0,0);
-    Driver_Gyro.Activate(true,0,0,0);
-# ifdef TRIGGERED_MAG_SAMPLING
-    Driver_Gyro.PowerControl(ARM_POWER_LOW); //Low power mode until triggered
+    Driver_Mag.Activate(SENSOR_FLAG_ONE_SHOT_MODE,NULL /* unused */,NULL /* unused */,NULL /* unused */);
+    Driver_Accel.Activate(SENSOR_FLAG_CONTINUOUS_DATA,NULL /* unused */,NULL /* unused */,NULL /* unused */);
+    Driver_Gyro.Activate(SENSOR_FLAG_CONTINUOUS_DATA,NULL /* unused */,NULL /* unused */,NULL /* unused */);
+#ifdef TRIGGERED_MAG_SAMPLING
+    Driver_Mag.PowerControl(ARM_POWER_LOW); //Low power mode until triggered
 # endif
 #endif
 

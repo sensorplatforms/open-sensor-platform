@@ -35,12 +35,12 @@ typedef struct _OSP_SENSOR_DETAILS {
 } OSP_SENSOR_DETAILS;
 
 
-#define SENSOR_FLAG_CONTINUOUS_DATA         (       0)  ///<
-#define SENSOR_FLAG_WAKE_UP                 (1U <<  0)  ///<
-#define SENSOR_FLAG_ON_CHANGE_MODE          (1U <<  1)  ///<
-#define SENSOR_FLAG_ONE_SHOT_MODE           (1U <<  2)  ///<
-#define SENSOR_FLAG_MOTION_WAKEUP           (1U <<  3)  ///<
-#define SENSOR_FLAG_DATA_INJECTION          (1U <<  4)  ///<
+#define SENSOR_FLAG_CONTINUOUS_DATA         (1U <<  0)  ///<
+#define SENSOR_FLAG_WAKE_UP                 (1U <<  1)  ///<
+#define SENSOR_FLAG_ON_CHANGE_MODE          (1U <<  2)  ///<
+#define SENSOR_FLAG_ONE_SHOT_MODE           (1U <<  3)  ///<
+#define SENSOR_FLAG_MOTION_WAKEUP           (1U <<  4)  ///<
+#define SENSOR_FLAG_DATA_INJECTION          (1U <<  5)  ///<
 
 
 typedef struct _OSP_DRIVER_SENSOR {

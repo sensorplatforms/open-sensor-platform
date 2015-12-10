@@ -43,21 +43,6 @@ const GpioInfo_t DiagLEDs[NUM_LEDS] = {PINS_LEDS};
 /*-------------------------------------------------------------------------------------------------*\
  |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-/* Pin muxing table, only items that need changing from their default pin
-   state are in this table. Not every pin is mapped. */
-//TODO Pin init should be moved to respective modules handling the pin function
-STATIC const PINMUX_GRP_T pinmuxing[] = {
-
-    /* I2C1 standard/fast (bridge) */
-    {0, 27, (IOCON_FUNC1 | IOCON_MODE_INACT | IOCON_DIGITAL_EN | IOCON_STDI2C_EN)},    /* BRIDGE_SCL (SCL) */
-    {0, 28, (IOCON_FUNC1 | IOCON_MODE_INACT | IOCON_DIGITAL_EN | IOCON_STDI2C_EN)},    /* BRIDGE_SDA (SDA) */
-
-    /* Sensor related */
-    {0, 4,  (IOCON_FUNC0 | IOCON_MODE_PULLDOWN | IOCON_DIGITAL_EN)}, /* GYR_INT1 (GPIO input) */
-    {0, 18, (IOCON_FUNC0 | IOCON_MODE_INACT | IOCON_DIGITAL_EN)},    /* CT32B0_MAT0-ACCL_INT1 */
-    {0, 22, (IOCON_FUNC0 | IOCON_MODE_PULLDOWN | IOCON_DIGITAL_EN)}, /* MAG_DRDY_INT (GPIO input) */
-
-};
 
 /*-------------------------------------------------------------------------------------------------*\
  |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
@@ -172,9 +157,6 @@ void SystemGPIOConfig( void )
     //Chip_IOCON_Config(LPC_IOCON, SH_INT_PIN);
     //Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, SH_INT_GPIO_GRP, SH_INT_GPIO_PIN);
     //SensorHubIntLow(); //Deassert on startup
-
-    /* TODO: Catch ALL for uninitialized pins... should be moved to respective modules */
-    Chip_IOCON_SetPinMuxing(LPC_IOCON, pinmuxing, sizeof(pinmuxing) / sizeof(PINMUX_GRP_T));
 
     /* Setup DMA Common here since its not specific to any peripheral */
     Chip_DMA_Init(LPC_DMA);
@@ -344,6 +326,8 @@ void Board_SensorIfInit( InputSensor_t ifID )
     switch (ifID)
     {
     case ACCEL_INPUT_SENSOR:
+        /* Initialize the pinmux pin */
+        Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_ACCEL);
         /* ACCEL INT1 irq setup */
         NVIC_DisableIRQ(ACCEL_PINT_IRQn);
         NVIC_SetPriority(ACCEL_PINT_IRQn, ACCEL_INT_IRQ_PRIORITY);
@@ -363,6 +347,8 @@ void Board_SensorIfInit( InputSensor_t ifID )
         break;
 
     case MAG_INPUT_SENSOR:
+        /* Initialize the pinmux pin */
+        Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_MAG);
         NVIC_DisableIRQ(MAG_PINT_IRQn);
         NVIC_SetPriority(MAG_PINT_IRQn, MAG_INT_IRQ_PRIORITY);
 
@@ -381,6 +367,8 @@ void Board_SensorIfInit( InputSensor_t ifID )
         break;
 
     case GYRO_INPUT_SENSOR:
+        /* Initialize the pinmux pin */
+        Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_GYRO);
         NVIC_DisableIRQ(GYRO_PINT_IRQn);
         NVIC_SetPriority(GYRO_PINT_IRQn, GYRO_INT_IRQ_PRIORITY);
 
