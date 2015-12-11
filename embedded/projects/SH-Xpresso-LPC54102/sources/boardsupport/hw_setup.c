@@ -43,7 +43,15 @@ const GpioInfo_t DiagLEDs[NUM_LEDS] = {PINS_LEDS};
 \*-------------------------------------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------------------------------------*\
+ |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
  |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P R I V A T E     F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------------------------------------*\
@@ -113,6 +121,33 @@ void LED_Init( void )
         LED_Off(index);
     }
 }
+/****************************************************************************************************
+ * @fn      SystemGPIOConfig
+ *          Configures the various GPIO ports on the chip according to the usage by various
+ *          peripherals.
+ *
+ * @param   none
+ *
+ * @return  none
+ *
+ ***************************************************************************************************/
+void SystemGPIOConfig( void )
+{
+    /* Initialize GPIO */
+    Driver_GPIO.Initialize();
+
+    /* Setup the Sensor Hub interrupt pin as output */
+    //Chip_IOCON_Config(LPC_IOCON, SH_INT_PIN);
+    //Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, SH_INT_GPIO_GRP, SH_INT_GPIO_PIN);
+    //SensorHubIntLow(); //Deassert on startup
+
+    /* Setup DMA Common here since its not specific to any peripheral */
+    Chip_DMA_Init(LPC_DMA);
+    //Chip_SYSCON_PeriphReset(RESET_DMA);
+    Chip_DMA_Enable(LPC_DMA);
+    Chip_DMA_SetSRAMBase(LPC_DMA, DMA_ADDR(Chip_DMA_Table));
+}
+
 
 /****************************************************************************************************
  * @fn      SystemInterruptConfig
@@ -274,6 +309,8 @@ void Board_SensorIfInit( InputSensor_t ifID )
     switch (ifID)
     {
     case ACCEL_INPUT_SENSOR:
+        /* Initialize the pinmux pin */
+        Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_ACCEL);
         /* ACCEL INT1 irq setup */
         NVIC_DisableIRQ(ACCEL_PINT_IRQn);
         NVIC_SetPriority(ACCEL_PINT_IRQn, ACCEL_INT_IRQ_PRIORITY);
@@ -293,6 +330,8 @@ void Board_SensorIfInit( InputSensor_t ifID )
         break;
 
     case MAG_INPUT_SENSOR:
+        /* Initialize the pinmux pin */
+        Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_MAG);
         NVIC_DisableIRQ(MAG_PINT_IRQn);
         NVIC_SetPriority(MAG_PINT_IRQn, MAG_INT_IRQ_PRIORITY);
 
@@ -311,6 +350,8 @@ void Board_SensorIfInit( InputSensor_t ifID )
         break;
 
     case GYRO_INPUT_SENSOR:
+        /* Initialize the pinmux pin */
+        Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_GYRO);
         NVIC_DisableIRQ(GYRO_PINT_IRQn);
         NVIC_SetPriority(GYRO_PINT_IRQn, GYRO_INT_IRQ_PRIORITY);
 

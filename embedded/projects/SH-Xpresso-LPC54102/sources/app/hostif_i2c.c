@@ -29,6 +29,7 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+extern ARM_DRIVER_GPIO Driver_GPIO;
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E   C O N S T A N T S   &   M A C R O S
@@ -63,11 +64,6 @@ typedef struct _HostGCResponse
     uint8_t szMSB;    //data size MSB
     uint8_t szLSB;    //data size LSB
 } HostGCResponse_t;
-
-/*-------------------------------------------------------------------------------------------------*\
- |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
-\*-------------------------------------------------------------------------------------------------*/
-extern ARM_DRIVER_GPIO Driver_GPIO;
 
 typedef struct __HOSTIF_Ctrl_t {
     uint16_t rxCount;            /* Bytes so far received  */

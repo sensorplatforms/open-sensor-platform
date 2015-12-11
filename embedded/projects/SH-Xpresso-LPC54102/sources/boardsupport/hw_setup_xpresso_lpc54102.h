@@ -34,6 +34,18 @@
 \*-------------------------------------------------------------------------------------------------*/
 #define SENSORHUB_INT_ACTIVE_HIGH
 
+/* Pin handling macros for GPIO */
+#define NC (uint32_t)0xFFFFFFFF     //Indicates pin is not assigned
+#define ENCODE_PORT_PIN(port,pin) (PinName)(((uint32_t)port << 16) + (uint16_t)pin)
+#define DECODE_PORT(X) (((uint32_t)(X) >> 16) & 0xF)
+#define DECODE_PIN(X)  ((uint32_t)(X) & 0xFFFF)
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    T Y P E   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+/* Type to address GPIO pins */
+typedef uint32_t PinName;
+
 /* ########################################################################## */
 /* #    T I M I N G S                                                       # */
 /* ########################################################################## */
@@ -65,12 +77,6 @@
 /* ########################################################################## */
 /* Diagnostic GPIOs */
 #define LPC_GPIO_PORT LPC_GPIO
-#define NC (uint32_t)0xFFFFFFFF
-typedef uint32_t PinName;
-
-#define ENCODE_PORT_PIN(port,pin) (PinName)(((uint32_t)port << 16) + (uint16_t)pin)
-#define DECODE_PORT(X) (((uint32_t)(X) >> 16) & 0xF)
-#define DECODE_PIN(X)  ((uint32_t)(X) & 0xFFFF)
 
 /* Diagnostic LEDs on this board */
 enum _Leds { //Sequence must correspond to PINS_LED definition
@@ -170,6 +176,9 @@ extern const GpioInfo_t DiagLEDs[NUM_LEDS];
 #define ACCEL_INT2_PORT                         0
 #define ACCEL_INT2_PIN                          7
 
+/* CT32B0_MAT0-ACCL_INT1 */
+#define PIN_ACCEL    0, 18, (IOCON_FUNC0 | IOCON_MODE_INACT | IOCON_DIGITAL_EN)
+
 /* IMPORTANT! - Sensor interrupts are shared by multiple sensor devices on the
  * LPCXpresso Sensor Shield board. Particularly when Accel on BMI055 is used,
  * INT1 is connected to P0_18 via R16 (220ohm) and fights with the INT1 of BMC150
@@ -192,6 +201,9 @@ extern const GpioInfo_t DiagLEDs[NUM_LEDS];
 #define MAG_INT3_PORT                           0
 #define MAG_INT3_PIN                            10
 
+/* MAG_DRDY_INT (GPIO input) */
+#define PIN_MAG    0, 22, (IOCON_FUNC0 | IOCON_MODE_PULLDOWN | IOCON_DIGITAL_EN)
+
 /* ########################################################################## */
 /* #    G Y R O S C O P E  I N T E R F A C E                                # */
 /* ########################################################################## */
@@ -203,6 +215,9 @@ extern const GpioInfo_t DiagLEDs[NUM_LEDS];
 #define GYRO_PINT_IRQn                          PIN_INT1_IRQn
 #define GYRO_WAKE                               SYSCON_STARTER_PINT1
 #define GYRO_IRQHandler                         PIN_INT1_IRQHandler
+
+/* GYR_INT1 (GPIO input) */
+#define PIN_GYRO    0, 4,  (IOCON_FUNC0 | IOCON_MODE_PULLDOWN | IOCON_DIGITAL_EN)
 
 /* ########################################################################## */
 /* #    B A R O M E T E R  I N T E R F A C E                                # */
