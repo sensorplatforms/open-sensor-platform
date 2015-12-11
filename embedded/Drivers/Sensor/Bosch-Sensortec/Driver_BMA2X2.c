@@ -1,7 +1,7 @@
 /* Open Sensor Platform Project
  * https://github.com/sensorplatforms/open-sensor-platform
  *
- * Copyright (C) 2013 Sensor Platforms Inc.
+ * Copyright (C) 2015 Audience Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,9 @@
 #include "bosch_i2c_adapter.h"
 #include "chip.h"
 
+/*-------------------------------------------------------------------------------------------------*\
+ |    C O N S T A N T S   &   M A C R O S
+\*-------------------------------------------------------------------------------------------------*/
 #ifndef I2C_DRIVER
 # error Needs I2C_DRIVER to be defined. Check Common.h
 #endif
