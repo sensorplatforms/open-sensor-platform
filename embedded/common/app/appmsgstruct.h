@@ -1,7 +1,7 @@
 /* Open Sensor Platform Project
  * https://github.com/sensorplatforms/open-sensor-platform
  *
- * Copyright (C) 2013 Sensor Platforms Inc.
+ * Copyright (C) 2015 Audience Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@
 /* Generic structure to satisfy most sensor data passing */
 typedef struct MsgSensorDataTag
 {
-    uint32_t    timeStamp;
+    uint64_t    timeStamp;
     int32_t     X;
     int32_t     Y;
     int32_t     Z;
@@ -47,7 +47,7 @@ typedef struct MsgSensorDataTag
 
 typedef struct MsgSensorBoolTag 
 {
-    uint32_t timeStamp;
+    uint64_t timeStamp;
     uint8_t  active;
 } MsgSensorBoolData;
 
@@ -63,14 +63,6 @@ typedef MsgSensorData MsgPressData;
 typedef MsgSensorBoolData MsgSigMotionData;
 typedef MsgSensorBoolData MsgStepDetData;
 
-typedef struct MsgInclinationDataTag
-{
-    uint32_t    timeStamp;
-    int32_t     yaw;
-    int32_t     pitch;
-    int32_t     roll;   
-}  MsgInclinationData;
-
 typedef struct MsgSensorDataRdyTag
 {
     uint32_t     timeStamp;
@@ -84,13 +76,18 @@ typedef struct MsgCDSegmentDataTag
     uint8_t  type;
 } MsgCDSegmentData;
 
-
 typedef struct MsgSensorControlDataTag
 {
     uint32_t command;
     int32_t  data;
     uint8_t  sensorType;
 } MsgSensorControlData;
+
+typedef struct MsgCtrlReqTag
+{
+    uint8_t    *pRequestPacket;
+    uint8_t    length;
+} MsgCtrlReq;
 
 
 /*-------------------------------------------------------------------------------------------------*\

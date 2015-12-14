@@ -65,6 +65,7 @@ ASF_MSG_DEF( MSG_SENSOR_CONTROL,        MsgSensorControlData    msgSensorControl
 ASF_MSG_DEF( MSG_CONSOLE_CMD_RCVD,      MsgNoData           msgConsoleCmd       )
 ASF_MSG_DEF( MSG_SENSOR_ENABLE,         MsgGeneric          msgSensEnable       )
 ASF_MSG_DEF( MSG_SENSOR_DISABLE,        MsgGeneric          msgSensDisable      )
+ASF_MSG_DEF( MSG_PROCESS_CTRL_REQ,      MsgCtrlReq          msgCtrlReq          )
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
