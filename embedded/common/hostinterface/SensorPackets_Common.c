@@ -236,7 +236,7 @@ uint16_t Crc16_CCITT(const uint8_t *buf, uint16_t len)
  * @param   [IN]pPacket - Buffer containing an existing packet
  * @param   [IN]pktSize - Size of the packet in bytes
  *
- * @return  MQ_SUCCESS if CRC flag in packet is 0 or if CRC check passes, else a negative error code.
+ * @return  OSP_STATUS_OK if CRC flag in packet is 0 or if CRC check passes, else a negative error code.
  *
  ***************************************************************************************************/
 int32_t CheckPacketCRC(const uint8_t *pPacket, uint16_t pktSize)
@@ -253,12 +253,12 @@ int32_t CheckPacketCRC(const uint8_t *pPacket, uint16_t pktSize)
         }
         else
         {
-            return MQ_SUCCESS;
+            return OSP_STATUS_OK;
         }
     }
     else
     {
-        return MQ_SUCCESS;
+        return OSP_STATUS_OK;
     }
 }
 #endif
@@ -289,7 +289,7 @@ void FormatPacketCRC( HostIFPackets_t *pDest, uint16_t packetSizeIncludingCRC )
 /*=================================================================================================*\
  |  Packet characterization routines
 \*=================================================================================================*/
-#if 0
+#ifdef DEBUG_SENSOR_PACKETS
 /****************************************************************************************************
  * @fn      GetPacketSize
  *          Packet size calculated from packet type and fields as read from packet.
@@ -303,7 +303,7 @@ void GetPacketSize( const uint8_t *pPacket, uint16_t *pPacketSize, int32_t *pErr
 {
     const uint8_t packetID = GetPacketID(pPacket);
 
-    int32_t errCode = SET_ERROR( -MQ_UNSET_ERROR_CODE );
+    int32_t errCode = SET_ERROR( OSP_STATUS_UNSPECIFIED_ERROR );
     uint16_t packetSize;
 
     packetSize = PKT_BASE_HEADER_SIZE;  //  Control Byte + Sensor ID Byte + Attribute1 Byte
@@ -351,7 +351,7 @@ void GetPacketSize( const uint8_t *pPacket, uint16_t *pPacketSize, int32_t *pErr
 
                     packetSize  += (uint16_t) payloadSize + (uint16_t) ts_size;
 
-                    errCode  = MQ_SUCCESS;
+                    errCode  = OSP_STATUS_OK;
                 }
             }
         }
@@ -377,17 +377,16 @@ void GetPacketSize( const uint8_t *pPacket, uint16_t *pPacketSize, int32_t *pErr
             {
                 packetSize += (uint16_t) payloadSize;
 
-                errCode = MQ_SUCCESS;
+                errCode = OSP_STATUS_OK;
             }
         }
         break;
 
     default:
-        errCode = SET_ERROR( -MQ_DEFAULT_IN_SWITCH );
         break;
     }
 
-    if (errCode != MQ_SUCCESS)
+    if (errCode != OSP_STATUS_OK)
     {
         packetSize = 0;
     }
@@ -409,7 +408,7 @@ void GetPacketSize( const uint8_t *pPacket, uint16_t *pPacketSize, int32_t *pErr
  ***************************************************************************************************/
 int32_t GetSensorPacketPayloadSize( uint8_t sensorPacketType, uint8_t metadata ) {
 
-    int32_t payloadSizeOrErrorCode = SET_ERROR( -MQ_UNSET_ERROR_CODE );
+    int32_t payloadSizeOrErrorCode = SET_ERROR( OSP_STATUS_UNSPECIFIED_ERROR );
 
     if (sensorPacketType < N_SENSOR_DATA_VALID_PACKET_TYPES)
     {
@@ -432,7 +431,7 @@ int32_t GetSensorPacketPayloadSize( uint8_t sensorPacketType, uint8_t metadata )
     }
     else
     {
-        payloadSizeOrErrorCode = SET_ERROR( -MQ_INVALID_PARAMETER );
+        payloadSizeOrErrorCode = SET_ERROR( OSP_STATUS_INVALID_PARAMETER );
     }
 
     return payloadSizeOrErrorCode;
@@ -475,7 +474,7 @@ int32_t GetPacketPayloadSize( const uint8_t *pPacket )
     }
     else
     {
-        return (-MQ_INVALID_PARAMETER);
+        return (OSP_STATUS_INVALID_PACKETID);
     }
 }
 
@@ -493,7 +492,7 @@ int32_t GetPacketPayloadSize( const uint8_t *pPacket )
  ***************************************************************************************************/
 int32_t GetLocalPacketPayloadElementSizeAndCount( const LocalPacketTypes_t *pPacket, uint16_t *pElementSize, uint16_t *pElementCount )
 {
-    int32_t errorCode = (-MQ_UNSET_ERROR_CODE);
+    int32_t errorCode = OSP_STATUS_UNSPECIFIED_ERROR;
 
     *pElementSize  = 0;
     *pElementCount = 0;
@@ -509,7 +508,7 @@ int32_t GetLocalPacketPayloadElementSizeAndCount( const LocalPacketTypes_t *pPac
 
         *pElementSize   = sensorPacketDescriptions[sensorPacketType].ElementSz;
         *pElementCount  = sensorPacketDescriptions[sensorPacketType].NumElements;
-        errorCode       = MQ_SUCCESS;
+        errorCode       = OSP_STATUS_OK;
     }
     else if ( IsControlPacketType( pPacket->PacketID ) )
     {
@@ -519,16 +518,16 @@ int32_t GetLocalPacketPayloadElementSizeAndCount( const LocalPacketTypes_t *pPac
         {
             *pElementSize   = controlPacketDescriptions[parameterID].ElementSz;
             *pElementCount  = controlPacketDescriptions[parameterID].NumElements;
-            errorCode       = MQ_SUCCESS;
+            errorCode       = OSP_STATUS_OK;
         }
         else
         {
-            errorCode = (-MQ_INVALID_PARAMETER);
+            errorCode = (OSP_STATUS_INVALID_PARAMETER);
         }
     }
     else
     {
-        errorCode = (-MQ_INVALID_PACKETID);
+        errorCode = (OSP_STATUS_INVALID_PACKETID);
     }
 
     return errorCode;
@@ -547,58 +546,27 @@ int32_t GetLocalPacketPayloadElementSizeAndCount( const LocalPacketTypes_t *pPac
  ***************************************************************************************************/
 int32_t GetControlPacketPayloadSize( uint8_t packetID, uint8_t paramID )
 {
-    int32_t packetSizeOrErrorCode = SET_ERROR( OSP_STATUS_INVALID_PARAMETER );
+    int32_t packetSizeOrErrorCode = SET_ERROR( OSP_STATUS_UNSPECIFIED_ERROR );
 
-    if ( ValidControlPacketID(packetID) && ValidParameterID(paramID) )
+    const uint8_t rW = controlPacketDescriptions[paramID].RWAccess;
+
+    const uint8_t lookupKind = controlPacketSizeKinds[packetID][rW];
+
+    if (lookupKind == PSIZE_ZERO)
     {
-        const uint8_t rW = controlPacketDescriptions[paramID].RWAccess;
-
-        const uint8_t lookupKind = controlPacketSizeKinds[packetID][rW];
-
-        if (lookupKind == PSIZE_ZERO)
-        {
-            packetSizeOrErrorCode = 0;
-        }
-        else if (lookupKind == PSIZE_FROM_TABLE)
-        {
-            const uint8_t  elemSize = controlPacketDescriptions[paramID].ElementSz;
-
-            const uint16_t nElem = controlPacketDescriptions[paramID].NumElements;
-
-            uint16_t payloadSize = nElem * (uint16_t)elemSize;
-
-            packetSizeOrErrorCode = (int32_t)payloadSize;
-        }
+        packetSizeOrErrorCode   = 0;
     }
-    // else PSIZE_ILLEGAL, leave error code in place for return value.
+    else if (lookupKind == PSIZE_FROM_TABLE)
+    {
+        packetSizeOrErrorCode = controlPacketDescriptions[paramID].ElementSz *
+            controlPacketDescriptions[paramID].NumElements;
+    }
+    else
+    {
+        return SET_ERROR( OSP_STATUS_INVALID_PARAMETER );
+    }
 
     return packetSizeOrErrorCode;
-}
-
-
-/****************************************************************************************************
- * @fn      SetResponsePacketToErrorPacket
- *          Convert Response packet to Error_Code_In_Data Response packet.
- *
- * @param   [IN/OUT]pLocalPacket  - packet to change.
- * @param   [IN]errorCode         - error code to set.
- *
- * @return  nothing.
- *
- ***************************************************************************************************/
-void SetResponsePacketToErrorPacket( LocalPacketTypes_t *pLocalPacket, int32_t errorCode )
-{
-    uint8_t *pPacketPayload;
-
-    pLocalPacket->SCP.CRP.ParameterID = PARAM_ID_ERROR_CODE_IN_DATA;
-    pLocalPacket->PayloadOffset = LOCAL_PKT_PAYLOAD_OFFSET;
-
-    pLocalPacket->PayloadSize = controlPacketDescriptions[PARAM_ID_ERROR_CODE_IN_DATA].ElementSz
-        * controlPacketDescriptions[PARAM_ID_ERROR_CODE_IN_DATA].NumElements;
-
-    pPacketPayload = pLocalPacket->PayloadOffset + (uint8_t *) &(pLocalPacket);
-
-    SH_MEMCPY( pPacketPayload, (const uint8_t *) &(errorCode), pLocalPacket->PayloadSize );
 }
 
 
@@ -616,7 +584,7 @@ uint8_t IsWriteConfigCommand( uint8_t packetID, uint8_t parameterID )
 {
     uint8_t isWrite;
 
-    if ( packetID == PKID_CONTROL_REQ_WR && ValidParameterID(parameterID) )
+    if ( packetID == PKID_CONTROL_REQ_WR )
     {
         const uint8_t rW = controlPacketDescriptions[parameterID].RWAccess;
 

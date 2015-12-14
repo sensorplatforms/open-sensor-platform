@@ -27,7 +27,7 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-#ifdef _DEBUG_SENSOR_HUB_TARGET
+#ifdef DEBUG_SENSOR_PACKETS
 extern uint32_t g_logging;
 #endif
 
@@ -378,7 +378,7 @@ static int32_t ParseSensorDataPacket( LocalPacketTypes_t *pOut, const uint8_t *p
             pSDPOut->P.RawSensor.Axis[1] = (int32_t)BYTES_TO_SHORT(pHif->SensPktRaw.DataRaw[2], pHif->SensPktRaw.DataRaw[3]);
             pSDPOut->P.RawSensor.Axis[2] = (int32_t)BYTES_TO_SHORT(pHif->SensPktRaw.DataRaw[4], pHif->SensPktRaw.DataRaw[5]);
 
-#ifdef _DEBUG_SENSOR_HUB_TARGET
+#ifdef DEBUG_SENSOR_PACKETS
             if (g_logging & 0x10)
             {
                 DPRINTF("HIF: %d, %02X, %02X, %04X\r\n", sizeof(HostIFPackets_t),

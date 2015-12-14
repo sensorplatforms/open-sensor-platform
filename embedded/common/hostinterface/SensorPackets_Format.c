@@ -83,7 +83,7 @@ int32_t FormatControlPacketFromFields( HostIFPackets_t *pDest, const uint8_t *pS
 
     if (pDest == NULL)
     {
-        return SET_ERROR( OSP_STATUS_INVALID_PARAMETER );
+        return SET_ERROR( OSP_STATUS_NULL_POINTER );
     }
 
     /* write control packet header from provided fields */
@@ -93,7 +93,7 @@ int32_t FormatControlPacketFromFields( HostIFPackets_t *pDest, const uint8_t *pS
     /* return error code here, on error */
     if (packetPayloadSize < 0)
     {
-        return SET_ERROR( (packetPayloadSize) );
+        return SET_ERROR( packetPayloadSize );
     }
 
     packetSize = packetPayloadSize + CTRL_PKT_HEADER_SIZE;
@@ -103,7 +103,7 @@ int32_t FormatControlPacketFromFields( HostIFPackets_t *pDest, const uint8_t *pS
     {
         if (pSrcPayloadData == NULL)
         {
-            return SET_ERROR( OSP_STATUS_INVALID_PARAMETER );
+            return SET_ERROR( OSP_STATUS_NULL_POINTER );
         }
         else
         {
@@ -143,12 +143,11 @@ static int32_t FormatControlPacketHeader( HostIFPackets_t *pDest, uint8_t packet
     HifControlPktNoData_t *pOut = (HifControlPktNoData_t *) pDest;
 
     /* Get packet payload size */
-
     const int16_t packetPayloadSize = GetControlPacketPayloadSize(packetID, parameterID );
 
     if ( packetPayloadSize < 0 )
     {
-        return SET_ERROR( (-packetPayloadSize) );
+        return SET_ERROR( packetPayloadSize );
     }
 
     /* Check Sensor enumeration type Android or User defined */
@@ -222,7 +221,7 @@ int32_t FormatSensorDataPacket( HostIFPackets_t *pDestPacket, const uint8_t *pSr
     /* Sanity checks... */
     if (pDest == NULL || pSrc == NULL)
     {
-        return SET_ERROR( OSP_STATUS_INVALID_PARAMETER );
+        return SET_ERROR( OSP_STATUS_NULL_POINTER );
     }
 
     /* clear header before setting bits in it */
@@ -387,6 +386,7 @@ int32_t FormatSignificantMotionPktFixP(
                                        SENSOR_DATA_SIGNIFICANT_MOTION, META_DATA_UNUSED, sType, SENSOR_SUBTYPE_UNUSED);
 }
 
+
 /****************************************************************************************************
  * @fn      FormatThreeAxisPktFixP
  *          Using the given Calibrated data, this function creates the Sensor Data Packet for sending
@@ -427,7 +427,6 @@ int32_t FormatStepCounterPkt( HostIFPackets_t *pDest, const StepCounter_t *pStep
                                    SENSOR_DATA_STEP_COUNTER, META_DATA_UNUSED, sType, SENSOR_SUBTYPE_UNUSED);
         //TODO : Find out when to use the preciseData
 }
-
 
 
 /****************************************************************************************************
@@ -471,7 +470,6 @@ int32_t FormatCalibratedPktFixP( HostIFPackets_t *pDest, const CalibratedFixP_t 
 }
 
 
-
 /*=================================================================================================*\
  |    Control Request/Response packet formatting routines
 \*=================================================================================================*/
@@ -498,7 +496,7 @@ int32_t FormatControlPacket( HostIFPackets_t *pDest, const LocalPacketTypes_t *p
 
     if ( pDestPacketSize == NULL ) /* pDest NULL check happens in FormatControlPacketFromFields */
     {
-        retVal = SET_ERROR( OSP_STATUS_INVALID_PARAMETER );
+        retVal = SET_ERROR( OSP_STATUS_NULL_POINTER );
     }
     else
     {
@@ -533,13 +531,6 @@ int32_t FormatControlPacket( HostIFPackets_t *pDest, const LocalPacketTypes_t *p
 
 //   PARAM_ID_ERROR_CODE_IN_DATA     0x00    R_: Int32
 //
-int32_t FormatControlReqRead_ErrorCodeInData( HostIFPackets_t *pDest,
-    ASensorType_t sType, uint8_t subType,
-    uint8_t seqNum, uint8_t crcFlag )
-{
-    return _FCP( NULL, PKID_CONTROL_REQ_RD, PARAM_ID_ERROR_CODE_IN_DATA );
-}
-
 int32_t FormatControlResp_ErrorCodeInData( HostIFPackets_t *pDest, int32_t errorCodeInData,
     ASensorType_t sType, uint8_t subType,
     uint8_t seqNum, uint8_t crcFlag )
@@ -559,14 +550,6 @@ int32_t FormatControlReqWrite_Enable( HostIFPackets_t *pDest, uint8_t enable,
     return _FCP( &temp, PKID_CONTROL_REQ_WR, PARAM_ID_ENABLE );
 }
 
-int32_t FormatControlResp_Enable(
-    HostIFPackets_t *pDest,
-    ASensorType_t sType, uint8_t subType,
-    uint8_t seqNum, uint8_t crcFlag )
-{
-    return _FCP( NULL, PKID_CONTROL_RESP, PARAM_ID_ENABLE );
-}
-
 //   PARAM_ID_BATCH                  0x02    _W: Uint64 x 2
 //
 int32_t FormatControlReqWrite_Batch(
@@ -577,14 +560,6 @@ int32_t FormatControlReqWrite_Batch(
     return _FCP( pUint64x2, PKID_CONTROL_REQ_WR, PARAM_ID_BATCH );
 }
 
-int32_t FormatControlResp_Batch(
-    HostIFPackets_t *pDest,
-    ASensorType_t sType, uint8_t subType,
-    uint8_t seqNum, uint8_t crcFlag )
-{
-    return _FCP( NULL, PKID_CONTROL_RESP, PARAM_ID_BATCH );
-}
-
 //   PARAM_ID_FLUSH                  0x03    _W: no payload
 //
 int32_t FormatControlReqWrite_Flush(
@@ -593,14 +568,6 @@ int32_t FormatControlReqWrite_Flush(
     uint8_t seqNum, uint8_t crcFlag )
 {
     return _FCP( NULL, PKID_CONTROL_REQ_WR, PARAM_ID_FLUSH );
-}
-
-int32_t FormatControlResp_Flush(
-    HostIFPackets_t *pDest,
-    ASensorType_t sType, uint8_t subType,
-    uint8_t seqNum, uint8_t crcFlag )
-{
-    return _FCP( NULL, PKID_CONTROL_RESP, PARAM_ID_FLUSH );
 }
 
 //   PARAM_ID_RANGE_RESOLUTION       0x04    R_: FixP32 x 2
@@ -693,7 +660,7 @@ int32_t FormatControlReqWrite_AxisMapping(
     return _FCP( pInt8x3, PKID_CONTROL_REQ_WR, PARAM_ID_AXIS_MAPPING );
 }
 
-int32_t FormatControlResp_(
+int32_t FormatControlResp_AxisMapping(
     HostIFPackets_t *pDest, const int8_t *pInt8x3,
     ASensorType_t sType, uint8_t subType,
     uint8_t seqNum, uint8_t crcFlag )
@@ -1310,14 +1277,6 @@ int32_t FormatControlReqWrite_ConfigDone(
     uint8_t seqNum, uint8_t crcFlag )
 {
     return _FCP( NULL, PKID_CONTROL_REQ_WR, PARAM_ID_CONFIG_DONE );
-}
-
-int32_t FormatControlResp_ConfigDone(
-    HostIFPackets_t *pDest,
-    ASensorType_t sType, uint8_t subType,
-    uint8_t seqNum, uint8_t crcFlag )
-{
-    return _FCP( NULL, PKID_CONTROL_RESP, PARAM_ID_CONFIG_DONE );
 }
 
 

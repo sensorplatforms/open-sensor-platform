@@ -39,6 +39,7 @@
 \*-------------------------------------------------------------------------------------------------*/
 
 #define MAX_NUMBER_SENSORS                          ( NUM_SENSOR_TYPE )
+
 /* On Change non wakeup sensors are stored locally, it can store up to this define */
 #define NUM_ONCHANGE_NONWAKEUP_SENSOR               (10)
 
@@ -51,16 +52,17 @@
 /* Q Size Common Definitions */
 #define QUEUE_LOW_THR                               (0)
 #define QUEUE_HIGH_THR                              (1)
-#define HOST_WAKEUP_TOLERANCE_SIZE                  (75) 
+#define HOST_WAKEUP_TOLERANCE_PERCENT               (85)
 #define HIF_PACKET_SIZE                             M_CalcBufferSize(sizeof(HostIFPackets_t))
 
 /* Sensor Data Queue Size Definition */
 /* HIF Queue size indicate number of packet a single Q can hold */
-#define HIF_SENSOR_DATA_QUEUE_SIZE                  (100)
-#define NUM_DATA_QUEUE                              (2)
+#define HIF_NWKUP_SENSOR_DATA_QUEUE_SIZE            (200)
+#define HIF_WKUP_SENSOR_DATA_QUEUE_SIZE             (200)
 
 /* Combined HIF Sensor Data Packet pool size (Wakeup + Non Wakeup) */
-#define HIF_SENSOR_DATA_PACKET_POOL_SIZE            ( ( HIF_SENSOR_DATA_QUEUE_SIZE * ( NUM_DATA_QUEUE )) + HOST_WAKEUP_TOLERANCE_SIZE )
+#define HIF_SENSOR_DATA_PACKET_POOL_SIZE            ( HIF_NWKUP_SENSOR_DATA_QUEUE_SIZE + HIF_WKUP_SENSOR_DATA_QUEUE_SIZE )
+
 
 /* Sensor Control Queue Size Definition */
 /* HIF Queue size indicate number of Event a single Q can hold */
@@ -76,75 +78,47 @@
 #define QUEUE_CONTROL_RESPONSE_EMPTY_BIT            (0x04)
 #define QUEUE_ALL_EMPTY_MASK                        (0x07)
 
-/* Mapping table for Sensor type to FFIO Type */
-static const uint32_t AndroidTypeToFIFOTypeMap[MAX_NUMBER_SENSORS] =
-{
-    [SENSOR_META_DATA]                      = BATCH_SENSOR_NUM,
-    [SENSOR_ACCELEROMETER]                  = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [SENSOR_GEOMAGNETIC_FIELD]              = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [SENSOR_MAGNETIC_FIELD]                 = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [SENSOR_ORIENTATION]                    = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [SENSOR_GYROSCOPE]                      = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [SENSOR_LIGHT]                          = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [SENSOR_PRESSURE]                       = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [SENSOR_TEMPERATURE]                    = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [SENSOR_PROXIMITY]                      = BATCH_SENSOR_WAKEUP_FIFO,
-    [SENSOR_GRAVITY]                        = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [SENSOR_LINEAR_ACCELERATION]            = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [SENSOR_ROTATION_VECTOR]                = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [SENSOR_RELATIVE_HUMIDITY]              = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [SENSOR_AMBIENT_TEMPERATURE]            = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [SENSOR_MAGNETIC_FIELD_UNCALIBRATED]    = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [SENSOR_GAME_ROTATION_VECTOR]           = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [SENSOR_GYROSCOPE_UNCALIBRATED]         = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [SENSOR_SIGNIFICANT_MOTION]             = BATCH_SENSOR_WAKEUP_FIFO,
-    [SENSOR_STEP_DETECTOR]                  = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [SENSOR_STEP_COUNTER]                   = BATCH_SENSOR_NONWAKEUP_ONCHANGE_FIFO,
-    [SENSOR_GEOMAGNETIC_ROTATION_VECTOR]    = BATCH_SENSOR_NONWAKEUP_FIFO,
-
-    /* Private Sensor Type */
-    [PSENSOR_ACCELEROMETER_RAW]             = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [PSENSOR_MAGNETIC_FIELD_RAW]            = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [PSENSOR_GYROSCOPE_RAW]                 = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [PSENSOR_LIGHT_UV]                      = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [PSENSOR_LIGHT_RGB]                     = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [PSENSOR_STEP]                          = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [PSENSOR_ACCELEROMETER_UNCALIBRATED]    = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [PSENSOR_ORIENTATION]                   = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [PSENSOR_CONTEXT_DEVICE_MOTION]         = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [PSENSOR_CONTEXT_CARRY]                 = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [PSENSOR_CONTEXT_POSTURE]               = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [PSENSOR_CONTEXT_TRANSPORT]             = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [PSENSOR_CONTEXT_GESTURE_EVENT]                 = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [PSENSOR_HEART_RATE]                    = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [SYSTEM_REAL_TIME_CLOCK]                = BATCH_SENSOR_NONWAKEUP_FIFO,
-    [PSENSOR_MAGNETIC_FIELD_ANOMALY]        = BATCH_SENSOR_NONWAKEUP_FIFO,
-};
-
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E   T Y P E   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 
-/* Structures to hold batching state */
-typedef struct _BatchParam
+/* Batch Queue Type Enumeration */
+typedef enum _BatchQType
 {
-    uint64_t    SamplingRate;   /* Min. Sampling Rate for batched sensor */
-    uint64_t    ReportLatency;  /* Max. Report Latency for batched sensor */
-#ifdef DECIMATION_MASK 
-    uint32_t    SampleCnt;      /* Sample count for sensor*/
-    uint32_t    DecimationCnt;  /* Decimation count for sensor*/
-#endif
-    osp_bool_t   isValidEntry;   /* Flag for Valid entry */
-} BatchParam_t;
+    BATCH_WAKEUP_QUEUE,
+    BATCH_NONWAKEUP_QUEUE,
+    BATCH_QUEUE_NUM
+}BatchQType_t;
 
-typedef struct _Batch
+/* Structures to hold batching sensor parameters */
+typedef struct _BatchSensorParam
 {
-    BatchParam_t  SensorList[MAX_NUMBER_SENSORS];         /* Batching sensor list */
+    uint64_t                ActualSamplingRate;     /* Actual Sampling Rate in ns for batched sensor */
+    uint64_t                RequestedSamplingRate;  /* Requested Sampling Rate in ns for batched sensor */
+    uint64_t                ReportLatency;          /* Max. Report Latency for batched sensor */
+    BatchQType_t            QType;                  /* Sensor FIFO Type */
+#ifdef DECIMATION_MASK
+    uint32_t                SampleCnt;              /* Sample count for sensor*/
+    uint32_t                DecimationCnt;          /* Decimation count for sensor*/
+#endif
+    osp_bool_t              isValidEntry;           /* Flag for Valid entry */
+} BatchSensorParam_t;
+
+/* Structure to hold Batch Queue parameters */
+typedef struct _BatchQParam
+{
     Queue_t       *pQ;                                    /* pointer to sensor Q */
     uint64_t      MinReportLatency;                       /* min. report latency from sensor list */
     uint8_t       NumBatchedSensor;                       /* Number of sensor currently batched */
-} Batch_t;
+}BatchQParam_t;
+
+/* Structure to hold Batch Descriptor */
+typedef struct _BatchDescriptor
+{
+    BatchSensorParam_t  SensorList[MAX_NUMBER_SENSORS];         /* Batching sensor list */
+    BatchQParam_t       BatchQ[BATCH_QUEUE_NUM];                /* Batching Queues */
+} BatchDescriptor_t;
 
 /* Structures to hold On Change Sensor Sample */
 typedef struct _BatchOnChangeSensor
@@ -161,18 +135,69 @@ typedef struct _OnChangeSenorSample
     osp_bool_t               QEmpty;                                         /* Mark Q is empty*/
 } OnChangeSenorSample_t;
 
+typedef struct _SensorTypeAndRateMap
+{
+    BatchSensorFIFOType_t    FIFOType;           /* Sensor FIFO Type */
+    uint64_t                 SamplingRate;       /* Sensor Sampling Rate */
+}SensorTypeAndRateMap_t;
+
 
 /*-------------------------------------------------------------------------------------------------*\
  |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-static Batch_t NonWakeupBatch, WakeupBatch;
+/* Mapping table for Sensor type to get Sampling rate and FFIO Type */
+static const SensorTypeAndRateMap_t SensorTypeAndRateMap[MAX_NUMBER_SENSORS] =
+{
+    [SENSOR_META_DATA]                   = { BATCH_SENSOR_NUM,                     ON_CHANGE_SAMPLE_PERIOD   },
+    [SENSOR_ACCELEROMETER]               = { BATCH_SENSOR_NONWAKEUP_FIFO,          ACC_ACTUAL_SAMPLE_PERIOD  },
+    [SENSOR_GEOMAGNETIC_FIELD]           = { BATCH_SENSOR_NONWAKEUP_FIFO,          MAG_ACTUAL_SAMPLE_PERIOD  },
+    [SENSOR_MAGNETIC_FIELD]              = { BATCH_SENSOR_NONWAKEUP_FIFO,          MAG_ACTUAL_SAMPLE_PERIOD  },
+    [SENSOR_ORIENTATION]                 = { BATCH_SENSOR_NONWAKEUP_FIFO,          GYRO_ACTUAL_SAMPLE_PERIOD },
+    [SENSOR_GYROSCOPE]                   = { BATCH_SENSOR_NONWAKEUP_FIFO,          GYRO_ACTUAL_SAMPLE_PERIOD },
+    [SENSOR_LIGHT]                       = { BATCH_SENSOR_NONWAKEUP_FIFO,          ON_CHANGE_SAMPLE_PERIOD   },
+    [SENSOR_PRESSURE]                    = { BATCH_SENSOR_NONWAKEUP_FIFO,          PRES_ACTUAL_SAMPLE_PERIOD },
+    [SENSOR_TEMPERATURE]                 = { BATCH_SENSOR_NONWAKEUP_FIFO,          ON_CHANGE_SAMPLE_PERIOD   },
+    [SENSOR_PROXIMITY]                   = { BATCH_SENSOR_WAKEUP_FIFO,             ON_CHANGE_SAMPLE_PERIOD   },
+    [SENSOR_GRAVITY]                     = { BATCH_SENSOR_NONWAKEUP_FIFO,          ACC_ACTUAL_SAMPLE_PERIOD  },
+    [SENSOR_LINEAR_ACCELERATION]         = { BATCH_SENSOR_NONWAKEUP_FIFO,          ACC_ACTUAL_SAMPLE_PERIOD  },
+    [SENSOR_ROTATION_VECTOR]             = { BATCH_SENSOR_NONWAKEUP_FIFO,          GYRO_ACTUAL_SAMPLE_PERIOD },
+    [SENSOR_RELATIVE_HUMIDITY]           = { BATCH_SENSOR_NONWAKEUP_FIFO,          ON_CHANGE_SAMPLE_PERIOD   },
+    [SENSOR_AMBIENT_TEMPERATURE]         = { BATCH_SENSOR_NONWAKEUP_FIFO,          ON_CHANGE_SAMPLE_PERIOD   },
+    [SENSOR_MAGNETIC_FIELD_UNCALIBRATED] = { BATCH_SENSOR_WAKEUP_FIFO,             MAG_ACTUAL_SAMPLE_PERIOD  },
+    [SENSOR_GAME_ROTATION_VECTOR]        = { BATCH_SENSOR_NONWAKEUP_FIFO,          GYRO_ACTUAL_SAMPLE_PERIOD },
+    [SENSOR_GYROSCOPE_UNCALIBRATED]      = { BATCH_SENSOR_NONWAKEUP_FIFO,          GYRO_ACTUAL_SAMPLE_PERIOD },
+    [SENSOR_SIGNIFICANT_MOTION]          = { BATCH_SENSOR_WAKEUP_FIFO,             ON_CHANGE_SAMPLE_PERIOD   },
+    [SENSOR_STEP_DETECTOR]               = { BATCH_SENSOR_NONWAKEUP_FIFO,          ON_CHANGE_SAMPLE_PERIOD   },
+    [SENSOR_STEP_COUNTER]                = { BATCH_SENSOR_NONWAKEUP_ONCHANGE_FIFO, ON_CHANGE_SAMPLE_PERIOD   },
+    [SENSOR_GEOMAGNETIC_ROTATION_VECTOR] = { BATCH_SENSOR_NONWAKEUP_FIFO,          GYRO_ACTUAL_SAMPLE_PERIOD },
+
+    /* Private Sensor Type */
+    [PSENSOR_ACCELEROMETER_RAW]          = { BATCH_SENSOR_NONWAKEUP_FIFO,          ACC_ACTUAL_SAMPLE_PERIOD  },
+    [PSENSOR_MAGNETIC_FIELD_RAW]         = { BATCH_SENSOR_NONWAKEUP_FIFO,          MAG_ACTUAL_SAMPLE_PERIOD  },
+    [PSENSOR_GYROSCOPE_RAW]              = { BATCH_SENSOR_NONWAKEUP_FIFO,          GYRO_ACTUAL_SAMPLE_PERIOD },
+    [PSENSOR_LIGHT_UV]                   = { BATCH_SENSOR_NONWAKEUP_FIFO,          ON_CHANGE_SAMPLE_PERIOD   },
+    [PSENSOR_LIGHT_RGB]                  = { BATCH_SENSOR_NONWAKEUP_FIFO,          ON_CHANGE_SAMPLE_PERIOD   },
+    [PSENSOR_STEP]                       = { BATCH_SENSOR_NONWAKEUP_FIFO,          ON_CHANGE_SAMPLE_PERIOD   },
+    [PSENSOR_ACCELEROMETER_UNCALIBRATED] = { BATCH_SENSOR_NONWAKEUP_FIFO,          ACC_ACTUAL_SAMPLE_PERIOD  },
+    [PSENSOR_ORIENTATION]                = { BATCH_SENSOR_NONWAKEUP_FIFO,          GYRO_ACTUAL_SAMPLE_PERIOD },
+    [PSENSOR_CONTEXT_DEVICE_MOTION]      = { BATCH_SENSOR_NONWAKEUP_FIFO,          ON_CHANGE_SAMPLE_PERIOD   },
+    [PSENSOR_CONTEXT_CARRY]              = { BATCH_SENSOR_NONWAKEUP_FIFO,          ON_CHANGE_SAMPLE_PERIOD   },
+    [PSENSOR_CONTEXT_POSTURE]            = { BATCH_SENSOR_NONWAKEUP_FIFO,          ON_CHANGE_SAMPLE_PERIOD   },
+    [PSENSOR_CONTEXT_TRANSPORT]          = { BATCH_SENSOR_NONWAKEUP_FIFO,          ON_CHANGE_SAMPLE_PERIOD   },
+    [PSENSOR_GESTURE_EVENT]              = { BATCH_SENSOR_NONWAKEUP_FIFO,          ON_CHANGE_SAMPLE_PERIOD   },
+    [PSENSOR_HEART_RATE]                 = { BATCH_SENSOR_NONWAKEUP_FIFO,          ON_CHANGE_SAMPLE_PERIOD   },
+    [SYSTEM_REAL_TIME_CLOCK]             = { BATCH_SENSOR_NONWAKEUP_FIFO,          ON_CHANGE_SAMPLE_PERIOD   },
+    [PSENSOR_MAGNETIC_FIELD_ANOMALY]     = { BATCH_SENSOR_NONWAKEUP_FIFO,          MAG_ACTUAL_SAMPLE_PERIOD  },
+};
+
+static BatchDescriptor_t BatchDesc;
 static OnChangeSenorSample_t NonWakeupOnChangeSensor;
 static osp_bool_t isBatchManagerInitialized = FALSE;
 static Q_Type_t CurrQType = NUM_QUEUE_TYPE;
 
-Queue_t *_HiFNonWakeupQueue = NULL;
-Queue_t *_HiFWakeUpQueue = NULL;
-Queue_t *_HiFControlQueue = NULL;
+static Queue_t *_HiFNonWakeupQueue = NULL;
+static Queue_t *_HiFWakeUpQueue = NULL;
+static Queue_t *_HiFControlQueue = NULL;
 
 /* Memory Pool for Sensor Data Packet for NonWakeup sensor and Wakeup sensor */
 DECLARE_BLOCK_POOL( SensorDataPacketPool, HIF_PACKET_SIZE, HIF_SENSOR_DATA_PACKET_POOL_SIZE );
@@ -187,10 +212,10 @@ DECLARE_BLOCK_POOL( SensorControlResponsePacketPool, HIF_PACKET_SIZE, HIF_CONTRO
 static void QHighThresholdCallBack( Q_Type_t QType );
 static void QEmptyCallBack( Q_Type_t QType );
 static int16_t GetCurrentQType( Q_Type_t *pQType );
-static uint32_t CalculateHighThreshold( Batch_t *pBatchAttribute );
-static int16_t RegisterSensorBatch( Batch_t *pBatchAttribute, uint16_t sensorType, void *pSensorConfig);
-static int16_t DeRegisterSensorBatch( Batch_t *pBatchAttribute, uint32_t sensorType );
-static int16_t FindMinReportLatency( Batch_t *pBatchAttribute );
+static uint32_t CalculateHighThreshold( BatchDescriptor_t *pBatchDesc, BatchQType_t QType );
+static int16_t RegisterSensorBatch( BatchDescriptor_t *pBatchDesc, uint16_t sensorType, void *pSensorConfig );
+static int16_t DeRegisterSensorBatch( BatchDescriptor_t *pBatchDesc, uint32_t sensorType );
+static int16_t FindMinReportLatency( BatchDescriptor_t *pBatchDesc, BatchQType_t QType );
 static int16_t QInitialize( void );
 static int16_t BatchManagerAllocHifPacket( Buffer_t **pHifPacket, uint32_t *pPacketPool);
 static int16_t EnqueueOnChangeSensorQ( HostIFPackets_t *pHiFDataPacket, uint16_t packetSize, uint32_t sensorType );
@@ -266,7 +291,7 @@ static void QHighThresholdCallBack( Q_Type_t QType )
  * @param  [IN] QType - Type of Queue
  *
  * @return  none
- * 
+ *
  ***************************************************************************************************/
 static void QEmptyCallBack( Q_Type_t QType )
 {
@@ -377,35 +402,59 @@ static int16_t GetCurrentQType( Q_Type_t *pQType )
  * @fn      CalculateHighThreshold
  *          Calculate new value of high threshold for new sensor
  *
- * @param   [IN] pBatchAttribute - pointer to batching attribute structure
+ * @param   [IN] pBatchDesc - pointer to batching descriptor structure
+ * @param   [IN] QType      - Queue Type
  *
- * @return Calculated high threshold value
+ * @return  Calculated high threshold value
  *
  ***************************************************************************************************/
-static uint32_t CalculateHighThreshold( Batch_t *pBatchAttribute )
+static uint32_t CalculateHighThreshold( BatchDescriptor_t *pBatchDesc, BatchQType_t QType )
 {
     uint8_t i;
     uint32_t highThr = 0;
+    uint32_t highThrLimit;
 
     /* Find min. Report latency before we calculate high threshold value */
-    FindMinReportLatency( pBatchAttribute );
+    FindMinReportLatency( pBatchDesc, QType );
+
+    /* calculate threshold limit based on FIFO size and a tolerance % to account for Host Wake up time */
+    highThrLimit = ( pBatchDesc->BatchQ[QType].pQ->Capacity * HOST_WAKEUP_TOLERANCE_PERCENT ) / 100 ;
 
     /* If Min. Report Latency is 0 then Sensor Event should be send as soon as it occurs */
-    if ( (pBatchAttribute->MinReportLatency == 0) || (pBatchAttribute->MinReportLatency == (uint64_t)DEFAULT_REPORT_LATENCY) )
+    if ( ( pBatchDesc->BatchQ[QType].MinReportLatency == 0 ) ||
+         ( pBatchDesc->BatchQ[QType].MinReportLatency == (uint64_t)DEFAULT_REPORT_LATENCY ) )
     {
         highThr = DEFAULT_HIGH_THRESHOLD;
         return highThr;
     }
 
     /* Calculate High threshold value */
-    for (i = 0; i < MAX_NUMBER_SENSORS; i++)
+    for ( i = 0; i < MAX_NUMBER_SENSORS; i++ )
     {
-        /* Check that valid sampling rate entry before calculation */
-        if( pBatchAttribute->SensorList[i].SamplingRate != MIN_SAMPLING_PERIOD )
+        if ( pBatchDesc->SensorList[i].QType != QType )
+        {
+            continue; /* skip Sensors belonging to different Queue type */
+        }
+
+        /* Check only registered sensors for threshold calculation. Also skip On-Change sensors in thresold calculation */
+        if ( ( pBatchDesc->SensorList[i].isValidEntry ) &&
+             ( pBatchDesc->SensorList[i].ActualSamplingRate != ON_CHANGE_SAMPLE_PERIOD ) )
         {
             /* Calculate high threshold value for one sensor entry and accumulate to previous value*/
-            highThr += (pBatchAttribute->MinReportLatency / pBatchAttribute->SensorList[i].SamplingRate);
+            highThr += ( pBatchDesc->BatchQ[QType].MinReportLatency / pBatchDesc->SensorList[i].ActualSamplingRate );
         }
+    }
+
+    /* If the calculated FIFO threshold based on MRL exceeds the FIFO capacity, report when the FIFO is full */
+    if ( highThr > highThrLimit ) {
+
+        highThr = highThrLimit;
+    }
+    else if ( highThr < DEFAULT_HIGH_THRESHOLD )
+    {
+        /* If the registered sensors are all ON-CHANGE, the calculated threshold value will be 0 */
+        /* TODO: ensure MRL for On-change sensors */
+        highThr = DEFAULT_HIGH_THRESHOLD;
     }
 
     return highThr;
@@ -416,27 +465,28 @@ static uint32_t CalculateHighThreshold( Batch_t *pBatchAttribute )
  * @fn      RegisterSensorBatch
  *          Register Sensor parameter (Sampling Rate and Report latency) to Batching structure
  *
- * @param   [IN] pBatchAttribute - pointer to batching attribute structure
+ * @param   [IN] pBatchDesc - pointer to batching descriptor structure
  * @param   [IN] sensorType - SensorType - Android Sensor Type
  * @param   [IN] pSensorConfig - pointer to Sensor config data
  *
  * @return  OSP_STATUS_OK or error code
  *
  ***************************************************************************************************/
-static int16_t RegisterSensorBatch( Batch_t *pBatchAttribute, uint16_t sensorType, void *pSensorConfig)
+static int16_t RegisterSensorBatch( BatchDescriptor_t *pBatchDesc, uint16_t sensorType, void *pSensorConfig )
 {
-    BatchParam_t  *pSensorParam = (BatchParam_t *)pSensorConfig;
+    BatchSensorParam_t  *pSensorParam = (BatchSensorParam_t *)pSensorConfig;
 
-    /* Validate Batch Attribute */
-    if ((pBatchAttribute == NULL) || (pSensorConfig == NULL))
+    /* Validate Batch Descriptor */
+    if ((pBatchDesc == NULL) || (pSensorConfig == NULL))
     {
         return (OSP_STATUS_NULL_POINTER);
     }
 
     /* Register sensor to be batched */
-    pBatchAttribute->SensorList[sensorType].ReportLatency   = pSensorParam->ReportLatency;
-    pBatchAttribute->SensorList[sensorType].SamplingRate    = pSensorParam->SamplingRate;
-    pBatchAttribute->SensorList[sensorType].isValidEntry    = TRUE;
+    /* TODO : Requested Sample Rate is not currently used for decimation calculations. */
+    pBatchDesc->SensorList[sensorType].ReportLatency            = pSensorParam->ReportLatency;
+    pBatchDesc->SensorList[sensorType].RequestedSamplingRate    = pSensorParam->RequestedSamplingRate;
+    pBatchDesc->SensorList[sensorType].isValidEntry             = TRUE;
 
     return OSP_STATUS_OK;
 }
@@ -446,24 +496,24 @@ static int16_t RegisterSensorBatch( Batch_t *pBatchAttribute, uint16_t sensorTyp
  * @fn      DeRegisterSensorBatch
  *          DeRegister Sensor parameter (Sampling Rate and Report latency) to Batching structure
  *
- * @param   [IN] pBatchAttribute - Pointer of Batching attribute
+ * @param   [IN] pBatchDesc - Pointer of Batching Descriptor
  * @param   [IN] sensorType - Type of Sensor
 
  * @return  OSP_STATUS_OK or error code
  *
  ***************************************************************************************************/
-static int16_t DeRegisterSensorBatch( Batch_t *pBatchAttribute, uint32_t sensorType )
+static int16_t DeRegisterSensorBatch( BatchDescriptor_t *pBatchDesc, uint32_t sensorType )
 {
-    /* Validate Batch Attribute */
-    if (pBatchAttribute == NULL)
+    /* Validate Batch Descriptor */
+    if (pBatchDesc == NULL)
     {
         return (OSP_STATUS_NULL_POINTER);
     }
 
     /* Unregister sensor to remove from batching */
-    pBatchAttribute->SensorList[sensorType].ReportLatency   = (uint64_t)DEFAULT_REPORT_LATENCY;
-    pBatchAttribute->SensorList[sensorType].SamplingRate    = MIN_SAMPLING_PERIOD;
-    pBatchAttribute->SensorList[sensorType].isValidEntry    = FALSE;
+    pBatchDesc->SensorList[sensorType].ReportLatency            = (uint64_t)DEFAULT_REPORT_LATENCY;
+    pBatchDesc->SensorList[sensorType].RequestedSamplingRate    = MIN_SAMPLING_PERIOD;
+    pBatchDesc->SensorList[sensorType].isValidEntry             = FALSE;
 
     return OSP_STATUS_OK;
 }
@@ -473,30 +523,32 @@ static int16_t DeRegisterSensorBatch( Batch_t *pBatchAttribute, uint32_t sensorT
  * @fn      FindMinReportLatency
  *          Find Min. Report Latency for given Batching structure
  *
- * @param   [IN] pBatchAttribute - Pointer of Batching attribute
+ * @param   [IN] pBatchDesc - Pointer of Batching Descriptor
+ * @param   [IN] QType      - Sensor Queue Type
  *
  * @return  OSP_STATUS_OK or error code
  *
  ***************************************************************************************************/
-static int16_t FindMinReportLatency( Batch_t *pBatchAttribute )
+static int16_t FindMinReportLatency( BatchDescriptor_t *pBatchDesc, BatchQType_t QType )
 {
     uint8_t i;
 
-    /* Validate Batch Attribute */
-    if (pBatchAttribute == NULL)
+    /* Validate Batch Descriptor */
+    if ( pBatchDesc == NULL )
     {
-        return (OSP_STATUS_NULL_POINTER);
+        return ( OSP_STATUS_NULL_POINTER );
     }
 
     /* Set min. Report latency to Max initially */
-    pBatchAttribute->MinReportLatency = (uint64_t)DEFAULT_REPORT_LATENCY;
+    pBatchDesc->BatchQ[QType].MinReportLatency = (uint64_t)DEFAULT_REPORT_LATENCY;
 
-    /* Search min.Report latency number from Batching Attribute */
-    for (i = 0; i < MAX_NUMBER_SENSORS; i++)
+    /* Search min.Report latency number from Batching Descriptor */
+    for ( i = 0; i < MAX_NUMBER_SENSORS; i++ )
     {
-        if (pBatchAttribute->SensorList[i].ReportLatency < pBatchAttribute->MinReportLatency)
+        if ( ( pBatchDesc->SensorList[i].QType == QType ) &&
+             ( pBatchDesc->SensorList[i].ReportLatency < pBatchDesc->BatchQ[QType].MinReportLatency ) )
         {
-            pBatchAttribute->MinReportLatency = pBatchAttribute->SensorList[i].ReportLatency;
+            pBatchDesc->BatchQ[QType].MinReportLatency = pBatchDesc->SensorList[i].ReportLatency;
         }
     }
 
@@ -521,7 +573,7 @@ static int16_t BatchManagerAllocHifPacket( Buffer_t **pHifPacket, uint32_t *pPac
     if (*pHifPacket != NULL)
     {
         return OSP_STATUS_OK;
-    } 
+    }
     else
     {
         return OSP_STATUS_NULL_POINTER;
@@ -543,35 +595,35 @@ static int16_t QInitialize( void )
     int16_t errCode;
 
     /* Initialize Data Packet pool */
-    //TODO - Opportunity for future optimization here by having different PACKET 
+    //TODO - Opportunity for future optimization here by having different PACKET
     // size for this pool since not all sensors will be wakeup type and most likely
     // the wakeup sensors data will be smaller in size as compared to e.g. Rotation Vector
     InitBlockPool( SensorDataPacketPool, sizeof(SensorDataPacketPool), HIF_PACKET_SIZE );
 
         /* Create Non wakeup Queue */
-    _HiFNonWakeupQueue = QueueCreate( HIF_SENSOR_DATA_QUEUE_SIZE, QUEUE_LOW_THR, QUEUE_HIGH_THR );
+    _HiFNonWakeupQueue = QueueCreate( HIF_NWKUP_SENSOR_DATA_QUEUE_SIZE, QUEUE_LOW_THR, QUEUE_HIGH_THR );
     ASF_assert(_HiFNonWakeupQueue != NULL);
 
     /* Create Wakeup Sensor Queue */
-    _HiFWakeUpQueue = QueueCreate( HIF_SENSOR_DATA_QUEUE_SIZE, QUEUE_LOW_THR, QUEUE_HIGH_THR );
+    _HiFWakeUpQueue = QueueCreate( HIF_WKUP_SENSOR_DATA_QUEUE_SIZE, QUEUE_LOW_THR, QUEUE_HIGH_THR );
     ASF_assert(_HiFWakeUpQueue != NULL);
 
     /* Register Call backs for High and Low Thresholds   */
-    errCode = QueueRegisterCallBack( _HiFNonWakeupQueue , QUEUE_EMPTY_CB, (fpQueueEvtCallback_t) QEmptyCallBack, 
+    errCode = QueueRegisterCallBack( _HiFNonWakeupQueue , QUEUE_EMPTY_CB, (fpQueueEvtCallback_t) QEmptyCallBack,
                                      (void *)QUEUE_NONWAKEUP_TYPE );
     ASF_assert(errCode == OSP_STATUS_OK);
 
-    errCode = QueueRegisterCallBack( _HiFNonWakeupQueue , QUEUE_HIGH_THRESHOLD_CB, 
-                                     (fpQueueEvtCallback_t) QHighThresholdCallBack, 
+    errCode = QueueRegisterCallBack( _HiFNonWakeupQueue , QUEUE_HIGH_THRESHOLD_CB,
+                                     (fpQueueEvtCallback_t) QHighThresholdCallBack,
                                      (void *)QUEUE_NONWAKEUP_TYPE );
     ASF_assert(errCode == OSP_STATUS_OK);
 
     /* Register Call backs for High and Low Thresholds */
-    errCode = QueueRegisterCallBack( _HiFWakeUpQueue , QUEUE_EMPTY_CB, (fpQueueEvtCallback_t) QEmptyCallBack, 
+    errCode = QueueRegisterCallBack( _HiFWakeUpQueue , QUEUE_EMPTY_CB, (fpQueueEvtCallback_t) QEmptyCallBack,
                                     (void *)QUEUE_WAKEUP_TYPE );
     ASF_assert(errCode == OSP_STATUS_OK);
 
-    errCode = QueueRegisterCallBack( _HiFWakeUpQueue , QUEUE_HIGH_THRESHOLD_CB, 
+    errCode = QueueRegisterCallBack( _HiFWakeUpQueue , QUEUE_HIGH_THRESHOLD_CB,
                                     (fpQueueEvtCallback_t) QHighThresholdCallBack, (void *)QUEUE_WAKEUP_TYPE );
     ASF_assert(errCode == OSP_STATUS_OK);
 
@@ -706,38 +758,33 @@ int16_t BatchManagerInitialize( void )
         {
             return (OSP_STATUS_NULL_POINTER);
         }
-    
+
         /* Initialize Batch structure with Q */
-        NonWakeupBatch.pQ   = (Queue_t *)_HiFNonWakeupQueue;
-        WakeupBatch.pQ      = (Queue_t *)_HiFWakeUpQueue;
+        BatchDesc.BatchQ[BATCH_WAKEUP_QUEUE].pQ    = (Queue_t *)_HiFWakeUpQueue;
+        BatchDesc.BatchQ[BATCH_NONWAKEUP_QUEUE].pQ = (Queue_t *)_HiFNonWakeupQueue;
 
-        /* Initialize Batching Attribute structure */
-        for (i = 0; i < MAX_NUMBER_SENSORS; i++)
+        /* Initialize Batching descriptor structure */
+        for ( i = 0; i < MAX_NUMBER_SENSORS; i++ )
         {
-            NonWakeupBatch.SensorList[i].ReportLatency  = (uint64_t)DEFAULT_REPORT_LATENCY;
-            NonWakeupBatch.SensorList[i].SamplingRate   = MIN_SAMPLING_PERIOD;
-            NonWakeupBatch.SensorList[i].isValidEntry   = FALSE;
+            BatchDesc.SensorList[i].ReportLatency         = (uint64_t)DEFAULT_REPORT_LATENCY;
+            BatchDesc.SensorList[i].RequestedSamplingRate = MIN_SAMPLING_PERIOD;
+            BatchDesc.SensorList[i].ActualSamplingRate    = SensorTypeAndRateMap[i].SamplingRate;
+            BatchDesc.SensorList[i].isValidEntry          = FALSE;
+            /* Use Wake up Queue for Wake up FIFO Sensors and NonWake Up Queue for Non Wake up and Non Wake up on change FIFOs */
+            BatchDesc.SensorList[i].QType                 = ( SensorTypeAndRateMap[i].FIFOType == BATCH_SENSOR_WAKEUP_FIFO ) ?
+                                                              (BATCH_WAKEUP_QUEUE):(BATCH_NONWAKEUP_QUEUE);
 #ifdef DECIMATION_MASK
-            NonWakeupBatch.SensorList[i].DecimationCnt  = 0;
-            NonWakeupBatch.SensorList[i].SampleCnt      = 0;
-#endif
-
-            WakeupBatch.SensorList[i].ReportLatency = (uint64_t)DEFAULT_REPORT_LATENCY;
-            WakeupBatch.SensorList[i].SamplingRate  = MIN_SAMPLING_PERIOD;
-            WakeupBatch.SensorList[i].isValidEntry  = FALSE;
-
-#ifdef DECIMATION_MASK
-            WakeupBatch.SensorList[i].DecimationCnt  = 0;
-            WakeupBatch.SensorList[i].SampleCnt      = 0;
+            BatchDesc.SensorList[i].DecimationCnt         = 0;
+            BatchDesc.SensorList[i].SampleCnt             = 0;
 #endif
         }
-    
+
         /* Initialize min. Report latency to max */
-        NonWakeupBatch.MinReportLatency = (uint64_t)DEFAULT_REPORT_LATENCY;
-        WakeupBatch.MinReportLatency    = (uint64_t)DEFAULT_REPORT_LATENCY;
-    
-        NonWakeupBatch.NumBatchedSensor   = 0;
-        WakeupBatch.NumBatchedSensor      = 0;
+        BatchDesc.BatchQ[BATCH_WAKEUP_QUEUE].MinReportLatency       = (uint64_t)DEFAULT_REPORT_LATENCY;
+        BatchDesc.BatchQ[BATCH_NONWAKEUP_QUEUE].MinReportLatency    = (uint64_t)DEFAULT_REPORT_LATENCY;
+
+        BatchDesc.BatchQ[BATCH_WAKEUP_QUEUE].NumBatchedSensor       = 0;
+        BatchDesc.BatchQ[BATCH_NONWAKEUP_QUEUE].NumBatchedSensor    = 0;
 
         /* Initialize on change non wakeup sensor list */
         for (i = 0; i < NUM_ONCHANGE_NONWAKEUP_SENSOR; i++)
@@ -768,11 +815,12 @@ int16_t BatchManagerInitialize( void )
  ***************************************************************************************************/
 int16_t BatchManagerSensorRegister( ASensorType_t SensorType, uint64_t SamplingRate, uint64_t ReportLatency )
 {
-    Batch_t *pCurrBatchAttribute;
-    int16_t errCode             = OSP_STATUS_INVALID_PARAMETER;
-    BatchParam_t  BatchParam;
-    uint16_t sampleFreq;
-    uint32_t sType;
+    BatchDescriptor_t *pCurrBatchDesc = &BatchDesc;
+    int16_t errCode                   = OSP_STATUS_INVALID_PARAMETER;
+    BatchSensorParam_t BatchParam;
+    BatchQType_t       QType;
+    uint16_t           sampleFreq;
+    uint32_t           sType;
 
     /* Change sensor base */
     sType = M_ToBaseSensorEnum (SensorType);
@@ -783,55 +831,41 @@ int16_t BatchManagerSensorRegister( ASensorType_t SensorType, uint64_t SamplingR
         return (errCode);
     }
 
-    BatchParam.SamplingRate = SamplingRate;
+    /* get Q type */
+    QType = pCurrBatchDesc->SensorList[sType].QType;
+
+    BatchParam.RequestedSamplingRate = SamplingRate;
     BatchParam.ReportLatency = ReportLatency;
 
     /* Convert given sampling period to sampling frequency */
-    sampleFreq = ( TIME_1SEC_NS_UNIT / BatchParam.SamplingRate );
+    sampleFreq = ( TIME_1SEC_NS_UNIT / BatchParam.RequestedSamplingRate );
 
     /* Validate Data rate value */
     if (sampleFreq > MAX_SAMPLING_FREQ_HZ)
     {
         return (errCode);
     }
-
-    /* Get Type of Batching Q for give sensor Type */
-    switch (AndroidTypeToFIFOTypeMap[sType])
-    {
-    case BATCH_SENSOR_WAKEUP_FIFO:
-        pCurrBatchAttribute = &WakeupBatch;
-        break;
-
-    case BATCH_SENSOR_NONWAKEUP_FIFO:
-    case BATCH_SENSOR_NONWAKEUP_ONCHANGE_FIFO:
-        pCurrBatchAttribute = &NonWakeupBatch;
-        break;
-
-    default:
-        return errCode;
-    }
-
 #ifdef DECIMATION_MASK
-    pCurrBatchAttribute->SensorList[sType].DecimationCnt = (uint32_t)(SamplingRate / SensorDriverRate);
+    pCurrBatchDesc->SensorList[sType].DecimationCnt = (uint32_t)(SamplingRate / SensorDriverRate);
 
-    if ( pCurrBatchAttribute->SensorList[sType].DecimationCnt == 0 )
+    if ( pCurrBatchDesc->SensorList[sType].DecimationCnt == 0 )
     {
-        pCurrBatchAttribute->SensorList[sType].DecimationCnt = 1;
+        pCurrBatchDesc->SensorList[sType].DecimationCnt = 1;
     }
 
 #endif
     /* Checks sensor is already register or not, if it is register already return */
-    if ( !pCurrBatchAttribute->SensorList[sType].isValidEntry )
+    if ( !pCurrBatchDesc->SensorList[sType].isValidEntry )
     {
         /* Register sensor with Batching module */
-        errCode = RegisterSensorBatch( pCurrBatchAttribute, sType, &BatchParam );
+        errCode = RegisterSensorBatch( pCurrBatchDesc, sType, &BatchParam );
 
         if (errCode == OSP_STATUS_OK)
         {
             /* Increase number of batched sensor */
-            pCurrBatchAttribute->NumBatchedSensor++;
+            pCurrBatchDesc->BatchQ[QType].NumBatchedSensor++;
         }
-    } 
+    }
     else
     {
         return (OSP_STATUS_SENSOR_ALREADY_REGISTERED);
@@ -843,7 +877,7 @@ int16_t BatchManagerSensorRegister( ASensorType_t SensorType, uint64_t SamplingR
 
 /****************************************************************************************************
  * @fn      BatchManagerSensorEnable
- *          Enable batching for given sensor 
+ *          Enable batching for given sensor
  *
  * @param   [IN] SensorType - Type of Sensor
  *
@@ -852,10 +886,11 @@ int16_t BatchManagerSensorRegister( ASensorType_t SensorType, uint64_t SamplingR
  ***************************************************************************************************/
 int16_t BatchManagerSensorEnable( ASensorType_t SensorType )
 {
-    Batch_t *pCurrBatchAttribute;
-    uint32_t highThreshold;
-    int16_t errCode             = OSP_STATUS_INVALID_PARAMETER;
-    BatchStateType_t currState;
+    BatchDescriptor_t *pCurrBatchDesc = &BatchDesc;
+    uint32_t          highThreshold;
+    int16_t           errCode         = OSP_STATUS_INVALID_PARAMETER;
+    BatchStateType_t  currState;
+    BatchQType_t  QType;
     uint32_t sType;
 
     /* Change sensor base */
@@ -867,27 +902,14 @@ int16_t BatchManagerSensorEnable( ASensorType_t SensorType )
         return (errCode);
     }
 
-    /* Get Type of Batching Q for give sensor Type */
-    switch (AndroidTypeToFIFOTypeMap[sType])
-    {
-    case BATCH_SENSOR_WAKEUP_FIFO:
-        pCurrBatchAttribute = &WakeupBatch;
-        break;
-
-    case BATCH_SENSOR_NONWAKEUP_FIFO:
-    case BATCH_SENSOR_NONWAKEUP_ONCHANGE_FIFO:
-        pCurrBatchAttribute = &NonWakeupBatch;
-        break;
-
-    default:
-        return errCode;
-    }
-
     /* Check valid entry for given sensor type */
-    if ( !pCurrBatchAttribute->SensorList[sType].isValidEntry )
+    if ( !pCurrBatchDesc->SensorList[sType].isValidEntry )
     {
         return (errCode);
     }
+
+    /* get current Q type */
+    QType = pCurrBatchDesc->SensorList[sType].QType;
 
     /* Change state to Batch Active if it is in Idle state */
     errCode = BatchStateGet( &currState );
@@ -900,10 +922,10 @@ int16_t BatchManagerSensorEnable( ASensorType_t SensorType )
     }
 
     /* Calculate and validate High threshold value */
-    highThreshold = CalculateHighThreshold( pCurrBatchAttribute );
+    highThreshold = CalculateHighThreshold( pCurrBatchDesc, QType );
 
     /* Set High Threshold value for given Q */
-    errCode = QueueHighThresholdSet( pCurrBatchAttribute->pQ, highThreshold );
+    errCode = QueueHighThresholdSet( pCurrBatchDesc->BatchQ[QType].pQ, highThreshold );
 
     return errCode;
 }
@@ -920,9 +942,10 @@ int16_t BatchManagerSensorEnable( ASensorType_t SensorType )
  ***************************************************************************************************/
 int16_t BatchManagerSensorDeRegister( ASensorType_t SensorType )
 {
-    Batch_t *pCurrBatchAttribute;
-    int16_t errCode             = OSP_STATUS_INVALID_PARAMETER;
-    uint32_t sType;
+    BatchDescriptor_t *pCurrBatchDesc = &BatchDesc;
+    BatchQType_t       QType;
+    int16_t            errCode        = OSP_STATUS_INVALID_PARAMETER;
+    uint32_t           sType;
 
     /* Change sensor base */
     sType = M_ToBaseSensorEnum (SensorType);
@@ -933,37 +956,23 @@ int16_t BatchManagerSensorDeRegister( ASensorType_t SensorType )
         return (errCode);
     }
 
-    /* Get Type of Batching Q for give sensor Type */
-    switch (AndroidTypeToFIFOTypeMap[sType])
-    {
-    case BATCH_SENSOR_WAKEUP_FIFO:
-        pCurrBatchAttribute = &WakeupBatch;
-        break;
-
-    case BATCH_SENSOR_NONWAKEUP_FIFO:
-    case BATCH_SENSOR_NONWAKEUP_ONCHANGE_FIFO:
-        pCurrBatchAttribute = &NonWakeupBatch;
-        break;
-
-    default:
-        return errCode;
-    }
+    QType = pCurrBatchDesc->SensorList[sType].QType;
 
     /* Checks sensor is already unregister or not, if it is unregister already return */
-    if ( pCurrBatchAttribute->SensorList[sType].isValidEntry )
+    if ( pCurrBatchDesc->SensorList[sType].isValidEntry )
     {
         /* DeRegister sensor with Batching module */
-        errCode = DeRegisterSensorBatch( pCurrBatchAttribute, sType);
+        errCode = DeRegisterSensorBatch( pCurrBatchDesc, sType);
 
         if (errCode == OSP_STATUS_OK )
         {
             /* decrease number of batched sensor */
-            pCurrBatchAttribute->NumBatchedSensor--;
+            pCurrBatchDesc->BatchQ[QType].NumBatchedSensor--;
         }
     }
     else
     {
-        return OSP_STATUS_OK;
+        return OSP_STATUS_SENSOR_NOT_REGISTERED;
     }
 
     return errCode;
@@ -981,9 +990,10 @@ int16_t BatchManagerSensorDeRegister( ASensorType_t SensorType )
  ***************************************************************************************************/
 int16_t BatchManagerSensorDisable( ASensorType_t sensorType )
 {
-    Batch_t *pCurrBatchAttribute;
-    uint32_t highThreshold;
-    int16_t errCode             = OSP_STATUS_INVALID_PARAMETER;
+    BatchDescriptor_t *pCurrBatchDesc = &BatchDesc;
+    BatchQType_t      QType;
+    uint32_t          highThreshold;
+    int16_t           errCode         = OSP_STATUS_INVALID_PARAMETER;
     uint32_t sType;
 
     /* Change sensor base */
@@ -995,45 +1005,31 @@ int16_t BatchManagerSensorDisable( ASensorType_t sensorType )
         return (errCode);
     }
 
-    /* Get Type of Batching Q for give sensor Type */
-    switch (AndroidTypeToFIFOTypeMap[sType])
-    {
-    case BATCH_SENSOR_WAKEUP_FIFO:
-        pCurrBatchAttribute = &WakeupBatch;
-        errCode = BatchManagerQueueFlush(QUEUE_WAKEUP_TYPE);
-        break;
-
-    case BATCH_SENSOR_NONWAKEUP_FIFO:
-    case BATCH_SENSOR_NONWAKEUP_ONCHANGE_FIFO:
-        pCurrBatchAttribute = &NonWakeupBatch;
-        errCode = BatchManagerQueueFlush(QUEUE_NONWAKEUP_TYPE);
-        break;
-
-    default:
-        return errCode;
-    }
+    /* get current Q type */
+    QType = pCurrBatchDesc->SensorList[sType].QType;
 
     /* Check that entry is removed from Sensor list before calculate new threshold value */
-    if ( pCurrBatchAttribute->SensorList[sType].isValidEntry )
+    if ( pCurrBatchDesc->SensorList[sType].isValidEntry )
     {
         return (errCode);
     }
 
 #ifdef DECIMATION_MASK
 
-    pCurrBatchAttribute->SensorList[sType].DecimationCnt   = 0;
-    pCurrBatchAttribute->SensorList[sType].SampleCnt       = 0;
+    pCurrBatchDesc->SensorList[sType].DecimationCnt   = 0;
+    pCurrBatchDesc->SensorList[sType].SampleCnt       = 0;
 
 #endif
 
     /* Calculate New High threshold value */
-    highThreshold = CalculateHighThreshold( pCurrBatchAttribute );
+    highThreshold = CalculateHighThreshold( pCurrBatchDesc, QType );
 
     /* Set New High Threshold value for given Q */
-    errCode = QueueHighThresholdSet( pCurrBatchAttribute->pQ, highThreshold );
+    errCode = QueueHighThresholdSet( pCurrBatchDesc->BatchQ[QType].pQ, highThreshold );
 
     /* There is no sensor to be batched so change Batch state to BATCH_IDLE */
-    if (NonWakeupBatch.NumBatchedSensor == 0 || WakeupBatch.NumBatchedSensor == 0)
+    if ( ( BatchDesc.BatchQ[BATCH_WAKEUP_QUEUE].NumBatchedSensor == 0 ) &&
+         ( BatchDesc.BatchQ[BATCH_NONWAKEUP_QUEUE].NumBatchedSensor == 0 ) )
     {
         errCode = BatchStateSet( BATCH_IDLE );
         ASF_assert( errCode == OSP_STATUS_OK );
@@ -1054,9 +1050,9 @@ int16_t BatchManagerSensorDisable( ASensorType_t sensorType )
  ***************************************************************************************************/
 int16_t BatchManagerGetSensorState( ASensorType_t sensorType, int32_t * state)
 {
-    Batch_t *pCurrBatchAttribute;
-    int16_t errCode             = OSP_STATUS_INVALID_PARAMETER;
-    uint32_t sType;
+    BatchDescriptor_t *pCurrBatchDesc = &BatchDesc;
+    int16_t            errCode        = OSP_STATUS_INVALID_PARAMETER;
+    uint32_t           sType;
 
     /* Change sensor base */
     sType = M_ToBaseSensorEnum (sensorType);
@@ -1067,24 +1063,8 @@ int16_t BatchManagerGetSensorState( ASensorType_t sensorType, int32_t * state)
         return (errCode);
     }
 
-    /* Get Type of Batching Q for give sensor Type */
-    switch (AndroidTypeToFIFOTypeMap[sType])
-    {
-    case BATCH_SENSOR_WAKEUP_FIFO:
-        pCurrBatchAttribute = &WakeupBatch;
-        break;
-
-    case BATCH_SENSOR_NONWAKEUP_FIFO:
-    case BATCH_SENSOR_NONWAKEUP_ONCHANGE_FIFO:
-        pCurrBatchAttribute = &NonWakeupBatch;
-        break;
-
-    default:
-        return errCode;
-    }
-
     /* Check that entry is removed from Sensor list before calculate new threshold value */
-    if ( pCurrBatchAttribute->SensorList[sType].isValidEntry )
+    if ( pCurrBatchDesc->SensorList[sType].isValidEntry )
     {
         *state = ENABLE;
     }
@@ -1092,7 +1072,6 @@ int16_t BatchManagerGetSensorState( ASensorType_t sensorType, int32_t * state)
     {
         *state = DISABLE;
     }
-
 
     return errCode;
 }
@@ -1112,41 +1091,22 @@ int16_t BatchManagerGetSensorState( ASensorType_t sensorType, int32_t * state)
  ***************************************************************************************************/
 int16_t BatchManagerSensorDataEnQueue( HostIFPackets_t *pHiFDataPacket, uint16_t packetSize, uint32_t sensorType )
 {
-    int16_t status;
-    Buffer_t *pTempHifPacket;
-    BatchStateType_t currBatchState;
-    Buffer_t *pHifPacket;
+    int16_t                 status;
+    Buffer_t                *pTempHifPacket;
+    BatchStateType_t        currBatchState;
+    Buffer_t                *pHifPacket;
+    BatchSensorFIFOType_t   FIFOType;
 
     /* Change sensor base */
     sensorType = M_ToBaseSensorEnum (sensorType);
 
 #ifdef DECIMATION_MASK
-    switch ( AndroidTypeToFIFOTypeMap[sensorType] )
+    /* Check packet needs to be decimated */
+    if ( ( BatchDesc.SensorList[sensorType].SampleCnt++ %
+           BatchDesc.SensorList[sensorType].DecimationCnt ) != 0)
     {
-    case BATCH_SENSOR_NONWAKEUP_FIFO:
-    case BATCH_SENSOR_NONWAKEUP_ONCHANGE_FIFO:
-        /* Check packet needs to be decimated */
-        if ( (NonWakeupBatch.SensorList[sensorType].SampleCnt++ % 
-            NonWakeupBatch.SensorList[sensorType].DecimationCnt ) != 0)
-        {
-            return;
-        }
-        break;
-
-    case BATCH_SENSOR_WAKEUP_FIFO:
-        /* Check packet needs to be decimated */
-        if ( (WakeupBatch.SensorList[sensorType].SampleCnt++ % 
-            WakeupBatch.SensorList[sensorType].DecimationCnt ) != 0)
-        {
-            return;
-        }
-        break;
-
-    default:
-        status = ( OSP_STATUS_INVALID_PARAMETER );
-        break;
+        return;
     }
-
 #endif
 
     /* Allocate Packet from Sensor Data Pool */
@@ -1158,6 +1118,8 @@ int16_t BatchManagerSensorDataEnQueue( HostIFPackets_t *pHiFDataPacket, uint16_t
         return status;
     }
 
+    FIFOType = SensorTypeAndRateMap[sensorType].FIFOType;
+
     /* Copy packet to Packet pool */
     SH_MEMCPY( &(pHifPacket->DataStart), pHiFDataPacket, packetSize );
 
@@ -1165,7 +1127,7 @@ int16_t BatchManagerSensorDataEnQueue( HostIFPackets_t *pHiFDataPacket, uint16_t
     pHifPacket->Header.Length = packetSize;
 
     /* EnQueue packet based on Sensor Type */
-    switch ( AndroidTypeToFIFOTypeMap[sensorType] )
+    switch ( FIFOType )
     {
     case BATCH_SENSOR_NONWAKEUP_FIFO:
     case BATCH_SENSOR_NONWAKEUP_ONCHANGE_FIFO:
@@ -1184,6 +1146,10 @@ int16_t BatchManagerSensorDataEnQueue( HostIFPackets_t *pHiFDataPacket, uint16_t
                 /* Q is full and host is suspended so Old packet needs to removed to make space for new packets.*/
                 DeQueue( _HiFNonWakeupQueue, &pTempHifPacket );
 
+                /* Free Block from PacketPool */
+                status = FreeBlock( SensorDataPacketPool, pTempHifPacket );
+                ASF_assert( status == OSP_STATUS_OK );
+
                 /* EnQueue packet again */
                 status = EnQueue( _HiFNonWakeupQueue , pHifPacket );
                 ASF_assert( status == OSP_STATUS_OK );
@@ -1194,7 +1160,7 @@ int16_t BatchManagerSensorDataEnQueue( HostIFPackets_t *pHiFDataPacket, uint16_t
             }
         }
         /* If non wakeup on change sensor then save packet in locally */
-        if (AndroidTypeToFIFOTypeMap[sensorType] == BATCH_SENSOR_NONWAKEUP_ONCHANGE_FIFO )
+        if ( FIFOType == BATCH_SENSOR_NONWAKEUP_ONCHANGE_FIFO )
         {
             status = EnqueueOnChangeSensorQ( pHiFDataPacket, packetSize, sensorType );
         }
@@ -1225,7 +1191,7 @@ int16_t BatchManagerSensorDataEnQueue( HostIFPackets_t *pHiFDataPacket, uint16_t
  *          DeQueue HiF packets from Sensor Data Q or Control Response Q
  *
  * @param   [OUT] pBuf - Pointer for buffer where packet needs to be store after DeQueue
- * @param   [OUT] pLength - Hold length of packet
+ * @param   [IN/OUT] pLength - [IN] Max buffer size for dequeue; [OUT] Total length of packets dequeued
  *
  *
  * @return  OSP_STATUS_OK or error code
@@ -1236,101 +1202,111 @@ int16_t BatchManagerDeQueue( uint8_t *pBuf, uint32_t *pLength )
     int16_t status;
     Buffer_t *pHIFPkt;
 
+    uint32_t bufSize = *pLength;
+    uint32_t pktLen  = 0;
+
     *pLength = 0; //Set length to zero in case we return error status
 
-    /* Get Current Q type */
-    status = GetCurrentQType( &CurrQType );
-
-    /* All Qs are empty */
-    if (status != OSP_STATUS_OK)
+    do
     {
-        return status;
-    }
+        /* Get Current Q type */
+        status = GetCurrentQType( &CurrQType );
 
-    switch(CurrQType)
-    {
-    case QUEUE_NONWAKEUP_TYPE:
-        /* DeQueue packet from the non Wake up Q */
-        status = DeQueue( _HiFNonWakeupQueue, &pHIFPkt );
-
-        if ( status == OSP_STATUS_OK )
+        /* All Qs are empty */
+        if (status != OSP_STATUS_OK)
         {
-            /* Copy packet to given buffer */
-            SH_MEMCPY( pBuf, &(pHIFPkt->DataStart), pHIFPkt->Header.Length );
-
-            /* update length of DeQueue packet */
-            *pLength = pHIFPkt->Header.Length;
-
-            /* Free Block from PacketPool */
-            status = FreeBlock( SensorDataPacketPool, pHIFPkt );
-            ASF_assert(status == OSP_STATUS_OK);
+            break;
         }
 
-        /* If Non Wakeup Q is Empty check Local On change Sensor Packets */
-        if ( status == (OSP_STATUS_QUEUE_EMPTY))
+        switch(CurrQType)
         {
-            /* Dequeue packet from on change sensor */
-            do 
-            {
-                status = DequeueOnChangeSensorQ( &pHIFPkt );
-            } while ( status == ( OSP_STATUS_INVALID_PARAMETER ));
+        case QUEUE_NONWAKEUP_TYPE:
+            /* DeQueue packet from the non Wake up Q */
+            status = DeQueue( _HiFNonWakeupQueue, &pHIFPkt );
 
-            /* If it is valid packet then */
             if ( status == OSP_STATUS_OK )
             {
                 /* Copy packet to given buffer */
-                SH_MEMCPY( pBuf, &(pHIFPkt->DataStart), pHIFPkt->Header.Length );
+                SH_MEMCPY( pBuf + *pLength, &(pHIFPkt->DataStart), pHIFPkt->Header.Length );
 
                 /* update length of DeQueue packet */
-                *pLength = pHIFPkt->Header.Length;
+                pktLen = pHIFPkt->Header.Length;
+                *pLength += pktLen;
+
+                /* Free Block from PacketPool */
+                status = FreeBlock( SensorDataPacketPool, pHIFPkt );
+                ASF_assert(status == OSP_STATUS_OK);
             }
-            else
+            /* If Non Wakeup Q is Empty check Local On change Sensor Packets */
+            else if ( status == OSP_STATUS_QUEUE_EMPTY)
             {
-                /* Set Non wakeup Q Empty bit */
-                QEmptyCallBack(QUEUE_NONWAKEUP_TYPE);
+                /* Dequeue packet from on change sensor */
+                do
+                {
+                    status = DequeueOnChangeSensorQ( &pHIFPkt );
+                } while ( status == OSP_STATUS_INVALID_PARAMETER );
+
+                /* If it is valid packet then */
+                if ( status == OSP_STATUS_OK )
+                {
+                    /* Copy packet to given buffer */
+                    SH_MEMCPY( pBuf + *pLength, &(pHIFPkt->DataStart), pHIFPkt->Header.Length );
+
+                    /* update length of DeQueue packet */
+                    pktLen = pHIFPkt->Header.Length;
+                    *pLength += pktLen;
+                }
+                else
+                {
+                    /* Set Non wakeup Q Empty bit */
+                    QEmptyCallBack(QUEUE_NONWAKEUP_TYPE);
+                }
             }
+            break;
+
+        case QUEUE_WAKEUP_TYPE:
+            /* DeQueue packet from the Wake up Q */
+            status = DeQueue( _HiFWakeUpQueue, &pHIFPkt );
+
+            if ( status == OSP_STATUS_OK )
+            {
+                /* Copy packet to given buffer */
+                SH_MEMCPY( pBuf + *pLength, &(pHIFPkt->DataStart), pHIFPkt->Header.Length );
+
+                /* update length of DeQueue packet */
+                pktLen = pHIFPkt->Header.Length;
+                *pLength += pktLen;
+
+                /* Free Block from PacketPool */
+                status = FreeBlock( SensorDataPacketPool, pHIFPkt );
+                ASF_assert(status == OSP_STATUS_OK);
+            }
+            break;
+
+        case QUEUE_CONTROL_RESPONSE_TYPE:
+            /* DeQueue packet from Control Response Q */
+            status = DeQueue( _HiFControlQueue, &pHIFPkt );
+
+            if ( status == OSP_STATUS_OK )
+            {
+                /* Copy packet to given buffer */
+                SH_MEMCPY( pBuf + *pLength, &(pHIFPkt->DataStart), pHIFPkt->Header.Length );
+
+                /* update length of DeQueue packet */
+                pktLen = pHIFPkt->Header.Length;
+                *pLength += pktLen;
+
+                /* Free Block from PacketPool */
+                status = FreeBlock( SensorControlResponsePacketPool, pHIFPkt );
+                ASF_assert(status == OSP_STATUS_OK);
+            }
+            break;
+
+        default:
+            return (OSP_STATUS_INVALID_PARAMETER);
         }
-        break;
-
-    case QUEUE_WAKEUP_TYPE:
-        /* DeQueue packet from the Wake up Q */
-        status = DeQueue( _HiFWakeUpQueue, &pHIFPkt );
-
-        if ( status == OSP_STATUS_OK )
-        {
-            /* Copy packet to given buffer */
-            SH_MEMCPY( pBuf, &(pHIFPkt->DataStart), pHIFPkt->Header.Length );
-
-            /* update length of DeQueue packet */
-            *pLength = pHIFPkt->Header.Length;
-
-            /* Free Block from PacketPool */
-            status = FreeBlock( SensorDataPacketPool, pHIFPkt );
-            ASF_assert(status == OSP_STATUS_OK);
-        }
-        break;
-
-    case QUEUE_CONTROL_RESPONSE_TYPE:
-        /* DeQueue packet from Control Response Q */
-        status = DeQueue( _HiFControlQueue, &pHIFPkt );
-
-        if ( status == OSP_STATUS_OK )
-        {
-            /* Copy packet to given buffer */
-            SH_MEMCPY( pBuf, &(pHIFPkt->DataStart), pHIFPkt->Header.Length );
-
-            /* update length of DeQueue packet */
-            *pLength = pHIFPkt->Header.Length;
-
-            /* Free Block from PacketPool */
-            status = FreeBlock( SensorControlResponsePacketPool, pHIFPkt );
-            ASF_assert(status == OSP_STATUS_OK);
-        }
-        break;
-
-    default:
-        return (OSP_STATUS_INVALID_PARAMETER);
-    }
+        bufSize -= pktLen;    /* update buffer space left after dequeue */
+    } while ( bufSize >=  sizeof(HostIFPackets_t) );    /* loop until atleast one packet size space is left in buffer */
 
     return status;
 }
@@ -1384,7 +1360,7 @@ int16_t BatchManagerControlResponseEnQueue( HostIFPackets_t *pHiFControlPacket, 
  * @fn      BatchManagerQueueFlush
  *          Flushes given Q
  *
- * @param   [IN] Q Type 
+ * @param   [IN] Q Type
  *
  * @return  OSP_STATUS_OK or error code
  *
@@ -1435,13 +1411,14 @@ int16_t BatchManagerQueueFlush( Q_Type_t qType)
  * @fn      BatchManagerMaxQCount
  *          Provide Maximum event stored by NonWakup and Wakeup Qs.
  *
- * @return  Max. Number of event handle by Batchmanager Q 
+ * @return  Max. Number of event handle by Batchmanager Q
  *
  ***************************************************************************************************/
 uint32_t BatchManagerMaxQCount( void )
 {
     /* Sum up Q capacity for both Wakeup and NonWakeup Q */
-    return( NonWakeupBatch.pQ->Capacity + WakeupBatch.pQ->Capacity );
+    return( BatchDesc.BatchQ[BATCH_WAKEUP_QUEUE].pQ->Capacity +
+            BatchDesc.BatchQ[BATCH_NONWAKEUP_QUEUE].pQ->Capacity );
 }
 
 

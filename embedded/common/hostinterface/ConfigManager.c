@@ -18,7 +18,7 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
-#include "common.h" 
+#include "common.h"
 #include "ConfigManager.h"
 #include "osp-api.h"
 #include <string.h> //for sprintf, strncpy, memset
@@ -56,7 +56,7 @@ OSP_STATUS_t Algorithm_UnsubscribeSensor( ASensorType_t sensor);
 #define SDT_FURTHER_ACTION  ((int16_t) (-4))
 
 //static const uint8_t controlRequestNeedsSensorDescriptor[N_PARAM_ID] =
-static const int16_t sensorDescriptorOffsets[N_PARAM_ID] = 
+static const int16_t sensorDescriptorOffsets[N_PARAM_ID] =
 {
     [PARAM_ID_ERROR_CODE_IN_DATA]    =      SDT_ILLEGAL,                               //  0x00
     [PARAM_ID_ENABLE]                =      SDT_NO_DESCRIPTOR,                         //  0x01
@@ -90,26 +90,29 @@ static const int16_t sensorDescriptorOffsets[N_PARAM_ID] =
     [PARAM_ID_DYNAMIC_CAL_ROTATION]  =    SDT_FURTHER_ACTION,                          //  0x1D  TODO
     [PARAM_ID_DYNAMIC_CAL_QUALITY]   =    SDT_FURTHER_ACTION,                          //  0x1E  TODO
     [PARAM_ID_DYNAMIC_CAL_SOURCE]    =    SDT_FURTHER_ACTION,                          //  0x1F  TODO
-    [PARAM_ID_CONFIG_DONE]           =      SDT_NO_DESCRIPTOR                          //  0x20  
+    [PARAM_ID_CONFIG_DONE]           =      SDT_NO_DESCRIPTOR                          //  0x20
           //   N_PARAM_ID                                                                  0x21
 };
 
 /*-------------------------------------------------------------------------------------------------*\
  |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-static const Q_Type_t queuesToFlushInOrder[NUM_QUEUE_TYPE] = 
-{ 
-    QUEUE_CONTROL_RESPONSE_TYPE, QUEUE_WAKEUP_TYPE, QUEUE_NONWAKEUP_TYPE 
+static const Q_Type_t queuesToFlushInOrder[NUM_QUEUE_TYPE] =
+{
+    QUEUE_CONTROL_RESPONSE_TYPE, QUEUE_WAKEUP_TYPE, QUEUE_NONWAKEUP_TYPE
 };
 
-static const int32_t queueFlushErrors[NUM_QUEUE_TYPE] = 
+static const int32_t queueFlushErrors[NUM_QUEUE_TYPE] =
 {
-    OSP_STATUS_FLUSH_CTRL_RSP_Q_ERR, OSP_STATUS_FLUSH_WAKEUP_Q_ERR, OSP_STATUS_FLUSH_NONWAKEUP_Q_ERR 
+    OSP_STATUS_FLUSH_CTRL_RSP_Q_ERR, OSP_STATUS_FLUSH_WAKEUP_Q_ERR, OSP_STATUS_FLUSH_NONWAKEUP_Q_ERR
 };
 
 /*-------------------------------------------------------------------------------------------------*\
  |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+
+//static uint8_t SensorInitTableIndex( uint32_t sensorID );
+
 static int16_t GetSensorDescriptor( SensorDescriptor_t **ppSensorDescriptor, uint32_t sensorType );
 
 static void CopyStringField( char *pDest, const char *pSrc, uint16_t nCount );
@@ -117,10 +120,10 @@ static void CopyStringField( char *pDest, const char *pSrc, uint16_t nCount );
 static int32_t TakeWriteAction(               LocalPacketTypes_t *pLocalPacket );
 static int32_t TakeReadAction(                LocalPacketTypes_t *pLocalPacket );
 
-static int32_t ActionEnableDisable(           ASensorType_t sType, 
+static int32_t ActionEnableDisable(           ASensorType_t sType,
                                               uint8_t isEnable                 );
-static int32_t ActionBatch(                   ASensorType_t sType, 
-                                              uint64_t SamplingRate, 
+static int32_t ActionBatch(                   ASensorType_t sType,
+                                              uint64_t SamplingRate,
                                               uint64_t ReportLatency           );
 static int32_t ActionFlush(void);
 static int32_t ActionReadVersion( LocalPacketTypes_t *pLocalPacket );
@@ -187,10 +190,11 @@ static int16_t GetSensorDescriptor( SensorDescriptor_t **ppSensorDescriptor, uin
     {
         if ( ppSensorDescriptor != NULL )
         {
-            *ppSensorDescriptor = NULL;  // (SensorDescriptor_t *) 
+            *ppSensorDescriptor = NULL;  // (SensorDescriptor_t *)
         }
+        errorCode = OSP_STATUS_NULL_POINTER;
     }
-    else 
+    else
     {
         sensorIndex = SensorInitTableIndex( sensorType );
     }
@@ -210,11 +214,11 @@ static int16_t GetSensorDescriptor( SensorDescriptor_t **ppSensorDescriptor, uin
     }
 
 
-    if ( errorCode != OSP_STATUS_OK && ppSensorDescriptor != NULL )
+    if ( (errorCode != OSP_STATUS_OK) && (ppSensorDescriptor != NULL) )
     {
-        *ppSensorDescriptor = NULL;   // clear target pointer 
+        *ppSensorDescriptor = NULL;   // clear target pointer
     }
-    
+
     return SET_ERROR( errorCode );
 #else
     return SET_ERROR( OSP_STATUS_UNSUPPORTED_FEATURE );
@@ -250,7 +254,7 @@ static void CopyStringField( char *pDest, const char *pSrc, uint16_t nCount )
  *          Writes null chars to string after first terminating null found
  *
  ***************************************************************************************************/
-void CleanString( uint8_t *pDest, int16_t nCount ) 
+void CleanString( uint8_t *pDest, int16_t nCount )
 {
     uint8_t gotNull = 0;
     int16_t i;
@@ -281,7 +285,7 @@ static int32_t CopyPayloadVsSensorDescriptor( uint8_t isWrite, LocalPacketTypes_
     const int16_t packetPayloadOffset = pLocalPacket->PayloadOffset;
     const int16_t packetPayloadSize = pLocalPacket->PayloadSize;
     const int16_t sdOffset = sensorDescriptorOffsets[ parameterID ];
-    int32_t        errorCode;
+    int32_t       errorCode;
 
     SensorDescriptor_t *pSensorDescriptor;
     uint8_t *pSensorTablePayload;
@@ -291,10 +295,10 @@ static int32_t CopyPayloadVsSensorDescriptor( uint8_t isWrite, LocalPacketTypes_
 
     if ( pLocalPacket == NULL )
     {
-        return SET_ERROR( OSP_STATUS_INVALID_PARAMETER );
+        return SET_ERROR( OSP_STATUS_NULL_POINTER );
     }
 
-    if ( !ValidParameterID( parameterID ) || packetPayloadOffset < 0 || packetPayloadSize < 0 || sdOffset < 0 )
+    if ( !ValidParameterID( parameterID ) || (packetPayloadOffset < 0) || (packetPayloadSize < 0) || (sdOffset < 0) )
     {
         return SET_ERROR( OSP_STATUS_INVALID_PARAMETER );
     }
@@ -329,7 +333,7 @@ static int32_t CopyPayloadVsSensorDescriptor( uint8_t isWrite, LocalPacketTypes_
 
 /****************************************************************************************************
  * @fn      TakeWriteAction
- *          Write Action Handler
+ *          Handler for Control Write Requests
  *
  ***************************************************************************************************/
 static int32_t TakeWriteAction( LocalPacketTypes_t *pLocalPacket )
@@ -339,22 +343,25 @@ static int32_t TakeWriteAction( LocalPacketTypes_t *pLocalPacket )
 
     if ( pLocalPacket == NULL )
     {
-        return SET_ERROR( OSP_STATUS_INVALID_PARAMETER );
+        return SET_ERROR( OSP_STATUS_NULL_POINTER );
     }
 
     switch( pLocalPacket->SCP.CRP.ParameterID )
     {
     case PARAM_ID_ENABLE:                   //  0x01
         errorCode = ActionEnableDisable( pLocalPacket->SType, pLocalPacket->SCP.CRP.PL.Enable.DataU8 );
+        DPRINTF("Sensor [%d] %s status %d \r\n", pLocalPacket->SType, ( pLocalPacket->SCP.CRP.PL.Enable.DataU8 == 0) ? ( "Disable" ) : ( "Enable "), errorCode);
         break;
 
     case PARAM_ID_BATCH:                    //  0x02
         errorCode = ActionBatch( pLocalPacket->SType, pLocalPacket->SCP.CRP.PL.Batch.DataU64x2[0],
                                  pLocalPacket->SCP.CRP.PL.Batch.DataU64x2[1] );
+        DPRINTF("Batch sensor [%d] status %d \r\n", pLocalPacket->SType, errorCode);
         break;
 
     case PARAM_ID_FLUSH:                    //  0x03
         errorCode = ActionFlush();
+        DPRINTF("Flush status %d \r\n", errorCode);
         break;
 
     case PARAM_ID_RANGE_RESOLUTION:         //  0x04
@@ -364,7 +371,7 @@ static int32_t TakeWriteAction( LocalPacketTypes_t *pLocalPacket )
         break;
 
     case PARAM_ID_FIFO_EVT_CNT:             //  0x07
-        errorCode = SET_ERROR( OSP_STATUS_INVALID_PARAMETER );  ;  //  because Read-Only
+        errorCode = SET_ERROR( OSP_STATUS_INVALID_PARAMETER );  //  because Read-Only
         break;
 
     case PARAM_ID_AXIS_MAPPING:             //  0x08
@@ -400,8 +407,8 @@ static int32_t TakeWriteAction( LocalPacketTypes_t *pLocalPacket )
         errorCode = SET_ERROR( OSP_STATUS_UNSUPPORTED_FEATURE );
         break;
 
-    case PARAM_ID_CONFIG_DONE:              //  0x20  
-        ActionConfigDone();
+    case PARAM_ID_CONFIG_DONE:              //  0x20
+        errorCode = ActionConfigDone();
         break;
 
     default:  // 0x00 or out-of-bounds is an error.
@@ -416,7 +423,7 @@ static int32_t TakeWriteAction( LocalPacketTypes_t *pLocalPacket )
 
 /****************************************************************************************************
  * @fn      TakeReadAction
- *          Read Action Handler
+ *          Handler Control Read Requests
  *
  ***************************************************************************************************/
 static int32_t TakeReadAction( LocalPacketTypes_t *pLocalPacket )
@@ -426,7 +433,7 @@ static int32_t TakeReadAction( LocalPacketTypes_t *pLocalPacket )
 
     if ( pLocalPacket == NULL )
     {
-        return SET_ERROR( OSP_STATUS_INVALID_PARAMETER );
+        return SET_ERROR( OSP_STATUS_NULL_POINTER );
     }
 
     switch( pLocalPacket->SCP.CRP.ParameterID )
@@ -490,7 +497,7 @@ static int32_t TakeReadAction( LocalPacketTypes_t *pLocalPacket )
         errorCode = SET_ERROR( OSP_STATUS_UNSUPPORTED_FEATURE );
         break;
 
-    case PARAM_ID_CONFIG_DONE:              //  0x20  
+    case PARAM_ID_CONFIG_DONE:              //  0x20
         errorCode = SET_ERROR( OSP_STATUS_INVALID_PARAMETER );
         break;
 
@@ -513,11 +520,11 @@ static int32_t TakeReadAction( LocalPacketTypes_t *pLocalPacket )
  ***************************************************************************************************/
 static int32_t ActionEnableDisable( ASensorType_t sType, uint8_t isEnable )
 {
-    /*  To enable sensor 
+    /*  To enable sensor
           BatchManagerSensorEnable()
           Subscribe to Sensor results from Algo
 
-        To disable Sensor 
+        To disable Sensor
           BatchManagerSensorDeRegister()
           BatchManagerSensorDisable()
           UnSubscribe to Sensor results from Algo
@@ -533,7 +540,6 @@ static int32_t ActionEnableDisable( ASensorType_t sType, uint8_t isEnable )
         {
             errorCode = (int32_t) Algorithm_SubscribeSensor( sType );
         }
-   
     }
     else
     {
@@ -564,7 +570,7 @@ static int32_t ActionEnableDisable( ASensorType_t sType, uint8_t isEnable )
  * @return  OSP_STATUS_OK or negative error code.
  *
  ***************************************************************************************************/
-static int32_t ActionBatch( ASensorType_t sType, uint64_t SamplingRate,  uint64_t ReportLatency ) 
+static int32_t ActionBatch( ASensorType_t sType, uint64_t SamplingRate,  uint64_t ReportLatency )
 {
     int32_t errorCode;
 
@@ -582,7 +588,7 @@ static int32_t ActionBatch( ASensorType_t sType, uint64_t SamplingRate,  uint64_
  * @return  OSP_STATUS_OK or negative error code.
  *
  ***************************************************************************************************/
-static int32_t ActionFlush() 
+static int32_t ActionFlush()
 {
     int32_t errorCode;
     uint8_t i;
@@ -605,7 +611,7 @@ static int32_t ActionFlush()
 
 /****************************************************************************************************
  * @fn      ActionReadVersion
- *          Read the Batch library version information into the response payload, for PARAM_ID_VERSION.
+ *          Read the Algorithm library version information into the response payload, for PARAM_ID_VERSION.
  *
  * @return  OSP_STATUS_OK or negative error code.
  *
@@ -645,7 +651,7 @@ static int32_t ActionReadVersion(  LocalPacketTypes_t *pLocalPacket )
  * @return  OSP_STATUS_OK or negative error code.
  *
  ***************************************************************************************************/
-static int32_t ActionConfigDone() 
+static int32_t ActionConfigDone()
 {
     int32_t errorCode;
 
@@ -662,29 +668,29 @@ static int32_t ActionConfigDone()
  * @fn      SHConfigManager_ProcessControlRequest
  *          Control Request parser/handler/response-formatter.
  *
- *          Parse serialized Control Request packet, take action as necessary 
- *          (rejecting if action not allowed by current Batch state), make serialized 
- *          Control Response packet and send to BatchManager Enqueue, if indicated (if 
- *          Sequence Number field in Request packet is nonzero).  Returns 
- *          negative error code on non-respond-able error, otherwise zero if no response 
+ *          Parse serialized Control Request packet, take action as necessary
+ *          (rejecting if action not allowed by current Batch state), make serialized
+ *          Control Response packet and send to BatchManager Enqueue, if indicated (if
+ *          Sequence Number field in Request packet is nonzero).  Returns
+ *          negative error code on non-respond-able error, otherwise zero if no response
  *          requested, otherwise positive response packet length.
  *
  * @param   [IN]pRequestPacket - Packet buffer containing the serialized packet to parse and act on
- * @param   [IN]requestPacketBufferSize - Size of the request packet buffer
+ * @param   [IN]reqPktBufSize - Size of the request packet buffer
  *
  * @return  OSP_STATUS_OK or negative Error code enum corresponding to the error encountered
  *
  ***************************************************************************************************/
 
-int32_t SHConfigManager_ProcessControlRequest( const uint8_t *pRequestPacket, uint16_t requestPacketBufferSize )
+int32_t SHConfigManager_ProcessControlRequest( const uint8_t *pRequestPacket, uint16_t reqPktBufSize )
 {
     //  check that packet is a Request packet, and set flag if it is a Write packet
     const uint8_t packetID  = GetPacketID( pRequestPacket );
     uint8_t       isWriteRequest;
 
-    LocalPacketTypes_t localPacket;
-    int32_t errorCode;  
-    uint16_t packetSize;
+    LocalPacketTypes_t  localPacket;
+    int32_t             errorCode, respErrCode;
+    uint16_t            parsedPktSize; //This size is determined by the parser
 
     if (DEBUG_SENSOR_PACKETS)
     {
@@ -708,42 +714,45 @@ int32_t SHConfigManager_ProcessControlRequest( const uint8_t *pRequestPacket, ui
         errorCode = OSP_STATUS_INVALID_PARAMETER;
     }
 
-    //  parse the request packet (only one request packet is expected at a time!)
+    // Parse the request packet (only one request packet is expected at a time!). When the ParseHostInterfacePkt()
+    // call returns we expect that the parsedPktSize equals the reqPktBufSize. Its possible that the
+    // request packet buffer contains more than one packet, in which case the rest of the buffer is ignored.
     if ( errorCode == OSP_STATUS_OK )
     {
-        errorCode = ParseHostInterfacePkt( &localPacket, pRequestPacket, &packetSize, requestPacketBufferSize ); //TODO FIXME
+        errorCode = ParseHostInterfacePkt( &localPacket, pRequestPacket, &parsedPktSize, reqPktBufSize );
     }
 
-    //  check that Control Request is valid for current Batch state, and advance state 
+    //  check that Control Request is valid for current Batch state, and advance state
     //  to BATCH_CONFIG if:
-    //    * This is a command valid to be executed under the current state, and 
+    //    * This is a command valid to be executed under the current state, and
     //    * This is a Write command, and
     //    * Old state was BATCH_STANDBY.
-    //  
+    //
     if ( errorCode == OSP_STATUS_OK )
     {
-        //TODO:  May be better to move this block of code into a routine in BATCH_State.c, 
+        //TODO:  May be better to move this block of code into a routine in BATCH_State.c,
         //TODO:  to encapsulate state machine handling.
 
-        //TODO:  It seems likely that some commands would be disallowed in some states 
-        //TODO:  and allowed in other states based on whether they were Write or Read commands, 
-        //TODO:  but BATCH_State.c state matrices only distinguish commands based on Parameter ID, 
-        //TODO:  not Write or Read.  For example, some commands could probably read parameters 
-        //TODO:  after ConfigDone is sent, but state matrices do not permit that and state 
-        //TODO:  diagram does not have a return to BATCH_STANDBY from BATCH_IDLE/BATCH_ACTIVE.  Maybe a 
+        //TODO:  It seems likely that some commands would be disallowed in some states
+        //TODO:  and allowed in other states based on whether they were Write or Read commands,
+        //TODO:  but BATCH_State.c state matrices only distinguish commands based on Parameter ID,
+        //TODO:  not Write or Read.  For example, some commands could probably read parameters
+        //TODO:  after ConfigDone is sent, but state matrices do not permit that and state
+        //TODO:  diagram does not have a return to BATCH_STANDBY from BATCH_IDLE/BATCH_ACTIVE.  Maybe a
         //TODO:  hub reset is needed to get back to there.
 
         const uint8_t parameterID = localPacket.SCP.CRP.ParameterID;
 
         errorCode          = (int32_t) BatchStateCommandValidate( (BatchCmdList_t)parameterID );
+
         if ( errorCode == OSP_STATUS_OK )
         {
             if ( IsWriteConfigCommand( packetID, parameterID ) )
             {
                 BatchStateType_t  currentState;
-    
+
                 errorCode = (int32_t) BatchStateGet( &currentState );
-    
+
                 if ( errorCode == OSP_STATUS_OK )
                 {
                     if ( currentState == BATCH_STANDBY )
@@ -761,42 +770,46 @@ int32_t SHConfigManager_ProcessControlRequest( const uint8_t *pRequestPacket, ui
     {
         if ( isWriteRequest )
         {
-            errorCode = TakeWriteAction( &localPacket );
+            respErrCode = TakeWriteAction( &localPacket );
         }
         else
         {
-            errorCode = TakeReadAction( &localPacket );
+            respErrCode = TakeReadAction( &localPacket );
         }
     }
 
-    DPRINTF( "ConfigManager errorCode post-action / pre-response: %08X\r\n", errorCode );
+    DPRINTF( "ConfigManager errorCode post-action / pre-response: %08X\r\n", respErrCode );
 
-    // compose and enqueue response packet if so requested0
+    // compose and enqueue response packet if so requested
     if ( localPacket.SCP.CRP.SequenceNumber != 0 )
     {
-        HostIFPackets_t hostResponsePacket;
-        uint16_t hostPacketLength;
+        HostIFPackets_t  hostResponsePacket;
+        int32_t          hostPacketLength;
 
         // change local packet type to Control Response, for the reply to Host
         localPacket.PacketID = PKID_CONTROL_RESP;
 
-        if ( errorCode < 0 )   // N.B.:  This is the error code returned to Host (not to routine caller).
+        if ( isWriteRequest )   // For all Write requests (non-zero seq) the error code is returned to Host
         {
-            SetResponsePacketToErrorPacket( &localPacket, errorCode );
+            hostPacketLength = FormatControlResp_ErrorCodeInData( &hostResponsePacket, respErrCode,
+                localPacket.SType, localPacket.SubType, localPacket.SCP.CRP.SequenceNumber,
+                (uint8_t) FORMAT_WITH_CRC_ENABLED );
+
+            if ( hostPacketLength < 0 )
+            {
+                DPRINTF( "ConfigManager errorCode response post-format: %08X\r\n", hostPacketLength );
+            }
+        }
+        else
+        {
+            //TODO - Format packet with data requested by host
         }
 
-        errorCode = FormatControlPacket( &hostResponsePacket, &localPacket, &hostPacketLength );
-
-        if ( errorCode != OSP_STATUS_OK )  // N.B.:  This is the error code returned to routine caller (not to Host)! (doc TODO?)
-        {
-            DPRINTF( "ConfigManager errorCode response post-format: %08X\r\n", errorCode );
-        }
-
-        if ( errorCode == OSP_STATUS_OK && hostPacketLength > 0 )
+        if ( (errorCode == OSP_STATUS_OK) && (hostPacketLength > 0) )
         {
             int32_t batchQueueErrorCode;
-            
-            batchQueueErrorCode = (int32_t) BatchManagerControlResponseEnQueue( &hostResponsePacket, hostPacketLength  );
+
+            batchQueueErrorCode = (int32_t) BatchManagerControlResponseEnQueue( &hostResponsePacket, hostPacketLength );
 
             if (batchQueueErrorCode != OSP_STATUS_OK)
             {
