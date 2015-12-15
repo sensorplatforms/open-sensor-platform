@@ -49,14 +49,14 @@
 #define TIME_1SEC_NS_UNIT                           (1000000000)
 #define DEFAULT_HIGH_THRESHOLD                      (1)
 
-/* Q Size Common Definitions */
+/* Queue Sizes Common Definitions */
 #define QUEUE_LOW_THR                               (0)
 #define QUEUE_HIGH_THR                              (1)
 #define HOST_WAKEUP_TOLERANCE_PERCENT               (85)
 #define HIF_PACKET_SIZE                             M_CalcBufferSize(sizeof(HostIFPackets_t))
 
 /* Sensor Data Queue Size Definition */
-/* HIF Queue size indicate number of packet a single Q can hold */
+/* HIF Queue size indicate number of packet a single queue can hold */
 #define HIF_NWKUP_SENSOR_DATA_QUEUE_SIZE            (200)
 #define HIF_WKUP_SENSOR_DATA_QUEUE_SIZE             (200)
 
@@ -65,7 +65,7 @@
 
 
 /* Sensor Control Queue Size Definition */
-/* HIF Queue size indicate number of Event a single Q can hold */
+/* HIF Queue size indicate number of Event a single queue can hold */
 #define HIF_CONTROL_QUEUE_SIZE                      (10)
 #define NUM_CONTROL_QUEUE                           (1)
 
@@ -110,9 +110,9 @@ typedef struct _BatchSensorParam
 /* Structure to hold Batch Queue parameters */
 typedef struct _BatchQParam
 {
-    Queue_t       *pQ;                                    /* pointer to sensor Q */
-    uint64_t      MinReportLatency;                       /* min. report latency from sensor list */
-    uint8_t       NumBatchedSensor;                       /* Number of sensor currently batched */
+    Queue_t       *pQ;                              /* pointer to sensor queue */
+    uint64_t      MinReportLatency;                 /* min. report latency from sensor list */
+    uint8_t       NumBatchedSensor;                 /* Number of sensor currently batched */
 }BatchQParam_t;
 
 /* Structure to hold Batch Descriptor */
@@ -125,22 +125,22 @@ typedef struct _BatchDescriptor
 /* Structures to hold On Change Sensor Sample */
 typedef struct _BatchOnChangeSensor
 {
-    BufferHeader_t      Header;                 /* Buffer header */
-    HostIFPackets_t     Sample;                 /* HiF Packet */
-    ASensorType_t       SensorType;             /* Sensor Type of current HiF Packet */
-    osp_bool_t          ValidFlag;              /* HiF Packet is valid Flag */
+    BufferHeader_t      Header;                     /* Buffer header */
+    HostIFPackets_t     Sample;                     /* HiF Packet */
+    ASensorType_t       SensorType;                 /* Sensor Type of current HiF Packet */
+    osp_bool_t          ValidFlag;                  /* HiF Packet is valid Flag */
 } BatchOnChangeSensor_t;
 
-typedef struct _OnChangeSenorSample
+typedef struct _OnChangeSensorSample
 {
     BatchOnChangeSensor_t   SensorList[NUM_ONCHANGE_NONWAKEUP_SENSOR];      /* On change sensor list */
-    osp_bool_t               QEmpty;                                         /* Mark Q is empty*/
-} OnChangeSenorSample_t;
+    osp_bool_t              Empty;                                          /* Buffer empty flag */
+} OnChangeSensorBuffer_t;
 
 typedef struct _SensorTypeAndRateMap
 {
-    BatchSensorFIFOType_t    FIFOType;           /* Sensor FIFO Type */
-    uint64_t                 SamplingRate;       /* Sensor Sampling Rate */
+    BatchSensorFIFOType_t    FIFOType;              /* Sensor FIFO Type */
+    uint64_t                 SamplingRate;          /* Sensor Sampling Rate */
 }SensorTypeAndRateMap_t;
 
 
@@ -193,7 +193,7 @@ static const SensorTypeAndRateMap_t SensorTypeAndRateMap[MAX_NUMBER_SENSORS] =
 };
 
 static BatchDescriptor_t BatchDesc;
-static OnChangeSenorSample_t NonWakeupOnChangeSensor;
+static OnChangeSensorBuffer_t NwOnChangeSensorBuffer;   /* for Non-Wakeup-On-Change Sensors */
 static osp_bool_t isBatchManagerInitialized = FALSE;
 static Q_Type_t CurrQType = NUM_QUEUE_TYPE;
 
@@ -236,9 +236,9 @@ volatile uint8_t QEmptyRegister = QUEUE_ALL_EMPTY_MASK;
 
 /****************************************************************************************************
  * @fn      QHighThresholdCallBack
- *          This Callback called when queue reach to high threshold mark
+ *          This Callback is called when queue reaches high threshold mark
  *
- * @param  [IN] QType - Type of Queue
+ * @param  [IN] QType - Queue identifier
  *
  * @return  none
  *
@@ -255,27 +255,27 @@ static void QHighThresholdCallBack( Q_Type_t QType )
         status = BatchStateGet( &currState );
         ASF_assert( status == OSP_STATUS_OK );
 
-        /* return if Batch state is in batching and host suspend */
+        /* return if Batch state is in batching and host is suspended */
         if ( currState == BATCH_ACTIVE_HOST_SUSPEND)
         {
             return;
         }
         else
         {
-            /* Set GPIO to indicate valid Packets in Queue */
+            /* Set Host Interrupt to indicate we have data for the Host */
             QEmptyRegister &= ~(QUEUE_NONWAKEUP_EMPTY_BIT);
             SensorHubAssertInt();
         }
         break;
 
     case QUEUE_WAKEUP_TYPE:
-        /* If CB is from Wakeup Q then assert host interrupt irrespective of Batch State */
+        /* If CB is from Wakeup queue then assert host interrupt irrespective of Batch State */
         QEmptyRegister &= ~(QUEUE_WAKEUP_EMPTY_BIT);
         SensorHubAssertInt();
         break;
 
     case QUEUE_CONTROL_RESPONSE_TYPE:
-        /* If CB is from Control Response Q then assert host interrupt irrespective of Batch State */
+        /* If CB is from Control Response queue then assert host interrupt irrespective of Batch State */
         QEmptyRegister &= ~(QUEUE_CONTROL_RESPONSE_EMPTY_BIT);
         SensorHubAssertInt();
         break;
@@ -290,7 +290,7 @@ static void QHighThresholdCallBack( Q_Type_t QType )
  * @fn      QEmptyCallBack
  *          Callback for queue when it gets empty
  *
- * @param  [IN] QType - Type of Queue
+ * @param  [IN] QType - Queue identifier
  *
  * @return  none
  *
@@ -298,7 +298,7 @@ static void QHighThresholdCallBack( Q_Type_t QType )
 static void QEmptyCallBack( Q_Type_t QType )
 {
 
-    /* Mark Q empty */
+    /* Mark queue empty */
     switch ( QType )
     {
     case QUEUE_WAKEUP_TYPE:
@@ -306,8 +306,8 @@ static void QEmptyCallBack( Q_Type_t QType )
         break;
 
     case QUEUE_NONWAKEUP_TYPE:
-        /* Before set Non wakeup empty flag check Locally stored NonWakeupOnchange Q empty */
-        if (NonWakeupOnChangeSensor.QEmpty)
+        /* Before set Non wakeup empty flag check Locally stored NonWakeupOnchange queue empty */
+        if (NwOnChangeSensorBuffer.Empty)
         {
             QEmptyRegister |= QUEUE_NONWAKEUP_EMPTY_BIT;
         }
@@ -321,7 +321,7 @@ static void QEmptyCallBack( Q_Type_t QType )
         break;
     }
 
-    /* All Qs are empty so clear Host interrupt pin */
+    /* If all queues are empty deassert Host interrupt pin */
     if ( QEmptyRegister == QUEUE_ALL_EMPTY_MASK )
     {
         SensorHubDeAssertInt();
@@ -332,9 +332,9 @@ static void QEmptyCallBack( Q_Type_t QType )
 /****************************************************************************************************
  * @fn      GetCurrentQType
  *          This is helper function for BatchManagerDeQueue, This function checks QEmptyRegister
- *          to find which Q is full so BatchManagerDeQueue can Dequeue from that Q.
+ *          to find which queue is full so BatchManagerDeQueue can Dequeue from that queue.
  *
- * @param  [IN] pQType - Pointer which hold current Q to be Dequeue.
+ * @param  [OUT] pQType - Pointer which returns current queue identifier that can be dequeued from
  *
  * @return  OSP_STATUS_OK or error code
  ***************************************************************************************************/
@@ -346,52 +346,52 @@ static int16_t GetCurrentQType( Q_Type_t *pQType )
         return (OSP_STATUS_NULL_POINTER);
     }
 
-    /* Control response Q is empty */
+    /* Control response queue is empty */
     if ( (QEmptyRegister & QUEUE_CONTROL_RESPONSE_EMPTY_BIT) )
     {
-        /* Set Current Q type to default */
+        /* Set Current queue type to default */
         *pQType = NUM_QUEUE_TYPE;
     }
     else
     {
-        /* Check current Q is set to default */
+        /* Check current queue is set to default */
         if ( *pQType == NUM_QUEUE_TYPE )
         {
-            /* Then set current Q type to control response */
+            /* Then set current queue type to control response */
             *pQType = QUEUE_CONTROL_RESPONSE_TYPE;
             return OSP_STATUS_OK;
         }
     }
 
-    /* Wakeup Q is empty */
+    /* Wakeup queue is empty */
     if ( (QEmptyRegister & QUEUE_WAKEUP_EMPTY_BIT) )
     {
-        /* Set Current Q type to default */
+        /* Set Current queue type to default */
         *pQType = NUM_QUEUE_TYPE;
     }
     else
     {
-        /* Check current Q is set to default */
+        /* Check current queue is set to default */
         if ( *pQType == NUM_QUEUE_TYPE )
         {
-            /* Then set current Q type to Wakeup */
+            /* Then set current queue type to Wakeup */
             *pQType = QUEUE_WAKEUP_TYPE;
             return OSP_STATUS_OK;
         }
     }
 
-    /* Non Wakeup Q is empty */
+    /* Non Wakeup queue is empty */
     if( QEmptyRegister & QUEUE_NONWAKEUP_EMPTY_BIT )
     {
-        /* Set Current Q type to default */
+        /* Set Current queue type to default */
         *pQType = NUM_QUEUE_TYPE;
     }
     else
     {
-        /* Check current Q is set to default */
+        /* Check current queue is set to default */
         if ( *pQType == NUM_QUEUE_TYPE )
         {
-            /* Then set current Q type to NonWakeup */
+            /* Then set current queue type to NonWakeup */
             *pQType = QUEUE_NONWAKEUP_TYPE;
             return OSP_STATUS_OK;
         }
@@ -465,7 +465,7 @@ static uint32_t CalculateHighThreshold( BatchDescriptor_t *pBatchDesc, BatchQTyp
 
 /****************************************************************************************************
  * @fn      RegisterSensorBatch
- *          Register Sensor parameter (Sampling Rate and Report latency) to Batching structure
+ *          Register Sensor parameter (Sampling Rate and Report latency) with Batch Manager
  *
  * @param   [IN] pBatchDesc - pointer to batching descriptor structure
  * @param   [IN] sensorType - SensorType - Android Sensor Type
@@ -486,9 +486,9 @@ static int16_t RegisterSensorBatch( BatchDescriptor_t *pBatchDesc, uint16_t sens
 
     /* Register sensor to be batched */
     /* TODO : Requested Sample Rate is not currently used for decimation calculations. */
-    pBatchDesc->SensorList[sensorType].ReportLatency            = pSensorParam->ReportLatency;
-    pBatchDesc->SensorList[sensorType].RequestedSamplingRate    = pSensorParam->RequestedSamplingRate;
-    pBatchDesc->SensorList[sensorType].isValidEntry             = TRUE;
+    pBatchDesc->SensorList[sensorType].ReportLatency         = pSensorParam->ReportLatency;
+    pBatchDesc->SensorList[sensorType].RequestedSamplingRate = pSensorParam->RequestedSamplingRate;
+    pBatchDesc->SensorList[sensorType].isValidEntry          = TRUE;
 
     return OSP_STATUS_OK;
 }
@@ -496,7 +496,7 @@ static int16_t RegisterSensorBatch( BatchDescriptor_t *pBatchDesc, uint16_t sens
 
 /****************************************************************************************************
  * @fn      DeRegisterSensorBatch
- *          DeRegister Sensor parameter (Sampling Rate and Report latency) to Batching structure
+ *          DeRegister Sensor parameter (Sampling Rate and Report latency) with Batch Manager
  *
  * @param   [IN] pBatchDesc - Pointer of Batching Descriptor
  * @param   [IN] sensorType - Type of Sensor
@@ -513,9 +513,9 @@ static int16_t DeRegisterSensorBatch( BatchDescriptor_t *pBatchDesc, uint32_t se
     }
 
     /* Unregister sensor to remove from batching */
-    pBatchDesc->SensorList[sensorType].ReportLatency            = (uint64_t)DEFAULT_REPORT_LATENCY;
-    pBatchDesc->SensorList[sensorType].RequestedSamplingRate    = MIN_SAMPLING_PERIOD;
-    pBatchDesc->SensorList[sensorType].isValidEntry             = FALSE;
+    pBatchDesc->SensorList[sensorType].ReportLatency         = (uint64_t)DEFAULT_REPORT_LATENCY;
+    pBatchDesc->SensorList[sensorType].RequestedSamplingRate = MIN_SAMPLING_PERIOD;
+    pBatchDesc->SensorList[sensorType].isValidEntry          = FALSE;
 
     return OSP_STATUS_OK;
 }
@@ -585,7 +585,7 @@ static int16_t BatchManagerAllocHifPacket( Buffer_t **pHifPacket, uint32_t *pPac
 
 /****************************************************************************************************
  * @fn      QInitialize
- *          Initialize Non-Wakeup, Wakeup and Control Response Q
+ *          Initialize Non-Wakeup, Wakeup and Control Response queue
  *
  * @param   none
  *
@@ -610,7 +610,7 @@ static int16_t QInitialize( void )
     _HiFWakeUpQueue = QueueCreate( HIF_WKUP_SENSOR_DATA_QUEUE_SIZE, QUEUE_LOW_THR, QUEUE_HIGH_THR );
     ASF_assert(_HiFWakeUpQueue != NULL);
 
-    /* Register Call backs for High and Low Thresholds   */
+    /* Register Callbacks for High and Low Thresholds   */
     errCode = QueueRegisterCallBack( _HiFNonWakeupQueue , QUEUE_EMPTY_CB, (fpQueueEvtCallback_t) QEmptyCallBack,
                                      (void *)QUEUE_NONWAKEUP_TYPE );
     ASF_assert(errCode == OSP_STATUS_OK);
@@ -620,7 +620,7 @@ static int16_t QInitialize( void )
                                      (void *)QUEUE_NONWAKEUP_TYPE );
     ASF_assert(errCode == OSP_STATUS_OK);
 
-    /* Register Call backs for High and Low Thresholds */
+    /* Register Callbacks for High and Low Thresholds */
     errCode = QueueRegisterCallBack( _HiFWakeUpQueue , QUEUE_EMPTY_CB, (fpQueueEvtCallback_t) QEmptyCallBack,
                                     (void *)QUEUE_WAKEUP_TYPE );
     ASF_assert(errCode == OSP_STATUS_OK);
@@ -636,7 +636,7 @@ static int16_t QInitialize( void )
     _HiFControlQueue = QueueCreate( HIF_CONTROL_QUEUE_SIZE, QUEUE_LOW_THR, QUEUE_HIGH_THR );
     ASF_assert( _HiFControlQueue != NULL );
 
-    /* Register Call backs for High and Low Thresholds */
+    /* Register Callbacks for High and Low Thresholds */
     errCode = QueueRegisterCallBack( _HiFControlQueue , QUEUE_EMPTY_CB, (fpQueueEvtCallback_t) QEmptyCallBack,
                                     (void *)QUEUE_CONTROL_RESPONSE_TYPE );
     ASF_assert(errCode == OSP_STATUS_OK);
@@ -667,28 +667,28 @@ static int16_t EnqueueOnChangeSensorQ( HostIFPackets_t *pHiFDataPacket, uint16_t
     for ( i = 0; i < NUM_ONCHANGE_NONWAKEUP_SENSOR; i++ )
     {
         /* Check packet is available */
-        if ( NonWakeupOnChangeSensor.SensorList[i].ValidFlag )
+        if ( NwOnChangeSensorBuffer.SensorList[i].ValidFlag )
         {
             /* Match sensor type before overwriting packet */
-            if ( NonWakeupOnChangeSensor.SensorList[i].SensorType == sensorType )
+            if ( NwOnChangeSensorBuffer.SensorList[i].SensorType == sensorType )
             {
                 /* Overwrite data to onChange sensor type */
-                SH_MEMCPY( &(NonWakeupOnChangeSensor.SensorList[i].Sample), pHiFDataPacket, packetSize );
-                NonWakeupOnChangeSensor.SensorList[i].ValidFlag = TRUE;
-                NonWakeupOnChangeSensor.SensorList[i].Header.Length = packetSize;
-                NonWakeupOnChangeSensor.SensorList[i].SensorType = (ASensorType_t)sensorType;
-                NonWakeupOnChangeSensor.QEmpty = FALSE;
+                SH_MEMCPY( &(NwOnChangeSensorBuffer.SensorList[i].Sample), pHiFDataPacket, packetSize );
+                NwOnChangeSensorBuffer.SensorList[i].ValidFlag = TRUE;
+                NwOnChangeSensorBuffer.SensorList[i].Header.Length = packetSize;
+                NwOnChangeSensorBuffer.SensorList[i].SensorType = (ASensorType_t)sensorType;
+                NwOnChangeSensorBuffer.Empty = FALSE;
                 return OSP_STATUS_OK;
             }
         }
         else
         {
             /* Copy data to onChange sensor type */
-            SH_MEMCPY( &(NonWakeupOnChangeSensor.SensorList[i].Sample), pHiFDataPacket, packetSize );
-            NonWakeupOnChangeSensor.SensorList[i].ValidFlag = TRUE;
-            NonWakeupOnChangeSensor.SensorList[i].Header.Length = packetSize;
-            NonWakeupOnChangeSensor.SensorList[i].SensorType = (ASensorType_t)sensorType;
-            NonWakeupOnChangeSensor.QEmpty = FALSE;
+            SH_MEMCPY( &(NwOnChangeSensorBuffer.SensorList[i].Sample), pHiFDataPacket, packetSize );
+            NwOnChangeSensorBuffer.SensorList[i].ValidFlag = TRUE;
+            NwOnChangeSensorBuffer.SensorList[i].Header.Length = packetSize;
+            NwOnChangeSensorBuffer.SensorList[i].SensorType = (ASensorType_t)sensorType;
+            NwOnChangeSensorBuffer.Empty = FALSE;
             return OSP_STATUS_OK;
         }
     }
@@ -712,9 +712,9 @@ static int16_t DequeueOnChangeSensorQ( Buffer_t **pBuf )
     if ( index < NUM_ONCHANGE_NONWAKEUP_SENSOR )
     {
         /* check Valid sample for current sensor */
-        if ( NonWakeupOnChangeSensor.SensorList[index].ValidFlag )
+        if ( NwOnChangeSensorBuffer.SensorList[index].ValidFlag )
         {
-            *pBuf = ( Buffer_t *)&NonWakeupOnChangeSensor.SensorList[index].Header;
+            *pBuf = ( Buffer_t *)&NwOnChangeSensorBuffer.SensorList[index].Header;
             index++;
         }
         else
@@ -726,7 +726,7 @@ static int16_t DequeueOnChangeSensorQ( Buffer_t **pBuf )
     else
     {
         /* We check all sensor in list and now there is no valid entry */
-        NonWakeupOnChangeSensor.QEmpty = TRUE;
+        NwOnChangeSensorBuffer.Empty = TRUE;
         index = 0;
         return (OSP_STATUS_QUEUE_EMPTY);
     }
@@ -735,7 +735,7 @@ static int16_t DequeueOnChangeSensorQ( Buffer_t **pBuf )
 
 
 /****************************************************************************************************
- * @fn      DiscardPacketsFromOnChangeSensorQ
+ * @fn      DiscardPktsFromOnChangeSensorBuf
  *          Discards packet corresponding to a sensor type from on-change non wakeup local Sample pool.
  *
  * @param   [IN] sensorType - Type of sensor
@@ -743,28 +743,29 @@ static int16_t DequeueOnChangeSensorQ( Buffer_t **pBuf )
  * @return  OSP_STATUS_OK or error code
  *
  ***************************************************************************************************/
-static int16_t DiscardPacketsFromOnChangeSensorQ(uint32_t sensorType )
+static int16_t DiscardPktsFromOnChangeSensorBuf( uint32_t sensorType )
 {
     int16_t i;
     int16_t validPackets = 0;
 
     for ( i = 0; i < NUM_ONCHANGE_NONWAKEUP_SENSOR; i++ )
     {
-        /* Check packet is available */
-        if ( NonWakeupOnChangeSensor.SensorList[i].ValidFlag )
+        /* Check is valid packet exists for the sensor */
+        if ( NwOnChangeSensorBuffer.SensorList[i].ValidFlag )
         {
             validPackets++;
-            if ( NonWakeupOnChangeSensor.SensorList[i].SensorType == sensorType )
+            if ( NwOnChangeSensorBuffer.SensorList[i].SensorType == sensorType )
             {
-                NonWakeupOnChangeSensor.SensorList[i].ValidFlag = false;
+                NwOnChangeSensorBuffer.SensorList[i].ValidFlag = false;
                 validPackets--;
              }
         }
     }
 
+    /* Mark buffer empty if zero valid packets in it */
     if ( validPackets == 0 )
     {
-        NonWakeupOnChangeSensor.QEmpty = true;
+        NwOnChangeSensorBuffer.Empty = true;
     }
 
     D1_printf("\r\n%s: Packets valid: %d\r\n",__FUNCTION__,validPackets );
@@ -792,16 +793,16 @@ int16_t BatchManagerInitialize( void )
 
     if (!isBatchManagerInitialized)
     {
-        /* Initialize Qs */
+        /* Initialize queues */
         QInitialize();
 
-        /* Validate Qs */
+        /* Validate queues */
         if ( ( _HiFWakeUpQueue == NULL) || (_HiFNonWakeupQueue == NULL) )
         {
             return (OSP_STATUS_NULL_POINTER);
         }
 
-        /* Initialize Batch structure with Q */
+        /* Initialize Batch structure with queue */
         BatchDesc.BatchQ[BATCH_WAKEUP_QUEUE].pQ    = (Queue_t *)_HiFWakeUpQueue;
         BatchDesc.BatchQ[BATCH_NONWAKEUP_QUEUE].pQ = (Queue_t *)_HiFNonWakeupQueue;
 
@@ -832,8 +833,8 @@ int16_t BatchManagerInitialize( void )
         /* Initialize on change non wakeup sensor list */
         for (i = 0; i < NUM_ONCHANGE_NONWAKEUP_SENSOR; i++)
         {
-            NonWakeupOnChangeSensor.SensorList[i].ValidFlag = FALSE;
-            NonWakeupOnChangeSensor.QEmpty = TRUE;
+            NwOnChangeSensorBuffer.SensorList[i].ValidFlag = FALSE;
+            NwOnChangeSensorBuffer.Empty = TRUE;
         }
 
         isBatchManagerInitialized = TRUE;
@@ -874,7 +875,7 @@ int16_t BatchManagerSensorRegister( ASensorType_t SensorType, uint64_t SamplingR
         return (errCode);
     }
 
-    /* get Q type */
+    /* get queue type */
     QType = pCurrBatchDesc->SensorList[sType].QType;
 
     BatchParam.RequestedSamplingRate = SamplingRate;
@@ -897,7 +898,7 @@ int16_t BatchManagerSensorRegister( ASensorType_t SensorType, uint64_t SamplingR
     }
 
 #endif
-    /* Checks sensor is already register or not, if it is register already return */
+    /* Checks sensor is already registered or not */
     if ( !pCurrBatchDesc->SensorList[sType].isValidEntry )
     {
         /* Register sensor with Batching module */
@@ -953,7 +954,7 @@ int16_t BatchManagerSensorEnable( ASensorType_t SensorType )
 
     pCurrBatchDesc->SensorList[sType].isSensorEnabled = true;
 
-    /* get current Q type */
+    /* get current queue type */
     QType = pCurrBatchDesc->SensorList[sType].QType;
 
     /* Change state to Batch Active if it is in Idle state */
@@ -969,7 +970,7 @@ int16_t BatchManagerSensorEnable( ASensorType_t SensorType )
     /* Calculate and validate High threshold value */
     highThreshold = CalculateHighThreshold( pCurrBatchDesc, QType );
 
-    /* Set High Threshold value for given Q */
+    /* Set High Threshold value for given queue */
     errCode = QueueHighThresholdSet( pCurrBatchDesc->BatchQ[QType].pQ, highThreshold );
 
     return errCode;
@@ -1003,7 +1004,7 @@ int16_t BatchManagerSensorDeRegister( ASensorType_t SensorType )
 
     QType = pCurrBatchDesc->SensorList[sType].QType;
 
-    /* Checks sensor is already unregister or not, if it is unregister already return */
+    /* Checks sensor is already unregistered or not */
     if ( pCurrBatchDesc->SensorList[sType].isValidEntry )
     {
         /* DeRegister sensor with Batching module */
@@ -1054,7 +1055,7 @@ int16_t BatchManagerSensorDisable( ASensorType_t sensorType )
         return (errCode);
     }
 
-    /* get current Q type */
+    /* get current queue type */
     QType = pCurrBatchDesc->SensorList[sType].QType;
 
     /* Check that entry is removed from Sensor list before calculate new threshold value */
@@ -1075,22 +1076,22 @@ int16_t BatchManagerSensorDisable( ASensorType_t sensorType )
     /* Calculate New High threshold value */
     highThreshold = CalculateHighThreshold( pCurrBatchDesc, QType );
 
-    /* Set New High Threshold value for given Q */
+    /* Set New High Threshold value for given queue */
     errCode = QueueHighThresholdSet( pCurrBatchDesc->BatchQ[QType].pQ, highThreshold );
 
     /* Check if sensor FIFO type is Non Wake up On Change FIFO */
     if ( SensorTypeAndRateMap[sType].FIFOType == BATCH_SENSOR_NONWAKEUP_ONCHANGE_FIFO )
     {
-        DiscardPacketsFromOnChangeSensorQ( sType );
+        DiscardPktsFromOnChangeSensorBuf( sType );
     }
 
     /* Get current Queue size */
     QueueGetSize( pCurrBatchDesc->BatchQ[QType].pQ, &size );    /* get number of entries */
     D1_printf( "\r\nQueue size before discard = %d\r\n", size );
 
-    /* Discard packets for the disabled sensor from apropriate Queue
-     * This is done so as to not retain and transfer old logged data when sensor is re-enabled */
-    /* This is required for CTS tests which fails if sensor data with old timestamps are sent to host */
+    /* Discard packets for the disabled sensor from appropriate Queue
+     * This is done so as to not retain and transfer stale sensor data when sensor is re-enabled
+     */
     while ( size > 0 )
     {
         stat = DeQueue( pCurrBatchDesc->BatchQ[QType].pQ , &pTempHifPacket );
@@ -1105,7 +1106,7 @@ int16_t BatchManagerSensorDisable( ASensorType_t sensorType )
         }
         else
         {
-             /* enqueue if it belongs to a different sensor */
+             /* enqueue back if it belongs to a different sensor */
              stat = EnQueue( pCurrBatchDesc->BatchQ[QType].pQ , pTempHifPacket );
              ASF_assert( stat == OSP_STATUS_OK );
         }
@@ -1168,7 +1169,7 @@ int16_t BatchManagerGetSensorState( ASensorType_t sensorType, int32_t * state)
 
 /****************************************************************************************************
  * @fn      BatchManagerSensorDataEnQueue
- *          Enqueue given Sensor data packet in given Q
+ *          Enqueue given Sensor data packet in given queue
  *
  * @param   [IN] pHiFDataPacket - Pointer of control response packet
  * @param   [IN] packetSize - Size of control response packet
@@ -1222,7 +1223,7 @@ int16_t BatchManagerSensorDataEnQueue( HostIFPackets_t *pHiFDataPacket, uint16_t
         /* EnQueue Packet */
         status = EnQueue(_HiFNonWakeupQueue , pHifPacket);
 
-        /* Check Q is full */
+        /* Check queue is full */
         if(status == (OSP_STATUS_QUEUE_FULL))
         {
             /* Get current state of Batch state machine */
@@ -1231,7 +1232,7 @@ int16_t BatchManagerSensorDataEnQueue( HostIFPackets_t *pHiFDataPacket, uint16_t
 
             if ( currBatchState == BATCH_ACTIVE_HOST_SUSPEND )
             {
-                /* Q is full and host is suspended so Old packet needs to removed to make space for new packets.*/
+                /* queue is full and host is suspended so Old packet needs to removed to make space for new packets.*/
                 DeQueue( _HiFNonWakeupQueue, &pTempHifPacket );
 
                 /* Free Block from PacketPool */
@@ -1258,7 +1259,7 @@ int16_t BatchManagerSensorDataEnQueue( HostIFPackets_t *pHiFDataPacket, uint16_t
         /* EnQueue Packet */
         status = EnQueue( _HiFWakeUpQueue , pHifPacket );
 
-        /* Check Q is full */
+        /* Check queue is full */
         if (status == (OSP_STATUS_QUEUE_FULL))
         {
             status = BatchManagerQueueFlush( QUEUE_WAKEUP_TYPE );
@@ -1276,7 +1277,7 @@ int16_t BatchManagerSensorDataEnQueue( HostIFPackets_t *pHiFDataPacket, uint16_t
 
 /****************************************************************************************************
  * @fn      BatchManagerDeQueue
- *          DeQueue HiF packets from Sensor Data Q or Control Response Q
+ *          DeQueue HiF packets from Sensor Data queue or Control Response queue
  *
  * @param   [OUT] pBuf - Pointer for buffer where packet needs to be store after DeQueue
  * @param   [IN/OUT] pLength - [IN] Max buffer size for dequeue; [OUT] Total length of packets dequeued
@@ -1297,10 +1298,10 @@ int16_t BatchManagerDeQueue( uint8_t *pBuf, uint32_t *pLength )
 
     do
     {
-        /* Get Current Q type */
+        /* Get Current queue type */
         status = GetCurrentQType( &CurrQType );
 
-        /* All Qs are empty */
+        /* All queues are empty */
         if (status != OSP_STATUS_OK)
         {
             break;
@@ -1309,7 +1310,7 @@ int16_t BatchManagerDeQueue( uint8_t *pBuf, uint32_t *pLength )
         switch(CurrQType)
         {
         case QUEUE_NONWAKEUP_TYPE:
-            /* DeQueue packet from the non Wake up Q */
+            /* DeQueue packet from the non Wake up queue */
             status = DeQueue( _HiFNonWakeupQueue, &pHIFPkt );
 
             if ( status == OSP_STATUS_OK )
@@ -1325,7 +1326,7 @@ int16_t BatchManagerDeQueue( uint8_t *pBuf, uint32_t *pLength )
                 status = FreeBlock( SensorDataPacketPool, pHIFPkt );
                 ASF_assert(status == OSP_STATUS_OK);
             }
-            /* If Non Wakeup Q is Empty check Local On change Sensor Packets */
+            /* If Non Wakeup queue is Empty check Local On change Sensor Packets */
             else if ( status == OSP_STATUS_QUEUE_EMPTY)
             {
                 /* Dequeue packet from on change sensor */
@@ -1346,14 +1347,14 @@ int16_t BatchManagerDeQueue( uint8_t *pBuf, uint32_t *pLength )
                 }
                 else
                 {
-                    /* Set Non wakeup Q Empty bit */
+                    /* Set Non wakeup queue Empty bit */
                     QEmptyCallBack(QUEUE_NONWAKEUP_TYPE);
                 }
             }
             break;
 
         case QUEUE_WAKEUP_TYPE:
-            /* DeQueue packet from the Wake up Q */
+            /* DeQueue packet from the Wake up queue */
             status = DeQueue( _HiFWakeUpQueue, &pHIFPkt );
 
             if ( status == OSP_STATUS_OK )
@@ -1372,7 +1373,7 @@ int16_t BatchManagerDeQueue( uint8_t *pBuf, uint32_t *pLength )
             break;
 
         case QUEUE_CONTROL_RESPONSE_TYPE:
-            /* DeQueue packet from Control Response Q */
+            /* DeQueue packet from Control Response queue */
             status = DeQueue( _HiFControlQueue, &pHIFPkt );
 
             if ( status == OSP_STATUS_OK )
@@ -1402,7 +1403,7 @@ int16_t BatchManagerDeQueue( uint8_t *pBuf, uint32_t *pLength )
 
 /****************************************************************************************************
  * @fn      BatchManagerControlResponseEnQueue
- *          Enqueue control response packet in control response Q
+ *          Enqueue control response packet in control response queue
  *
  * @param   [IN] pHiFControlPacket - Pointer of control response packet
    @param   [IN] packetSize - Size of control response packet
@@ -1431,10 +1432,10 @@ int16_t BatchManagerControlResponseEnQueue( HostIFPackets_t *pHiFControlPacket, 
     /* update length of packet */
     pHifControlResponsePacket->Header.Length = packetSize;
 
-    /* EnQueue Packet in Control response Q */
+    /* EnQueue Packet in Control response queue */
     status = EnQueue( _HiFControlQueue , pHifControlResponsePacket );
 
-    /* Check Q is full */
+    /* Check queue is full */
     if (status == (OSP_STATUS_QUEUE_FULL))
     {
         status = BatchManagerQueueFlush( QUEUE_WAKEUP_TYPE );
@@ -1446,9 +1447,9 @@ int16_t BatchManagerControlResponseEnQueue( HostIFPackets_t *pHiFControlPacket, 
 
 /****************************************************************************************************
  * @fn      BatchManagerQueueFlush
- *          Flushes given Q
+ *          Flushes given queue
  *
- * @param   [IN] Q Type
+ * @param   [IN] queue Type
  *
  * @return  OSP_STATUS_OK or error code
  *
@@ -1488,7 +1489,7 @@ int16_t BatchManagerQueueFlush( Q_Type_t qType)
         break;
     }
 
-    /* Start Q threshold call back */
+    /* Start queue threshold call back */
     QHighThresholdCallBack( qType );
 
     return OSP_STATUS_OK;
@@ -1497,14 +1498,14 @@ int16_t BatchManagerQueueFlush( Q_Type_t qType)
 
 /****************************************************************************************************
  * @fn      BatchManagerMaxQCount
- *          Provide Maximum event stored by NonWakup and Wakeup Qs.
+ *          Provide Maximum event stored by NonWakup and Wakeup queues.
  *
- * @return  Max. Number of event handle by Batchmanager Q
+ * @return  Max. Number of event handle by Batchmanager queue
  *
  ***************************************************************************************************/
 uint32_t BatchManagerMaxQCount( void )
 {
-    /* Sum up Q capacity for both Wakeup and NonWakeup Q */
+    /* Sum up queue capacity for both Wakeup and NonWakeup queue */
     return( BatchDesc.BatchQ[BATCH_WAKEUP_QUEUE].pQ->Capacity +
             BatchDesc.BatchQ[BATCH_NONWAKEUP_QUEUE].pQ->Capacity );
 }
