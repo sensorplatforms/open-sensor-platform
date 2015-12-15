@@ -93,6 +93,7 @@ int16_t EnQueue( Queue_t *myQ, Buffer_t *pBuf );
 int16_t DeQueue( Queue_t *myQ, Buffer_t **pBuf );
 int16_t QueueRegisterCallBack( Queue_t *pMyQ, Q_CBId_t cbid, fpQueueEvtCallback_t pFunc, void *pUser );
 int16_t QueueHighThresholdSet( Queue_t *pMyQ, uint32_t highThreshold );
+int16_t QueueGetSize( Queue_t *pMyQ, uint32_t *size );
 
 #endif /* QUEUE_H */
 /*-------------------------------------------------------------------------------------------------*\

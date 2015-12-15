@@ -103,6 +103,8 @@ typedef struct _BatchSensorParam
     uint32_t                DecimationCnt;          /* Decimation count for sensor*/
 #endif
     osp_bool_t              isValidEntry;           /* Flag for Valid entry */
+    osp_bool_t              isSensorEnabled;        /* Flag for Sensor Enable status */
+
 } BatchSensorParam_t;
 
 /* Structure to hold Batch Queue parameters */
@@ -437,7 +439,7 @@ static uint32_t CalculateHighThreshold( BatchDescriptor_t *pBatchDesc, BatchQTyp
         }
 
         /* Check only registered sensors for threshold calculation. Also skip On-Change sensors in thresold calculation */
-        if ( ( pBatchDesc->SensorList[i].isValidEntry ) &&
+        if ( ( pBatchDesc->SensorList[i].isSensorEnabled ) &&
              ( pBatchDesc->SensorList[i].ActualSamplingRate != ON_CHANGE_SAMPLE_PERIOD ) )
         {
             /* Calculate high threshold value for one sensor entry and accumulate to previous value*/
@@ -732,6 +734,46 @@ static int16_t DequeueOnChangeSensorQ( Buffer_t **pBuf )
 }
 
 
+/****************************************************************************************************
+ * @fn      DiscardPacketsFromOnChangeSensorQ
+ *          Discards packet corresponding to a sensor type from on-change non wakeup local Sample pool.
+ *
+ * @param   [IN] sensorType - Type of sensor
+ *
+ * @return  OSP_STATUS_OK or error code
+ *
+ ***************************************************************************************************/
+static int16_t DiscardPacketsFromOnChangeSensorQ(uint32_t sensorType )
+{
+    int16_t i;
+    int16_t validPackets = 0;
+
+    for ( i = 0; i < NUM_ONCHANGE_NONWAKEUP_SENSOR; i++ )
+    {
+        /* Check packet is available */
+        if ( NonWakeupOnChangeSensor.SensorList[i].ValidFlag )
+        {
+            validPackets++;
+            if ( NonWakeupOnChangeSensor.SensorList[i].SensorType == sensorType )
+            {
+                NonWakeupOnChangeSensor.SensorList[i].ValidFlag = false;
+                validPackets--;
+             }
+        }
+    }
+
+    if ( validPackets == 0 )
+    {
+        NonWakeupOnChangeSensor.QEmpty = true;
+    }
+
+    D1_printf("\r\n%s: Packets valid: %d\r\n",__FUNCTION__,validPackets );
+
+    return (OSP_STATUS_OK);
+}
+
+
+
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C     F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
@@ -770,6 +812,7 @@ int16_t BatchManagerInitialize( void )
             BatchDesc.SensorList[i].RequestedSamplingRate = MIN_SAMPLING_PERIOD;
             BatchDesc.SensorList[i].ActualSamplingRate    = SensorTypeAndRateMap[i].SamplingRate;
             BatchDesc.SensorList[i].isValidEntry          = FALSE;
+            BatchDesc.SensorList[i].isSensorEnabled       = FALSE;
             /* Use Wake up Queue for Wake up FIFO Sensors and NonWake Up Queue for Non Wake up and Non Wake up on change FIFOs */
             BatchDesc.SensorList[i].QType                 = ( SensorTypeAndRateMap[i].FIFOType == BATCH_SENSOR_WAKEUP_FIFO ) ?
                                                               (BATCH_WAKEUP_QUEUE):(BATCH_NONWAKEUP_QUEUE);
@@ -908,6 +951,8 @@ int16_t BatchManagerSensorEnable( ASensorType_t SensorType )
         return (errCode);
     }
 
+    pCurrBatchDesc->SensorList[sType].isSensorEnabled = true;
+
     /* get current Q type */
     QType = pCurrBatchDesc->SensorList[sType].QType;
 
@@ -992,9 +1037,13 @@ int16_t BatchManagerSensorDisable( ASensorType_t sensorType )
 {
     BatchDescriptor_t *pCurrBatchDesc = &BatchDesc;
     BatchQType_t      QType;
+    Buffer_t          *pTempHifPacket;
     uint32_t          highThreshold;
+    uint32_t          sType;
+    uint32_t          size;
     int16_t           errCode         = OSP_STATUS_INVALID_PARAMETER;
-    uint32_t sType;
+    int16_t           stat;
+
 
     /* Change sensor base */
     sType = M_ToBaseSensorEnum (sensorType);
@@ -1021,11 +1070,50 @@ int16_t BatchManagerSensorDisable( ASensorType_t sensorType )
 
 #endif
 
+    pCurrBatchDesc->SensorList[sType].isSensorEnabled = false;
+
     /* Calculate New High threshold value */
     highThreshold = CalculateHighThreshold( pCurrBatchDesc, QType );
 
     /* Set New High Threshold value for given Q */
     errCode = QueueHighThresholdSet( pCurrBatchDesc->BatchQ[QType].pQ, highThreshold );
+
+    /* Check if sensor FIFO type is Non Wake up On Change FIFO */
+    if ( SensorTypeAndRateMap[sType].FIFOType == BATCH_SENSOR_NONWAKEUP_ONCHANGE_FIFO )
+    {
+        DiscardPacketsFromOnChangeSensorQ( sType );
+    }
+
+    /* Get current Queue size */
+    QueueGetSize( pCurrBatchDesc->BatchQ[QType].pQ, &size );    /* get number of entries */
+    D1_printf( "\r\nQueue size before discard = %d\r\n", size );
+
+    /* Discard packets for the disabled sensor from apropriate Queue
+     * This is done so as to not retain and transfer old logged data when sensor is re-enabled */
+    /* This is required for CTS tests which fails if sensor data with old timestamps are sent to host */
+    while ( size > 0 )
+    {
+        stat = DeQueue( pCurrBatchDesc->BatchQ[QType].pQ , &pTempHifPacket );
+        ASF_assert( pTempHifPacket->Header.Length > SENSOR_DATA_PKT_HEADER_SIZE );    /*  check packet validity */
+
+        /* check the packet header for sensor type */
+        if ( ( *( &(pTempHifPacket->DataStart ) + PKT_SENSOR_ID_BYTE_OFFSET ) & SENSOR_TYPE_MASK ) == sType )
+        {
+            errCode = FreeBlock( SensorDataPacketPool, pTempHifPacket );
+            ASF_assert( errCode == OSP_STATUS_OK );
+
+        }
+        else
+        {
+             /* enqueue if it belongs to a different sensor */
+             stat = EnQueue( pCurrBatchDesc->BatchQ[QType].pQ , pTempHifPacket );
+             ASF_assert( stat == OSP_STATUS_OK );
+        }
+        size--;
+    }
+
+    QueueGetSize( pCurrBatchDesc->BatchQ[QType].pQ, &size );    /* get number of entries */
+    D1_printf("\r\nQueue size after discard = %d\r\n",size);
 
     /* There is no sensor to be batched so change Batch state to BATCH_IDLE */
     if ( ( BatchDesc.BatchQ[BATCH_WAKEUP_QUEUE].NumBatchedSensor == 0 ) &&
@@ -1064,7 +1152,7 @@ int16_t BatchManagerGetSensorState( ASensorType_t sensorType, int32_t * state)
     }
 
     /* Check that entry is removed from Sensor list before calculate new threshold value */
-    if ( pCurrBatchDesc->SensorList[sType].isValidEntry )
+    if ( pCurrBatchDesc->SensorList[sType].isSensorEnabled)
     {
         *state = ENABLE;
     }
@@ -1425,3 +1513,4 @@ uint32_t BatchManagerMaxQCount( void )
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/
+
