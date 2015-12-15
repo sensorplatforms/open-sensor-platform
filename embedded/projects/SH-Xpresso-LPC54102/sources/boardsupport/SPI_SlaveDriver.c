@@ -22,12 +22,13 @@
 #include "SPI_SlaveDriver.h"
 #include "Queue.h"
 #include "SensorPackets.h"
+#include "BatchManager.h"
+#include "ConfigManager.h"
+#include <string.h>
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-int16_t DeQueueToBuffer( uint8_t *pBuf, uint32_t *pBufSz, Queue_t *pQ );
-extern Queue_t *_HiFNonWakeupQueue;
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E   C O N S T A N T S   &   M A C R O S
@@ -100,6 +101,8 @@ static TState_t _TranState;
 static uint8_t _SpiTxBuffer[SPI_TX_BUF_SZ];
 static uint32_t _BufferSz = sizeof(_SpiTxBuffer);
 static uint8_t _ConfigBuffer[MAX_CONFIG_CMD_SZ];
+static uint8_t _ControlRequestBuffer[MAX_CONFIG_CMD_SZ];
+
 
 /*-------------------------------------------------------------------------------------------------*\
  |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
@@ -199,26 +202,6 @@ static void SPISlaveHardwareSetup( void )
 
 
 /****************************************************************************************************
- * @fn      PrintPacket
- *          Helper routine for debug display of packet data bytes
- *
- ***************************************************************************************************/
-static void PrintPacket( uint8_t *pPkt, uint16_t len )
-{
-    uint16_t i;
-    len = (len + 7) & 0xFFF8;
-
-    D1_printf("\t-------------------------\r\n");
-    for (i = 0; i < len; i+=8)
-    {
-        D1_printf("\tData: %02X %02X %02X %02X %02X %02X %02X %02X\r\n",
-            pPkt[i], pPkt[i+1], pPkt[i+2], pPkt[i+3],
-            pPkt[i+4], pPkt[i+5], pPkt[i+6], pPkt[i+7]);
-    }
-}
-
-
-/****************************************************************************************************
  * @fn      SPIResetFIFOandStates
  *          Helper routine for bus recovery/reset due to error or at the end of a transaction
  *
@@ -308,7 +291,7 @@ static void SPI_CommandHandler( uint16_t rcvDat )
 
             /* Get packets from application and fill the local transmit buffer */
             _BufferSz = sizeof(_SpiTxBuffer);
-            DeQueueToBuffer( _SpiTxBuffer, &_BufferSz, _HiFNonWakeupQueue );
+            BatchManagerDeQueue( _SpiTxBuffer, &_BufferSz );
             _SpiState.Cause     = CAUSE_SENSOR_DATA_READY;
             _SpiState.BufLength = _BufferSz;
             _SpiState.Remain    = ((_BufferSz + 3)/4) << 1; //16-bit data size in 32-bit multiple
@@ -464,9 +447,9 @@ void SPISlaveSetup( void )
  ***************************************************************************************************/
 void SPISlaveIRQHandler(void)
 {
-    SensorPacketTypes_t Out;
     uint32_t ints = Chip_SPI_GetPendingInts(SPI_HOSTIF_BUS);
     uint32_t intFifo = Chip_FIFOSPI_GetIntStatus(LPC_FIFO, SPI_IF_IDX);
+    MessageBuffer *pData = NULLP;
 
     /* Check for control & Error interrupts */
     if ((ints & (SPI_INTENSET_RXOVEN | SPI_INTENSET_TXUREN | SPI_INTENSET_SSAEN | SPI_INTENSET_SSDEN)) != 0)
@@ -482,7 +465,7 @@ void SPISlaveIRQHandler(void)
             Chip_SPI_ClearStatus(SPI_HOSTIF_BUS, SPI_STAT_TXUR);
             D0_printf("SPIS-ISR: TX Underrun!\r\n"); /* If all is well we should never see this! */
 
-            /* At this point the best solution is to try and recover the driver state and let host retry
+           /* At this point the best solution is to try and recover the driver state and let host retry
                the last transaction if needed */
             SPIResetFIFOandStates();
         }
@@ -504,8 +487,15 @@ void SPISlaveIRQHandler(void)
                 //D0_printf("\tEoT FIFO Flush.\r\n");
                 if (_SpiState.State == SPI_CONFIGURATION_PKT)
                 {
-                    PrintPacket(_ConfigBuffer, _SpiState.BufLength);
-                    ParseHostInterfacePkt( &Out, _ConfigBuffer, _SpiState.BufLength );
+                    //PrintPacket(_ConfigBuffer, _SpiState.BufLength);
+                    ASF_assert(ASFCreateMessage(MSG_PROCESS_CTRL_REQ,
+                                sizeof(MsgCtrlReq),
+                                &pData) == ASF_OK);
+                    memcpy(_ControlRequestBuffer, _ConfigBuffer, _SpiState.BufLength);
+                    pData->msg.msgCtrlReq.pRequestPacket = _ControlRequestBuffer;
+                    pData->msg.msgCtrlReq.length = _SpiState.BufLength;
+                    
+                    ASF_assert(ASFSendMessage(HOST_INTF_TASK_ID, pData) == ASF_OK);
                 }
                 /* Reset FIFOs & States */
                 SPIResetFIFOandStates();
