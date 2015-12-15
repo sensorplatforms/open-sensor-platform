@@ -117,19 +117,9 @@
 #define ASFTimerStart( owner, ref, tick, pTimer )  \
     _ASFTimerStart( owner, ref, tick, pTimer, __MODULE__, __LINE__ )
 
-/* Defines for MTCK Commands & handlers */
-#define CR                          0x0D
-#define LF                          0x0A
-
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-typedef enum AppResultCodesTag
-{
-    APP_OK      = 0,
-    APP_ERR     = 1
-} AppResult;
-
 typedef struct AsfTimerTag
 {
     TimerId         timerId;   /**< Id of the timer - internal use    */
