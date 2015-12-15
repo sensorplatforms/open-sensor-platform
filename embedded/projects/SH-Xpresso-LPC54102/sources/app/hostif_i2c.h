@@ -15,12 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#if !defined (I2CS_DRIVER_H)
-#define   I2CS_DRIVER_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#if !defined (HOSTIF_I2C_H)
+#define   HOSTIF_I2C_H
 
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
@@ -29,63 +25,10 @@ extern "C" {
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
-#define RX_LENGTH       64
 
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-typedef enum {
-    I2C_LPC_INVALID = -1,
-    I2C_LPC_0 = 0,
-    I2C_LPC_1 = 1,
-    I2C_LPC_2 = 2,
-    I2C_LPC_MAX
-}i2c_num;
-
-typedef enum _i2c_transfer_state_t {
-    I2C_IDLE,
-    I2C_READ_IN_PROGRESS,
-    I2C_WRITE_COMPLETE,
-    I2C_READ_COMPLETE,
-}i2c_transfer_state_t;
-
-
-typedef struct {
-    const void *txBuff;             /*!< Pointer to array of bytes to be transmitted */
-    void *rxBuff;                   /*!< Pointer memory where bytes received from I2C be stored */
-    volatile ErrorCode_t status;    /*!< status of the current I2C transfer (ErrorCode_t), must be 32-bits */
-    uint32_t flags;                 /*!< Reserved, set to 0 */
-    uint16_t txSz;                  /*!< Number of bytes in transmit array, if 0 only receive transfer will be performed */
-    uint16_t rxSz;                  /*!< Number of bytes to receive, if 0 only transmission will be performed */
-    uint16_t bytesSent;             /*!< Number of bytes sent */
-    uint16_t bytesRecv;             /*!< Number of bytes recevied */
-} i2cs_xfer_stat_t;
-
-typedef struct
-{
-    i2c_num i2c;
-    uint32_t ui_slave_address;
-    uint8_t uc_slave_index;
-    void *tx_buff;
-    uint8_t rxBuff[RX_LENGTH];
-    uint8_t rxCount;        /* Bytes so far received  */
-    uint8_t rxLength;       /* Expected Rx buffer length */
-    
-    /*
-    * i2c_operation indicates the I2C action to be performed as requested by host
-    * 0x1 --> receive data in progress
-    * 0x2 --> tramsit data
-    * 0x3 --> receive data Competed
-    */
-    uint8_t i2c_operation;
-    /* I2C transfer structure */
-    i2cs_xfer_stat_t pXfer;
-} i2c_t;
-
-enum {
-    I2C_ERROR_NO_SLAVE = -1,
-    I2C_ERROR_BUS_BUSY = -2
-};
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
@@ -98,17 +41,12 @@ enum {
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-void i2c_init( i2c_t *obj );
-void i2c_slave_mode( i2c_t *obj, osp_bool_t enable_slave );
-int  i2c_slave_receive( i2c_t *obj ); // Wait for next I2C event and find out what is going on
-int  i2c_slave_write( i2c_t *obj, const uint8_t *data, uint16_t length );
+void Hostif_I2C_Init(void);
+void Hostif_QueueTx(uint8_t *pBuf, uint16_t size);
+uint32_t Hostif_Process(void);
 
-#ifdef __cplusplus
-}
-#endif
 
-#endif /* I2CS_DRIVER_H */
+#endif /* HOSTIF_I2C_H */
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/
-

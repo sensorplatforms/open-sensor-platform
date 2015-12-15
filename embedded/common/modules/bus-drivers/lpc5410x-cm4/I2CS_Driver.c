@@ -111,6 +111,24 @@ static void i2cslave_start(uint8_t addr)
 {
     /* Do Nothing */
     //D0_printf("Slave Addr %x\n", addr);
+    i2c_t *obj = pi2c_slave_obj; /* get the record*/
+
+    if( obj->i2c_operation == I2C_READ_IN_PROGRESS)
+    {
+        D1_printf(" Rep St \r\n");
+        obj->i2c_operation = I2C_READ_COMPLETE;
+    }
+    else
+    {
+        obj->i2c_operation = I2C_IDLE;
+        obj->pXfer.rxBuff = obj->rxBuff;
+        obj->pXfer.rxSz = 0;
+        obj->pXfer.status = ERR_I2C_BUSY;
+        obj->pXfer.bytesSent = 0;
+        obj->pXfer.bytesRecv = 0;
+
+    }
+
 }
 
 /****************************************************************************************************
@@ -134,7 +152,7 @@ static uint8_t i2cslave_tx(uint8_t *data)
     }
 
     if(obj->pXfer.bytesSent >= obj->pXfer.txSz) {
-        obj->i2c_operation = 0x2; /* write operation */
+        obj->i2c_operation = I2C_WRITE_COMPLETE; /* write operation */
     }
 
     return I2C_SLVCTL_SLVCONTINUE;
@@ -152,16 +170,12 @@ static uint8_t i2cslave_rx(uint8_t data)
     uint8_t ret_val = I2C_SLVCTL_SLVCONTINUE;
     i2c_t *obj = pi2c_slave_obj; /* get the record*/
 
-    obj->i2c_operation = 0x1; /* read operation */
+    obj->i2c_operation = I2C_READ_IN_PROGRESS; /* read operation */
 
     p8 = obj->pXfer.rxBuff;
     p8[obj->pXfer.bytesRecv++] = (uint8_t) data;
 
-    if(obj->pXfer.bytesRecv >= obj->pXfer.rxSz) {
-        obj->pXfer.rxBuff = (uint8_t *)obj->pXfer.rxBuff + obj->pXfer.rxSz;
-        obj->pXfer.rxSz++;
-        obj->pXfer.bytesRecv = 0;
-    }
+    ASF_assert(obj->pXfer.bytesRecv < RX_LENGTH);
 
     return ret_val;
 }
@@ -175,11 +189,8 @@ static void i2cslave_done(void)
 {
     i2c_t *obj = pi2c_slave_obj; /* get the record*/
 
-    obj->pXfer.rxBuff = obj->rxBuff;
-    obj->pXfer.rxSz = 0;
-    obj->pXfer.status = ERR_I2C_BUSY;
-    obj->pXfer.bytesSent = 0;
-    obj->pXfer.bytesRecv = 0;
+    obj->i2c_operation = I2C_READ_COMPLETE; /* transaction completed */
+
 }
 
 /*-------------------------------------------------------------------------------------------------*\
@@ -217,7 +228,7 @@ void i2c_init(i2c_t *obj)
  * @return  none
  *
  ***************************************************************************************************/
-void i2c_slave_mode(i2c_t *obj, int enable_slave)
+void i2c_slave_mode(i2c_t *obj, osp_bool_t enable_slave)
 {
    i2cs_slave_t slaveSetup;
 
@@ -263,7 +274,7 @@ int i2c_slave_receive( i2c_t *obj )
  * @return  none
  *
  ***************************************************************************************************/
-int i2c_slave_write( i2c_t *obj, const char *data, int length )
+int i2c_slave_write( i2c_t *obj, const uint8_t *data, uint16_t length )
 {
     obj->pXfer.txBuff = (uint8_t *)data;
     obj->pXfer.txSz = length;
