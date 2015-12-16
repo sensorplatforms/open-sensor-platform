@@ -303,6 +303,31 @@ int16_t QueueHighThresholdSet( Queue_t *pMyQ, uint32_t highThreshold )
     return OSP_STATUS_OK;
 }
 
+
+/****************************************************************************************************
+ * @fn      QueueGetSize
+ *          Allows user to get the number of entries in a queue.
+ *
+ * @param   [IN]pMyQ  - Pointer to a queue previously created
+ * @param   [OUT]size - Size of the queue
+ *
+ * @return  OSP_STATUS_OK always
+ *
+ ***************************************************************************************************/
+int16_t QueueGetSize( Queue_t *pMyQ, uint32_t *size )
+{
+    SETUP_CRITICAL_SECTION();
+
+    ENTER_CRITICAL_SECTION();
+
+    *size = pMyQ->Size;
+
+    EXIT_CRITICAL_SECTION();
+
+    return OSP_STATUS_OK;
+}
+
+
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/

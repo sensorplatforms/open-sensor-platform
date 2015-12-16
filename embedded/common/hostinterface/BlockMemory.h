@@ -26,16 +26,9 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
-
-#if 0
-#define SETUP_CRITICAL_SECTION()        unsigned register int __intState
-#define ENTER_CRITICAL_SECTION()        __intState = xtos_ints_disable()
-#define EXIT_CRITICAL_SECTION()         xtos_ints_enable(__intState)
-#else
 #define SETUP_CRITICAL_SECTION()        OS_SETUP_CRITICAL()
 #define ENTER_CRITICAL_SECTION()        OS_ENTER_CRITICAL()
 #define EXIT_CRITICAL_SECTION()         OS_LEAVE_CRITICAL()
-#endif
 
 /* The DECLARE_BLOCK_POOL macro declares an array of bytes that can be used as a memory pool for fixed
  * block allocation.

@@ -29,7 +29,7 @@ extern "C" {
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
-#define RX_LENGTH       16
+#define RX_LENGTH       64
 
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
@@ -41,6 +41,14 @@ typedef enum {
     I2C_LPC_2 = 2,
     I2C_LPC_MAX
 }i2c_num;
+
+typedef enum _i2c_transfer_state_t {
+    I2C_IDLE,
+    I2C_READ_IN_PROGRESS,
+    I2C_WRITE_COMPLETE,
+    I2C_READ_COMPLETE,
+}i2c_transfer_state_t;
+
 
 typedef struct {
     const void *txBuff;             /*!< Pointer to array of bytes to be transmitted */
@@ -65,8 +73,9 @@ typedef struct
     
     /*
     * i2c_operation indicates the I2C action to be performed as requested by host
-    * 0x1 --> receive data
+    * 0x1 --> receive data in progress
     * 0x2 --> tramsit data
+    * 0x3 --> receive data Competed
     */
     uint8_t i2c_operation;
     /* I2C transfer structure */
@@ -90,9 +99,9 @@ enum {
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 void i2c_init( i2c_t *obj );
-void i2c_slave_mode( i2c_t *obj, int enable_slave );
+void i2c_slave_mode( i2c_t *obj, osp_bool_t enable_slave );
 int  i2c_slave_receive( i2c_t *obj ); // Wait for next I2C event and find out what is going on
-int  i2c_slave_write( i2c_t *obj, const char *data, int length );
+int  i2c_slave_write( i2c_t *obj, const uint8_t *data, uint16_t length );
 
 #ifdef __cplusplus
 }

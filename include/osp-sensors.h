@@ -1,7 +1,7 @@
 /* Open Sensor Platform Project
  * https://github.com/sensorplatforms/open-sensor-platform
  *
- * Copyright (C) 2013 Sensor Platforms Inc.
+ * Copyright (C) 2015 Audience Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,9 +33,10 @@
 #define SENSOR_SUBTYPE_UNUSED               0   //!< Subtype is not used for the sensor type
 #define SENSOR_SUBTYPE_START                1   //!< Subtype enumeration starts with 1
 #define SENSOR_DEVICE_PRIVATE_BASE          0x10000 //!< Android defined private sensor type base
+#define SENSOR_DEVICE_PRIVATE_MASK          0xFFFF  //!< Private sensor type mask
 
 #define M_PSensorToAndroidBase(type)        ((type) | SENSOR_DEVICE_PRIVATE_BASE)
-#define M_AndroidToPSensorBase(type)        ( type & 0xFFFF)
+#define M_ToBaseSensorEnum(type)            ((type) & SENSOR_DEVICE_PRIVATE_MASK)
 
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
@@ -102,7 +103,7 @@ typedef enum _ASensorType {
     PSENSOR_CONTEXT_CARRY,                  //!< context of device relative to user
     PSENSOR_CONTEXT_POSTURE,                //!< context of user relative to world frame
     PSENSOR_CONTEXT_TRANSPORT,              //!< context of environment relative to world frame
-    PSENSOR_CONTEXT_GESTURE_EVENT,          //!< gesture event such as a double-tap or shake
+    PSENSOR_GESTURE_EVENT,                  //!< gesture event such as a double-tap or shake
     PSENSOR_HEART_RATE,                     //!< heart-rate data
     PSENSOR_CONTEXT_SEGMENT_DETECTOR,       //!< Intermediate results for context calculations
     SYSTEM_REAL_TIME_CLOCK,                 //!< Real time clock used for time stamp
@@ -125,7 +126,7 @@ typedef enum _ASensorType {
     AP_PSENSOR_CONTEXT_CARRY                =  M_PSensorToAndroidBase(PSENSOR_CONTEXT_CARRY),
     AP_PSENSOR_CONTEXT_POSTURE              =  M_PSensorToAndroidBase(PSENSOR_CONTEXT_POSTURE),
     AP_PSENSOR_CONTEXT_TRANSPORT            =  M_PSensorToAndroidBase(PSENSOR_CONTEXT_TRANSPORT),
-    AP_PSENSOR_CONTEXT_GESTURE_EVENT        =  M_PSensorToAndroidBase(PSENSOR_CONTEXT_GESTURE_EVENT),
+    AP_PSENSOR_GESTURE_EVENT                =  M_PSensorToAndroidBase(PSENSOR_GESTURE_EVENT),
     AP_PSENSOR_HEART_RATE                   =  M_PSensorToAndroidBase(PSENSOR_HEART_RATE),
     AP_PSENSOR_CONTEXT_SEGMENT_DETECTOR     =  M_PSensorToAndroidBase(PSENSOR_CONTEXT_SEGMENT_DETECTOR),
     AP_SYSTEM_REAL_TIME_CLOCK               =  M_PSensorToAndroidBase(SYSTEM_REAL_TIME_CLOCK),
@@ -259,3 +260,4 @@ typedef enum _GestureSubType {
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/
+

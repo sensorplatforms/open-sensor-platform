@@ -15,79 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#if !defined (APPMSGSTRUCT_H)
-#define   APPMSGSTRUCT_H
-
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
-#include <stdint.h>
-
-/*-------------------------------------------------------------------------------------------------*\
- |    C O N S T A N T S   &   M A C R O S
-\*-------------------------------------------------------------------------------------------------*/
-
-/*-------------------------------------------------------------------------------------------------*\
- |    T Y P E   D E F I N I T I O N S
-\*-------------------------------------------------------------------------------------------------*/
-#pragma pack(push)  /* push current alignment to stack */
-#pragma pack(4)
-
-/* Generic structure to satisfy most sensor data passing */
-typedef struct MsgSensorDataTag
-{
-    uint64_t    timeStamp;
-    int32_t     X;
-    int32_t     Y;
-    int32_t     Z;
-    int32_t     W;
-    int32_t     HeadingError;
-    int32_t     TiltError;
-} MsgSensorData;
-
-typedef struct MsgSensorBoolTag 
-{
-    uint64_t timeStamp;
-    uint8_t  active;
-} MsgSensorBoolData;
-
-
-typedef MsgSensorData MsgAccelData;
-typedef MsgSensorData MsgMagData;
-typedef MsgSensorData MsgGyroData;
-typedef MsgSensorData MsgQuaternionData;
-typedef MsgSensorData MsgStepData;
-typedef MsgSensorData MsgOrientationData;
-typedef MsgSensorData MsgGenericTriAxisData;
-typedef MsgSensorData MsgPressData;
-typedef MsgSensorBoolData MsgSigMotionData;
-typedef MsgSensorBoolData MsgStepDetData;
-
-typedef struct MsgSensorDataRdyTag
-{
-    uint32_t     timeStamp;
-    uint8_t      sensorId;
-} MsgSensorDataRdy;
-
-typedef struct MsgCDSegmentDataTag
-{
-    uint64_t endTime;
-    uint32_t duration;
-    uint8_t  type;
-} MsgCDSegmentData;
-
-typedef struct MsgSensorControlDataTag
-{
-    uint32_t command;
-    int32_t  data;
-    uint8_t  sensorType;
-} MsgSensorControlData;
-
-typedef struct MsgCtrlReqTag
-{
-    uint8_t    *pRequestPacket;
-    uint8_t    length;
-} MsgCtrlReq;
+#include "Common.h"
 
 
 /*-------------------------------------------------------------------------------------------------*\
@@ -95,16 +26,57 @@ typedef struct MsgCtrlReqTag
 \*-------------------------------------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------------------------------------*\
+ |    P R I V A T E   C O N S T A N T S   &   M A C R O S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P R I V A T E   T Y P E   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------------------------------------*\
- |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
+ |    P R I V A T E     F U N C T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+/****************************************************************************************************
+ * @fn      StaticFunc1
+ *          Helper routine for ???
+ *
+ ***************************************************************************************************/
+void StaticFunc1( void )
+{
+}
+
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C     F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 
-#pragma pack(pop)   /* restore original alignment from stack */
+/****************************************************************************************************
+ * @fn      ???
+ *          <Describe>
+ *
+ * @param   none
+ *
+ * @return  none
+ *
+ * @see     ???
+ ***************************************************************************************************/
+int someFunction ( int some_args )
+{
+}
 
-#endif /* APPMSGSTRUCT_H */
+
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/

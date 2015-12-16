@@ -33,7 +33,7 @@
  |    C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
 #ifdef ANDROID_DEMO
-# define ANDROID_COMM_TASK              I2CSLAVE_COMM_TASK_ID
+# define ANDROID_COMM_TASK              HOST_INTF_TASK_ID
 #endif
 #define ALGORITHM_TASK                  ALGORITHM_TASK_ID
 
@@ -102,8 +102,9 @@
 # define GYRO_SAMPLE_DECIMATE           1
 #else
 # define MAG_DECIMATE_FACTOR            1
-# define ACCEL_SAMPLE_DECIMATE          2
-# define GYRO_SAMPLE_DECIMATE           4
+# define ACCEL_SAMPLE_DECIMATE          1
+# define GYRO_SAMPLE_DECIMATE           1
+#define PRESSURE_SAMPLE_DECIMATE        1
 #endif
 
 #define PRESSURE_SAMPLE_PERIOD          (40)   // in ms
@@ -111,6 +112,25 @@
 #ifdef TRIGGERED_MAG_SAMPLING
 # define MAG_TRIGGER_RATE_DECIMATE      1 //1/2 of Accel ODR
 #endif
+
+#define MAG_SAMPLE_RATE                    25    // in HZ
+#define ACC_SAMPLE_RATE                    63   // 62.5HZ
+#define GYRO_SAMPLE_RATE                   100
+#define PRESSURE_SAMPLE_RATE               25
+#define ON_CHANGE_SAMPLE_RATE              0
+
+#define MAG_SAMPLE_PERIOD                  (1000000000UL / MAG_SAMPLE_RATE)    // in ns
+#define ACC_SAMPLE_PERIOD                  (1000000000UL / ACC_SAMPLE_RATE)
+#define GYRO_SAMPLE_PERIOD                 (1000000000UL / GYRO_SAMPLE_RATE)
+#define PRES_SAMPLE_PERIOD                 (1000000000UL / PRESSURE_SAMPLE_RATE)
+#define ON_CHANGE_SAMPLE_PERIOD            (0)
+
+#define MAG_ACTUAL_SAMPLE_PERIOD           ( MAG_SAMPLE_PERIOD   *  MAG_DECIMATE_FACTOR       )
+#define ACC_ACTUAL_SAMPLE_PERIOD           ( ACC_SAMPLE_PERIOD   *  ACCEL_SAMPLE_DECIMATE     )
+#define GYRO_ACTUAL_SAMPLE_PERIOD          ( GYRO_SAMPLE_PERIOD  *  GYRO_SAMPLE_DECIMATE      )
+#define PRES_ACTUAL_SAMPLE_PERIOD          ( PRES_SAMPLE_PERIOD  *  PRESSURE_SAMPLE_DECIMATE  )
+
+
 
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S

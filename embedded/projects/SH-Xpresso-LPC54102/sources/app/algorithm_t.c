@@ -55,7 +55,7 @@ static void CalibrationUpdateCallback( InputSensorHandle_t handle, void *cal,
 #define ACCEL_RANGE_MAX             TOFIX_EXTENDED(4.0f * M_SI_EARTH_GRAVITY)
 #define ACCEL_NOISE                 TOFIX_PRECISE(1.0f/M_SI_EARTH_GRAVITY)
 
-// Settting for BMC150 magnetometer
+// Setting for BMC150 magnetometer
 #define MAG_MAX_1_3G_XY             (1300.0f)    //uT
 #define MAG_SCALING_XY              TOFIX_PRECISE(0.305f)  //uT/LSB
 #define MAG_MAX_2_5G_Z              (2500.0f)    //uT
@@ -284,11 +284,11 @@ __inline void ExitCriticalSection(void)
 static void GenericDataResultCallback(ResultHandle_t resultHandle,
                                       void* pOutput)
 {
-    char outBuff[DPRINTF_BUFF_SIZE];
     ASensorType_t sensorType;
     enum MessageIdTag msg_type;
     MessageBuffer *pSample = NULLP;
     osp_bool_t sendMessage = TRUE;
+    char *lipsCode;
 
     // A callback with NULL handle should never happen but check it anyway
     if ( resultHandle == NULL ) {
@@ -300,7 +300,6 @@ static void GenericDataResultCallback(ResultHandle_t resultHandle,
 
     // Android sensor result
     switch (sensorType) {
-
     case SENSOR_ACCELEROMETER:
     {
         Android_TriAxisPreciseData_t* pData =
@@ -316,9 +315,9 @@ static void GenericDataResultCallback(ResultHandle_t resultHandle,
         pSample->msg.msgAccelData.timeStamp = pData->TimeStamp;
 
         if ( g_logging & 0x40 ) {
-            snprintf(outBuff, DPRINTF_BUFF_SIZE, "A, %6.3f, %03.4f, %03.4f, %03.4f",
-                    TOFLT_TIME(pData->TimeStamp), TOFLT_PRECISE(pData->X),
-            TOFLT_PRECISE(pData->Y), TOFLT_PRECISE(pData->Z));
+            Print_LIPS("A, %6.3f, %3.4f, %3.4f, %3.4f",
+                TOFLT_TIME(pData->TimeStamp), TOFLT_PRECISE(pData->X),
+                TOFLT_PRECISE(pData->Y), TOFLT_PRECISE(pData->Z));
         }
         break;
     }
@@ -338,9 +337,9 @@ static void GenericDataResultCallback(ResultHandle_t resultHandle,
         pSample->msg.msgMagData.timeStamp = pData->TimeStamp;
 
         if (g_logging & 0x40) {
-            snprintf(outBuff, DPRINTF_BUFF_SIZE,"M, %6.3f, %03.4f, %03.4f, %03.4f",
-                    TOFLT_TIME(pData->TimeStamp), TOFLT_EXTENDED(pData->X),
-            TOFLT_EXTENDED(pData->Y), TOFLT_EXTENDED(pData->Z));
+            Print_LIPS("M, %6.3f, %3.4f, %3.4f, %3.4f",
+                TOFLT_TIME(pData->TimeStamp), TOFLT_EXTENDED(pData->X),
+                TOFLT_EXTENDED(pData->Y), TOFLT_EXTENDED(pData->Z));
         }
         break;
     }
@@ -360,9 +359,9 @@ static void GenericDataResultCallback(ResultHandle_t resultHandle,
         pSample->msg.msgGyroData.timeStamp = pData->TimeStamp;
 
         if (g_logging & 0x40) {
-            snprintf(outBuff, DPRINTF_BUFF_SIZE,"G, %6.3f, %03.4f, %03.4f, %03.4f",
-                    TOFLT_TIME(pData->TimeStamp), TOFLT_PRECISE(pData->X),
-            TOFLT_PRECISE(pData->Y), TOFLT_PRECISE(pData->Z));
+            Print_LIPS("G, %6.3f, %3.4f, %3.4f, %3.4f",
+                TOFLT_TIME(pData->TimeStamp), TOFLT_PRECISE(pData->X),
+                TOFLT_PRECISE(pData->Y), TOFLT_PRECISE(pData->Z));
         }
         break;
     }
@@ -377,13 +376,17 @@ static void GenericDataResultCallback(ResultHandle_t resultHandle,
         switch(sensorType) {
         case SENSOR_GEOMAGNETIC_ROTATION_VECTOR:
             msg_type = MSG_GEO_QUATERNION_DATA;
-            break;
+            lipsCode = "GC";
+
         case SENSOR_GAME_ROTATION_VECTOR:
             msg_type = MSG_GAME_QUATERNION_DATA;
+            lipsCode = "GV";
             break;
+
         case SENSOR_ROTATION_VECTOR:
         default:
             msg_type = MSG_QUATERNION_DATA;
+            lipsCode = "Q";
             break;
         }
 
@@ -399,31 +402,17 @@ static void GenericDataResultCallback(ResultHandle_t resultHandle,
         pSample->msg.msgQuaternionData.TiltError = pRotVecOut->TiltErrorEst;
         pSample->msg.msgQuaternionData.timeStamp = pRotVecOut->TimeStamp;
 
-
         if (g_logging & 0x40 ) {
-            int32_t offset;
-            switch(sensorType) {
-            case SENSOR_ROTATION_VECTOR:
-                offset = snprintf(outBuff, DPRINTF_BUFF_SIZE, "Q, ");
-                break;
-            case SENSOR_GEOMAGNETIC_ROTATION_VECTOR:
-                offset = snprintf(outBuff, DPRINTF_BUFF_SIZE, "GC, ");
-                break;
-             default:
-                offset = snprintf(outBuff, DPRINTF_BUFF_SIZE, "GV, ");
-                break;
-            }
-
-            snprintf(&outBuff[offset], DPRINTF_BUFF_SIZE - offset,
-                    "%6.3f, %.6f, %.6f, %.6f, %.6f",
-                                TOFLT_TIME(pRotVecOut->TimeStamp),
-                                TOFLT_PRECISE(pRotVecOut->W),
-                                TOFLT_PRECISE(pRotVecOut->X),
-                                TOFLT_PRECISE(pRotVecOut->Y),
-                                TOFLT_PRECISE(pRotVecOut->Z));
+            Print_LIPS("%s, %6.3f, %.6f, %.6f, %.6f, %.6f", lipsCode,
+                TOFLT_TIME(pRotVecOut->TimeStamp),
+                TOFLT_PRECISE(pRotVecOut->W),
+                TOFLT_PRECISE(pRotVecOut->X),
+                TOFLT_PRECISE(pRotVecOut->Y),
+                TOFLT_PRECISE(pRotVecOut->Z));
         }
         break;
     }
+
     case SENSOR_ORIENTATION:
     {
         Android_OrientationResultData_t *pOrientOut =
@@ -438,11 +427,11 @@ static void GenericDataResultCallback(ResultHandle_t resultHandle,
         pSample->msg.msgOrientationData.timeStamp = pOrientOut->TimeStamp;
 
         if ( g_logging & 0x40 ) {
-            snprintf(outBuff, DPRINTF_BUFF_SIZE,"I, %6.3f, %3.4f, %3.4f, %3.4f",
-                        TOFLT_TIME(pOrientOut->TimeStamp),
-                        TOFLT_EXTENDED(pOrientOut->Yaw),
-                        TOFLT_EXTENDED(pOrientOut->Pitch),
-                        TOFLT_EXTENDED(pOrientOut->Roll));
+            Print_LIPS("I, %6.3f, %3.4f, %3.4f, %3.4f",
+                TOFLT_TIME(pOrientOut->TimeStamp),
+                TOFLT_EXTENDED(pOrientOut->Yaw),
+                TOFLT_EXTENDED(pOrientOut->Pitch),
+                TOFLT_EXTENDED(pOrientOut->Roll));
         }
         break;
     }
@@ -455,8 +444,10 @@ static void GenericDataResultCallback(ResultHandle_t resultHandle,
 
         if (sensorType == SENSOR_GRAVITY) {
             msg_type = MSG_GRAVITY_DATA;
+            lipsCode = "GR";
         } else {
             msg_type = MSG_LINEAR_ACCELERATION_DATA;
+            lipsCode = "LN";
         }
 
         ASF_assert(ASFCreateMessage(msg_type,
@@ -469,20 +460,11 @@ static void GenericDataResultCallback(ResultHandle_t resultHandle,
         pSample->msg.msgGravityData.timeStamp = pTriAxisOut->TimeStamp;
 
         if ( g_logging & 0x40 ) {
-            if ( sensorType == SENSOR_GRAVITY ) {
-                snprintf(outBuff, DPRINTF_BUFF_SIZE,"GR: %6.3f, %3.4f, %3.4f, %3.4f",
-                        TOFLT_TIME(pTriAxisOut->TimeStamp),
-                        TOFLT_PRECISE(pTriAxisOut->X),
-                        TOFLT_PRECISE(pTriAxisOut->Y),
-                        TOFLT_PRECISE(pTriAxisOut->Z));
-            }
-            if ( sensorType == SENSOR_LINEAR_ACCELERATION ) {
-                snprintf(outBuff, DPRINTF_BUFF_SIZE,"LN: %6.3f, %3.4f, %3.4f, %3.4f",
-                        TOFLT_TIME(pTriAxisOut->TimeStamp),
-                        TOFLT_PRECISE(pTriAxisOut->X),
-                        TOFLT_PRECISE(pTriAxisOut->Y),
-                        TOFLT_PRECISE(pTriAxisOut->Z));
-            }
+            Print_LIPS("%s, %6.3f, %3.4f, %3.4f, %3.4f", lipsCode,
+                TOFLT_TIME(pTriAxisOut->TimeStamp),
+                TOFLT_PRECISE(pTriAxisOut->X),
+                TOFLT_PRECISE(pTriAxisOut->Y),
+                TOFLT_PRECISE(pTriAxisOut->Z));
         }
 
         break;
@@ -502,11 +484,11 @@ static void GenericDataResultCallback(ResultHandle_t resultHandle,
         pSample->msg.msgMagData.timeStamp = pData->TimeStamp;
 
         if (g_logging & 0x40) {
-            snprintf(outBuff, DPRINTF_BUFF_SIZE,"RM, %6.3f, %03.4f, %03.4f, %03.4f",
-                        TOFLT_TIME(pData->TimeStamp),
-                        TOFLT_EXTENDED(pData->X),
-                        TOFLT_EXTENDED(pData->Y),
-                        TOFLT_EXTENDED(pData->Z));
+            Print_LIPS("RM, %6.3f, %3.4f, %3.4f, %3.4f",
+                TOFLT_TIME(pData->TimeStamp),
+                TOFLT_EXTENDED(pData->X),
+                TOFLT_EXTENDED(pData->Y),
+                TOFLT_EXTENDED(pData->Z));
         }
         break;
     }
@@ -525,11 +507,11 @@ static void GenericDataResultCallback(ResultHandle_t resultHandle,
         pSample->msg.msgGyroData.timeStamp = pData->TimeStamp;
 
         if (g_logging & 0x40) {
-            snprintf(outBuff, DPRINTF_BUFF_SIZE,"RG, %6.3f, %03.4f, %03.4f, %03.4f",
-                        TOFLT_TIME(pData->TimeStamp),
-                        TOFLT_EXTENDED(pData->X),
-                        TOFLT_EXTENDED(pData->Y),
-                        TOFLT_EXTENDED(pData->Z));
+            Print_LIPS("RG, %6.3f, %3.4f, %3.4f, %3.4f",
+                TOFLT_TIME(pData->TimeStamp),
+                TOFLT_EXTENDED(pData->X),
+                TOFLT_EXTENDED(pData->Y),
+                TOFLT_EXTENDED(pData->Z));
         }
         break;
     }
@@ -545,9 +527,9 @@ static void GenericDataResultCallback(ResultHandle_t resultHandle,
         pSample->msg.msgSigMotionData.active = pData->data;
         pSample->msg.msgSigMotionData.timeStamp = pData->TimeStamp;
 
-        snprintf(outBuff, DPRINTF_BUFF_SIZE,"SM,%+03.4f,%d",
-                        TOFLT_TIME(pData->TimeStamp),
-                        pData->data);
+        Print_LIPS("SM, %6.3f, %d",
+            TOFLT_TIME(pData->TimeStamp),
+            pData->data);
        break;
     }
 
@@ -564,9 +546,7 @@ static void GenericDataResultCallback(ResultHandle_t resultHandle,
         pSample->msg.msgStepCountData.Z = 0;       // not use
         pSample->msg.msgStepCountData.timeStamp = pData->TimeStamp;
 
-        snprintf(outBuff, DPRINTF_BUFF_SIZE,"SC,%+03.4f,%d,0",
-                        TOFLT_TIME(pData->TimeStamp),
-                        pData->StepCount);
+        Print_LIPS("SC, %6.3f, %d, 0", TOFLT_TIME(pData->TimeStamp), pData->StepCount);
         break;
     }
 
@@ -581,10 +561,10 @@ static void GenericDataResultCallback(ResultHandle_t resultHandle,
         pSample->msg.msgStepDetData.active = TRUE;
         pSample->msg.msgStepDetData.timeStamp = pData->TimeStamp;
 
-        snprintf(outBuff, DPRINTF_BUFF_SIZE,"SD,%+03.4f",
-                    TOFLT_TIME(pData->TimeStamp));
+        Print_LIPS("SD, %6.3f", TOFLT_TIME(pData->TimeStamp));
         break;
     }
+
     case AP_PSENSOR_ACCELEROMETER_UNCALIBRATED:
     {
         Android_UncalibratedTriAxisPreciseData_t *pData =
@@ -598,13 +578,12 @@ static void GenericDataResultCallback(ResultHandle_t resultHandle,
         pSample->msg.msgAccelData.Z = pData->Z;
         pSample->msg.msgAccelData.timeStamp = pData->TimeStamp;
 
-
         if (g_logging & 0x40) {
-            snprintf(outBuff, DPRINTF_BUFF_SIZE,"RA, %6.3f, %03.4f, %03.4f, %03.4f",
-                    TOFLT_TIME(pData->TimeStamp),
-                    TOFLT_PRECISE(pData->X),
-                    TOFLT_PRECISE(pData->Y),
-                    TOFLT_PRECISE(pData->Z));
+            Print_LIPS("RA, %6.3f, %3.4f, %3.4f, %3.4f",
+                TOFLT_TIME(pData->TimeStamp),
+                TOFLT_PRECISE(pData->X),
+                TOFLT_PRECISE(pData->Y),
+                TOFLT_PRECISE(pData->Z));
         }
         break;
     }
@@ -617,10 +596,7 @@ static void GenericDataResultCallback(ResultHandle_t resultHandle,
 
     /* Now send the created message to the I2C slave task to route to host.*/
     if ( sendMessage ) {
-       if (!(ASFSendMessage(I2CSLAVE_COMM_TASK_ID, pSample) == ASF_OK)) {
-            D0_printf("Message Send Error!\r\n");
-        }
-        if ( g_logging & 0x40) Print_LIPS("%s", outBuff);
+        ASF_assert( ASFSendMessage(HOST_INTF_TASK_ID, pSample) == ASF_OK );
     }
 }
 
@@ -655,7 +631,7 @@ static void CalibrationUpdateCallback( InputSensorHandle_t handle, void *cal,
         // Now save gyroscope calibration to non-volatile memory
         // D0_printf("Update gyro calibration \r\n");
     } else {
-        return;    //un-recognised handle
+        return;    //un-recognized handle
     }
 }
 
@@ -803,7 +779,7 @@ ASF_TASK  void AlgorithmTask (ASF_TASK_ARG)
 {
     MessageBuffer *rcvMsg = NULLP;
     OSP_STATUS_t OSP_Status;
-    static uint32_t mycount = 0;
+    uint32_t mycount = 0;
 
 
     OSP_GetLibraryVersion(&version);
@@ -823,11 +799,11 @@ ASF_TASK  void AlgorithmTask (ASF_TASK_ARG)
     OSP_Status = OSP_RegisterInputSensor(&_GyroSensDesc, &_GyroHandle);
     ASF_assert_msg(OSP_STATUS_OK == OSP_Status, "OSP_RegisterInputSensor (gyro) Failed");
 
-
-    //SENSOR_SUBSCRIBE(SENSOR_ORIENTATION);
-    //SENSOR_SUBSCRIBE(SENSOR_ROTATION_VECTOR);
-
 #if 0
+
+    SENSOR_SUBSCRIBE(SENSOR_ORIENTATION);
+    SENSOR_SUBSCRIBE(SENSOR_ROTATION_VECTOR);
+
 
     SENSOR_SUBSCRIBE(SENSOR_STEP_COUNTER);
 
@@ -1023,7 +999,7 @@ OSP_STATUS_t Algorithm_SubscribeSensor( ASensorType_t sensor)
 
     // Now subscribe the sensor result
     if ( IsPrivateAndroidSensor(sensor) ) {
-        ASensorType_t PSensor =  (ASensorType_t)M_AndroidToPSensorBase(sensor);
+        ASensorType_t PSensor =  (ASensorType_t)M_ToBaseSensorEnum(sensor);
         status = OSP_SubscribeSensorResult(pResultDesc, &_outPSensorHandles[PSensor]);
     } else {
         status = OSP_SubscribeSensorResult(pResultDesc, &_outSensorHandles[sensor]);
@@ -1054,7 +1030,7 @@ OSP_STATUS_t Algorithm_UnsubscribeSensor( ASensorType_t sensor)
 
     if ( IsPrivateAndroidSensor(sensor) ) {
         // Private Android sensor
-        ASensorType_t PSensor =  (ASensorType_t)M_AndroidToPSensorBase(sensor);
+        ASensorType_t PSensor =  (ASensorType_t)M_ToBaseSensorEnum(sensor);
         if ( _outPSensorHandles[PSensor] != NULL ) {
            status =  OSP_UnsubscribeSensorResult(_outPSensorHandles[PSensor]);
            _outPSensorHandles[PSensor] = NULL;

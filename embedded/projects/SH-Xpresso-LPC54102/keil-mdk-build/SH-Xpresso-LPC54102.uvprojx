@@ -363,7 +363,7 @@
             <wLevel>2</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
-            <uC99>0</uC99>
+            <uC99>1</uC99>
             <useXO>0</useXO>
             <v6Lang>0</v6Lang>
             <v6LangP>0</v6LangP>
@@ -649,11 +649,6 @@
               <FilePath>..\sources\app\hostif_i2c.c</FilePath>
             </File>
             <File>
-              <FileName>i2c_slavecomm_t.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\sources\app\i2c_slavecomm_t.c</FilePath>
-            </File>
-            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sources\app\main.c</FilePath>
@@ -667,6 +662,11 @@
               <FileName>taskinit_user.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sources\app\taskinit_user.c</FilePath>
+            </File>
+            <File>
+              <FileName>host_interface_t.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sources\app\host_interface_t.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -759,9 +759,34 @@
               <FilePath>..\..\..\common\hostinterface\Queue.c</FilePath>
             </File>
             <File>
-              <FileName>SensorPackets.c</FileName>
+              <FileName>BatchManager.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\common\hostinterface\SensorPackets.c</FilePath>
+              <FilePath>..\..\..\common\hostinterface\BatchManager.c</FilePath>
+            </File>
+            <File>
+              <FileName>BatchState.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\BatchState.c</FilePath>
+            </File>
+            <File>
+              <FileName>ConfigManager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\ConfigManager.c</FilePath>
+            </File>
+            <File>
+              <FileName>SensorPackets_Common.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\SensorPackets_Common.c</FilePath>
+            </File>
+            <File>
+              <FileName>SensorPackets_Format.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\SensorPackets_Format.c</FilePath>
+            </File>
+            <File>
+              <FileName>SensorPackets_Parse.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\SensorPackets_Parse.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1127,7 +1152,7 @@
             <wLevel>2</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
-            <uC99>0</uC99>
+            <uC99>1</uC99>
             <useXO>0</useXO>
             <v6Lang>0</v6Lang>
             <v6LangP>0</v6LangP>
@@ -1413,11 +1438,6 @@
               <FilePath>..\sources\app\hostif_i2c.c</FilePath>
             </File>
             <File>
-              <FileName>i2c_slavecomm_t.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\sources\app\i2c_slavecomm_t.c</FilePath>
-            </File>
-            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sources\app\main.c</FilePath>
@@ -1431,6 +1451,11 @@
               <FileName>taskinit_user.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sources\app\taskinit_user.c</FilePath>
+            </File>
+            <File>
+              <FileName>host_interface_t.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sources\app\host_interface_t.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1523,9 +1548,34 @@
               <FilePath>..\..\..\common\hostinterface\Queue.c</FilePath>
             </File>
             <File>
-              <FileName>SensorPackets.c</FileName>
+              <FileName>BatchManager.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\common\hostinterface\SensorPackets.c</FilePath>
+              <FilePath>..\..\..\common\hostinterface\BatchManager.c</FilePath>
+            </File>
+            <File>
+              <FileName>BatchState.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\BatchState.c</FilePath>
+            </File>
+            <File>
+              <FileName>ConfigManager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\ConfigManager.c</FilePath>
+            </File>
+            <File>
+              <FileName>SensorPackets_Common.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\SensorPackets_Common.c</FilePath>
+            </File>
+            <File>
+              <FileName>SensorPackets_Format.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\SensorPackets_Format.c</FilePath>
+            </File>
+            <File>
+              <FileName>SensorPackets_Parse.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\SensorPackets_Parse.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1777,7 +1827,7 @@
             <Ra2Chk>0</Ra2Chk>
             <Ra3Chk>0</Ra3Chk>
             <Im1Chk>1</Im1Chk>
-            <Im2Chk>0</Im2Chk>
+            <Im2Chk>1</Im2Chk>
             <OnChipMemories>
               <Ocm1>
                 <Type>0</Type>
@@ -1891,7 +1941,7 @@
             <wLevel>2</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
-            <uC99>0</uC99>
+            <uC99>1</uC99>
             <useXO>0</useXO>
             <v6Lang>0</v6Lang>
             <v6LangP>0</v6LangP>
@@ -2177,11 +2227,6 @@
               <FilePath>..\sources\app\hostif_i2c.c</FilePath>
             </File>
             <File>
-              <FileName>i2c_slavecomm_t.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\sources\app\i2c_slavecomm_t.c</FilePath>
-            </File>
-            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sources\app\main.c</FilePath>
@@ -2195,6 +2240,11 @@
               <FileName>taskinit_user.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sources\app\taskinit_user.c</FilePath>
+            </File>
+            <File>
+              <FileName>host_interface_t.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sources\app\host_interface_t.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2287,9 +2337,34 @@
               <FilePath>..\..\..\common\hostinterface\Queue.c</FilePath>
             </File>
             <File>
-              <FileName>SensorPackets.c</FileName>
+              <FileName>BatchManager.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\common\hostinterface\SensorPackets.c</FilePath>
+              <FilePath>..\..\..\common\hostinterface\BatchManager.c</FilePath>
+            </File>
+            <File>
+              <FileName>BatchState.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\BatchState.c</FilePath>
+            </File>
+            <File>
+              <FileName>ConfigManager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\ConfigManager.c</FilePath>
+            </File>
+            <File>
+              <FileName>SensorPackets_Common.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\SensorPackets_Common.c</FilePath>
+            </File>
+            <File>
+              <FileName>SensorPackets_Format.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\SensorPackets_Format.c</FilePath>
+            </File>
+            <File>
+              <FileName>SensorPackets_Parse.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\SensorPackets_Parse.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2541,7 +2616,7 @@
             <Ra2Chk>0</Ra2Chk>
             <Ra3Chk>0</Ra3Chk>
             <Im1Chk>1</Im1Chk>
-            <Im2Chk>0</Im2Chk>
+            <Im2Chk>1</Im2Chk>
             <OnChipMemories>
               <Ocm1>
                 <Type>0</Type>
@@ -2655,7 +2730,7 @@
             <wLevel>2</wLevel>
             <uThumb>0</uThumb>
             <uSurpInc>0</uSurpInc>
-            <uC99>0</uC99>
+            <uC99>1</uC99>
             <useXO>0</useXO>
             <v6Lang>0</v6Lang>
             <v6LangP>0</v6LangP>
@@ -2941,11 +3016,6 @@
               <FilePath>..\sources\app\hostif_i2c.c</FilePath>
             </File>
             <File>
-              <FileName>i2c_slavecomm_t.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\sources\app\i2c_slavecomm_t.c</FilePath>
-            </File>
-            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sources\app\main.c</FilePath>
@@ -2959,6 +3029,11 @@
               <FileName>taskinit_user.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\sources\app\taskinit_user.c</FilePath>
+            </File>
+            <File>
+              <FileName>host_interface_t.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\sources\app\host_interface_t.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -3051,9 +3126,34 @@
               <FilePath>..\..\..\common\hostinterface\Queue.c</FilePath>
             </File>
             <File>
-              <FileName>SensorPackets.c</FileName>
+              <FileName>BatchManager.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\common\hostinterface\SensorPackets.c</FilePath>
+              <FilePath>..\..\..\common\hostinterface\BatchManager.c</FilePath>
+            </File>
+            <File>
+              <FileName>BatchState.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\BatchState.c</FilePath>
+            </File>
+            <File>
+              <FileName>ConfigManager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\ConfigManager.c</FilePath>
+            </File>
+            <File>
+              <FileName>SensorPackets_Common.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\SensorPackets_Common.c</FilePath>
+            </File>
+            <File>
+              <FileName>SensorPackets_Format.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\SensorPackets_Format.c</FilePath>
+            </File>
+            <File>
+              <FileName>SensorPackets_Parse.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\common\hostinterface\SensorPackets_Parse.c</FilePath>
             </File>
           </Files>
         </Group>
