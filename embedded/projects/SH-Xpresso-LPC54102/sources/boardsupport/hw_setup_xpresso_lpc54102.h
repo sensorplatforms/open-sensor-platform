@@ -36,6 +36,7 @@
 
 /* Pin handling macros for GPIO */
 #define NC (uint32_t)0xFFFFFFFF     //Indicates pin is not assigned
+/* Port and pin number are encoded into a 32-bit word with port number as upper nibble and pin number as lower nibble */
 #define ENCODE_PORT_PIN(port,pin) (PinName)(((uint32_t)port << 16) + (uint16_t)pin)
 #define DECODE_PORT(X) (((uint32_t)(X) >> 16) & 0xF)
 #define DECODE_PIN(X)  ((uint32_t)(X) & 0xFFFF)

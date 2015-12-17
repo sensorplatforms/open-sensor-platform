@@ -796,7 +796,7 @@
             <File>
               <FileName>Driver_GPIO.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\..\embedded\Drivers\CMSIS\Device\NXP\LPC5410x\Driver_GPIO.c</FilePath>
+              <FilePath>..\..\..\..\embedded\Drivers\LPC5410x-CM4\CMSIS\Driver_GPIO.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1595,7 +1595,7 @@
             <File>
               <FileName>Driver_GPIO.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\..\embedded\Drivers\CMSIS\Device\NXP\LPC5410x\Driver_GPIO.c</FilePath>
+              <FilePath>..\..\..\..\embedded\Drivers\LPC5410x-CM4\CMSIS\Driver_GPIO.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2394,7 +2394,7 @@
             <File>
               <FileName>Driver_GPIO.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\..\embedded\Drivers\CMSIS\Device\NXP\LPC5410x\Driver_GPIO.c</FilePath>
+              <FilePath>..\..\..\..\embedded\Drivers\LPC5410x-CM4\CMSIS\Driver_GPIO.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -3193,7 +3193,7 @@
             <File>
               <FileName>Driver_GPIO.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\..\..\embedded\Drivers\CMSIS\Device\NXP\LPC5410x\Driver_GPIO.c</FilePath>
+              <FilePath>..\..\..\..\embedded\Drivers\LPC5410x-CM4\CMSIS\Driver_GPIO.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -157,9 +157,6 @@ void SystemGPIOConfig( void )
 void SystemInterruptConfig( void )
 {
     NVIC_SetPriorityGrouping( SYSTEM_INTERRUPT_PRIORITY_GRP );
-
-    /* Enable Pin interrupt sources */
-    Chip_PININT_Init(NULL); /* Note: input arg is ignored! */
 }
 
 

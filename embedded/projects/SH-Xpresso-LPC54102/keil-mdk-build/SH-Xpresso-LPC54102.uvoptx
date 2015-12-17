@@ -1378,7 +1378,7 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\..\..\..\embedded\Drivers\CMSIS\Device\NXP\LPC5410x\Driver_GPIO.c</PathWithFileName>
+      <PathWithFileName>..\..\..\..\embedded\Drivers\LPC5410x-CM4\CMSIS\Driver_GPIO.c</PathWithFileName>
       <FilenameWithoutPath>Driver_GPIO.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>

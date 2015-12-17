@@ -30,21 +30,10 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-/* Private structure for GPIO */
-typedef struct _GPIO_T
-{
-    LPC_GPIO_T    *base;    /* GPIO Base address */
-    uint16_t       port;    /* Port number */
-    uint16_t       pin;     /* Pin number */
-    uint8_t        id;      /* Pin Interrupt Select Value */
-} GPIO_T;
 
 /*-------------------------------------------------------------------------------------------------*\
  |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-/* Private argument */
-static GPIO_T gpio_ID = { LPC_GPIO, 0, 0, 0 };
-
 /* Driver Version */
 static const ARM_DRIVER_VERSION DriverVersion = {
     OSP_GPIO_API_VERSION,
@@ -58,46 +47,33 @@ static const ARM_DRIVER_VERSION DriverVersion = {
  * @fn      OSP_GPIO_GetVersion
  *          Get driver version.
  *
- * @param   gpio_priv    Private object containing GPIO Base address, Interrupt pin select value (id) and Port-Pin numbers
+ * @param   gpio_priv   Private argument (Unused)
  *
  * @return  ARM_DRIVER_VERSION
  *
  ***************************************************************************************************/
-static ARM_DRIVER_VERSION OSP_GPIO_GetVersion( GPIO_T *gpio_priv )
+static ARM_DRIVER_VERSION OSP_GPIO_GetVersion( void *gpio_priv )
 {
     return DriverVersion;
-}
-
-/****************************************************************************************************
- * @fn      OSP_GPIO_AINConfig
- *          Configures all IOs as AIN to reduce the power consumption.
- *
- * @param   none
- *
- * @return  none
- *
- ***************************************************************************************************/
-static void OSP_GPIO_AINConfig( void )
-{
-    return;
 }
 
 /****************************************************************************************************
  * @fn      OSP_GPIO_Initialize
  *          Initializes the GPIO Module and Hardware
  *
- * @param   gpio_priv    Private object containing GPIO Base address, Interrupt pin select value (id) and Port-Pin numbers
+ * @param   gpio_priv   Private argument (Unused)
  *
  * @return  Return code: On success return ARM_DRIVER_OK
  *
  ***************************************************************************************************/
-static int32_t OSP_GPIO_Initialize( GPIO_T *gpio_priv )
+static int32_t OSP_GPIO_Initialize( void *gpio_priv )
 {
-    /* Set all GPIOs to analog input mode to begin with */
-    OSP_GPIO_AINConfig();
-
     /* Enable the peripheral clock in the PMC */
-    Chip_GPIO_Init( gpio_priv->base );
+    Chip_GPIO_Init( LPC_GPIO );
+
+    /* Enable Pin interrupt sources */
+    Chip_PININT_Init( NULL ); /* Note: input arg is ignored! */
+
     return ARM_DRIVER_OK;
 }
 
@@ -105,17 +81,17 @@ static int32_t OSP_GPIO_Initialize( GPIO_T *gpio_priv )
  * @fn      OSP_GPIO_Uninitialize
  *          Unitialize the GPIO Module
  *
- * @param   gpio_priv    Private object containing GPIO Base address, Interrupt pin select value (id) and Port-Pin numbers
+ * @param   gpio_priv   Private argument (Unused)
  *
  * @return  Return code: On success return ARM_DRIVER_OK
  *
  ***************************************************************************************************/
-static int32_t OSP_GPIO_Uninitialize( GPIO_T *gpio_priv )
+static int32_t OSP_GPIO_Uninitialize( void *gpio_priv )
 {
     /* Uninitialize GPIO */
-    Chip_GPIO_DeInit( gpio_priv->base );
+    Chip_GPIO_DeInit( LPC_GPIO );
 
-    Chip_PININT_DeInit( LPC_PININT );
+    Chip_PININT_DeInit( NULL ); /* Note: input arg is ignored! */
     return ARM_DRIVER_OK;
 }
 
@@ -124,21 +100,21 @@ static int32_t OSP_GPIO_Uninitialize( GPIO_T *gpio_priv )
  *          Control the GPIO's power state
  *
  * @param   state       Target GPIO Power state
- * @param   gpio_priv    Private object containing GPIO Base address, Interrupt pin select value (id) and Port-Pin numbers
+ * @param   gpio_priv   Private argument (Unused)
  *
  * @return  Return code: On success return ARM_DRIVER_OK
  *
  ***************************************************************************************************/
-static int32_t OSP_GPIO_PowerControl( ARM_POWER_STATE state, GPIO_T *gpio_priv )
+static int32_t OSP_GPIO_PowerControl( ARM_POWER_STATE state, void *gpio_priv )
 {
     switch ( state )
     {
         case ARM_POWER_OFF:
-            Chip_PININT_ClearIntStatus( LPC_PININT, gpio_priv->pin );
+            Chip_GPIO_DeInit( LPC_GPIO );
             break;
 
         case ARM_POWER_FULL:
-            Chip_INMUX_PinIntSel( gpio_priv->id, gpio_priv->port, gpio_priv->pin );
+            Chip_GPIO_Init( LPC_GPIO );
             break;
 
         default:
@@ -151,14 +127,14 @@ static int32_t OSP_GPIO_PowerControl( ARM_POWER_STATE state, GPIO_T *gpio_priv )
  * @fn      OSP_GPIO_SetDirection
  *          Set the direction of GPIO pin
  *
- * @param   pin     Port pin number
- * @param   dir     Direction (GPIO_DIR_INPUT or GPIO_DIR_OUTPUT)
- * @param   gpio_priv    Private object containing GPIO Base address, Interrupt pin select value (id) and Port-Pin numbers
+ * @param   pin         Port pin number (Port and pin numbers encoded using ENCODE_PORT_PIN)
+ * @param   dir         Direction (GPIO_DIR_INPUT or GPIO_DIR_OUTPUT)
+ * @param   gpio_priv   Private argument (Unused)
  *
  * @return  Return code: On success return ARM_DRIVER_OK
  *
  ***************************************************************************************************/
-static int32_t OSP_GPIO_SetDirection( uint32_t pin, uint32_t dir, GPIO_T *gpio_priv )
+static int32_t OSP_GPIO_SetDirection( uint32_t pin, uint32_t dir, void *gpio_priv )
 {
     uint32_t port_num = 0, pin_num = 0;
 
@@ -167,8 +143,8 @@ static int32_t OSP_GPIO_SetDirection( uint32_t pin, uint32_t dir, GPIO_T *gpio_p
     port_num = DECODE_PORT( pin );
     pin_num  = DECODE_PIN( pin );
 
-    dir  ? ( gpio_priv->base->DIR[port_num] |=  ( 1UL << pin_num) ) : \
-         ( gpio_priv->base->DIR[port_num] &= ~( 1UL << pin_num) );
+    ( dir == ARM_GPIO_DIR_OUTPUT ) ? Chip_GPIO_SetPinDIROutput( LPC_GPIO, port_num, pin_num ) : \
+                                     Chip_GPIO_SetPinDIRInput( LPC_GPIO, port_num, pin_num );
 
     return ARM_DRIVER_OK;
 }
@@ -177,30 +153,48 @@ static int32_t OSP_GPIO_SetDirection( uint32_t pin, uint32_t dir, GPIO_T *gpio_p
  * @fn      OSP_GPIO_SetTrigger
  *          Set the trigger mode for GPIO
  *
- * @param   pin         Pin Interrupt Channel
+ * @param   pin         Port pin number (Port and pin numbers encoded using ENCODE_PORT_PIN)
  * @param   trigger     Trigger mode
- * @param   gpio_priv    Private object containing GPIO Base address, Interrupt pin select value (id) and Port-Pin numbers
+ * @param   gpio_priv   Private argument (Unused)
  *
  * @return  Return code: On success return ARM_DRIVER_OK
  *
  ***************************************************************************************************/
-static int32_t OSP_GPIO_SetTrigger( uint32_t pin, uint32_t trigger, GPIO_T *gpio_priv )
+static int32_t OSP_GPIO_SetTrigger( uint32_t pin, uint32_t trigger, void *gpio_priv )
 {
+    uint32_t pinInterruptChannel = 0;
+
+    switch (DECODE_PIN(pin))
+    {
+        case ACCEL_INT_PIN:
+            pinInterruptChannel = ACCEL_PINT_CH;
+            break;
+        case MAG_INT_PIN:
+            pinInterruptChannel = MAG_PINT_CH;
+            break;
+        case GYRO_INT_PIN:
+            pinInterruptChannel = GYRO_PINT_CH;
+            break;
+        default:
+            return ARM_DRIVER_ERROR_UNSUPPORTED;
+    }
+
     if ( trigger & (1 << ARM_GPIO_TRIGGER_EDGE) )
     {
-        Chip_PININT_SetPinModeEdge( LPC_PININT, pin ); /* edge sensitive */
+        Chip_PININT_SetPinModeEdge( LPC_PININT, pinInterruptChannel ); /* edge sensitive */
     }
     else
     {
-        Chip_PININT_SetPinModeLevel( LPC_PININT, pin ); /* Level sensitive */
+        Chip_PININT_SetPinModeLevel( LPC_PININT, pinInterruptChannel ); /* Level sensitive */
     }
+
     if ( (trigger & (1 << ARM_GPIO_TRIGGER_HIGH)) || (trigger & (1 << ARM_GPIO_TRIGGER_RISING)) )
     {
-        Chip_PININT_EnableIntHigh( LPC_PININT, pin );  /* Rising Edge/High Level */
+        Chip_PININT_EnableIntHigh( LPC_PININT, pinInterruptChannel );  /* Rising Edge/High Level */
     }
     else
     {
-        Chip_PININT_EnableIntLow( LPC_PININT, pin );   /* Falling Edge/Low Level */
+        Chip_PININT_EnableIntLow( LPC_PININT, pinInterruptChannel );   /* Falling Edge/Low Level */
     }
     return ARM_DRIVER_OK;
 }
@@ -209,22 +203,23 @@ static int32_t OSP_GPIO_SetTrigger( uint32_t pin, uint32_t trigger, GPIO_T *gpio
  * @fn      OSP_GPIO_WritePin
  *          Set the GPIO Pin state
  *
- * @param   pin     Port pin number
- * @param   val     Value to be written  (0 or 1)
- * @param   gpio_priv    Private object containing GPIO Base address, Interrupt pin select value (id) and Port-Pin numbers
+ * @param   pin         Port pin number (Port and pin numbers encoded using ENCODE_PORT_PIN)
+ * @param   val         Value to be written  (0 or 1)
+ * @param   gpio_priv   Private argument (Unused)
  *
  * @return  Return code: On success return ARM_DRIVER_OK
  *
  ***************************************************************************************************/
-static int32_t OSP_GPIO_WritePin( uint32_t pin, uint32_t val, GPIO_T *gpio_priv )
+static int32_t OSP_GPIO_WritePin( uint32_t pin, uint32_t val, void *gpio_priv )
 {
     uint32_t port_num = 0, pin_num = 0;
 
     ASF_assert( pin != (PinName)NC );
+    ASF_assert( val <= 1 );
     port_num = DECODE_PORT( pin );
     pin_num  = DECODE_PIN( pin );
 
-    gpio_priv->base->B[port_num][pin_num] = val;
+    Chip_GPIO_WritePortBit( LPC_GPIO, port_num, pin_num, (bool) val );
     return ARM_DRIVER_OK;
 }
 
@@ -232,41 +227,42 @@ static int32_t OSP_GPIO_WritePin( uint32_t pin, uint32_t val, GPIO_T *gpio_priv 
  * @fn      OSP_GPIO_ReadPin
  *          Get the GPIO Pin value
  *
- * @param   pin     Port pin number
- * @param   gpio_priv    Private object containing GPIO Base address, Interrupt pin select value (id) and Port-Pin numbers
+ * @param   pin         Port pin number (Port and pin numbers encoded using ENCODE_PORT_PIN)
+ * @param   gpio_priv   Private argument (Unused)
  *
  * @return  pin value
  *
  ***************************************************************************************************/
-static int32_t OSP_GPIO_ReadPin( uint32_t pin, GPIO_T *gpio_priv )
+static int32_t OSP_GPIO_ReadPin( uint32_t pin, void *gpio_priv )
 {
     uint32_t port_num = 0, pin_num = 0;
 
     ASF_assert( pin != (PinName)NC );
     port_num = DECODE_PORT( pin );
     pin_num  = DECODE_PIN( pin );
-    return ( (gpio_priv->base->PIN[port_num] & (1UL << pin_num)) ? (1) : (0) );
+    
+    return ( Chip_GPIO_ReadPortBit( LPC_GPIO, port_num, pin_num ) );
 }
 
 /****************************************************************************************************
  * @fn      OSP_GPIO_SetHandler
  *          Handler function
  *
- * @param   pin     Port pin number
- * @param   handler Pointer to handler function
- * @param   data    Data to pass to the handler
- * @param   gpio_priv    Private object containing GPIO Base address, Interrupt pin select value (id) and Port-Pin numbers
+ * @param   pin         Port pin number (Port and pin numbers encoded using ENCODE_PORT_PIN)
+ * @param   handler     Pointer to handler function
+ * @param   data        Data to pass to the handler
+ * @param   gpio_priv   Private argument (Unused)
  *
  * @return  Return code: On success return ARM_DRIVER_OK
  *
  ***************************************************************************************************/
-static int32_t OSP_GPIO_SetHandler( uint32_t pin, ARM_GPIO_Handler_t handler, void *data, GPIO_T *gpio_priv )
+static int32_t OSP_GPIO_SetHandler( uint32_t pin, ARM_GPIO_Handler_t handler, void *data, void *gpio_priv )
 {
-    return ARM_DRIVER_OK;    //Do nothing
+    return ARM_DRIVER_ERROR_UNSUPPORTED;    //Not Supported
 }
 
 /* Driver Definition */
-ARM_BUILD_DRIVER_GPIO( GPIO, OSP_GPIO, &gpio_ID );
+ARM_BUILD_DRIVER_GPIO( GPIO, OSP_GPIO, NULL );
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
