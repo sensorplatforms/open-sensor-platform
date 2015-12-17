@@ -55,8 +55,6 @@ ASF_TASK_STATIC ( INSTR_MANAGER_TASK_ID,  InstrManagerTask,   50,  0x400,    4 )
 
 /* Handles command input from UART */
 ASF_TASK_STATIC ( CMD_HNDLR_TASK_ID,      CmdHandlerTask,     92,  0x400,    4 )
-/* Sensor data handler task */
-ASF_TASK_STATIC ( SENSOR_ACQ_TASK_ID,     SensorAcqTask,      102, 0x400,   16 )
 
 /* Additional tasks specific to application is defined in App_Tasks.h */
 #include "app_tasks.h"
