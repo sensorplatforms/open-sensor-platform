@@ -258,8 +258,6 @@ extern const GpioInfo_t DiagLEDs[NUM_LEDS];
 #define I2C_MCLOCK_SPEED                        400000 /* 400000 generates 375K, use 430000 for 400K */
 /** Sensor bus interface defines */
 #define I2C_SENSOR_BUS                          LPC_I2C0
-#define I2C_SENSOR_BUS_SCL_PIN                  0, 23, (IOCON_FUNC1 | IOCON_MODE_INACT | IOCON_DIGITAL_EN | IOCON_STDI2C_EN)  /* I2C0_SCL (SCL) */
-#define I2C_SENSOR_BUS_SDA_PIN                  0, 24, (IOCON_FUNC1 | IOCON_MODE_INACT | IOCON_DIGITAL_EN | IOCON_STDI2C_EN)  /* I2C0_SDA-WAKEUP (SDA) */
 #define I2C_SENSOR_CLOCK                        SYSCON_CLOCK_I2C0 // Clock for I2C used in SENSOR_IF
 #define I2C_SENSOR_RESET                        RESET_I2C0
 #define I2C_SENSOR_BUS_IRQn                     I2C0_IRQn
@@ -275,8 +273,6 @@ extern const GpioInfo_t DiagLEDs[NUM_LEDS];
 /* Interrupt and communication interface going to the host */
 #define HOSTIF_IRQ_PORT                         0
 #define HOSTIF_IRQ_PIN                          19
-#define HOSTIF_SCL_PIN                          0, 28, (IOCON_FUNC1 | IOCON_DIGITAL_EN)
-#define HOSTIF_SDA_PIN                          0, 27, (IOCON_FUNC1 | IOCON_DIGITAL_EN)
 
 
 /* I2C Slave interface for host communication (e.g. interface with Android host) */

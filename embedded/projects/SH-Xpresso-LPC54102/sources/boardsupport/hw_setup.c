@@ -341,6 +341,8 @@ void Board_SensorIfInit( InputSensor_t ifID )
         /* Initialize the I2C Driver interface */
         ASF_assert( ARM_DRIVER_OK == Driver_I2C0.Initialize( NULL ));
         ASF_assert( ARM_DRIVER_OK == Driver_I2C0.PowerControl( ARM_POWER_FULL ));
+        ASF_assert( ARM_DRIVER_OK == Driver_I2C0.Control( ARM_I2C_BUS_SPEED, ARM_I2C_BUS_SPEED_FAST ));
+        NVIC_SetPriority( I2C2_IRQn, I2C_SENSOR_BUS_INT_PRIORITY );
         i2c_init_done = 1;
     }
 
@@ -395,7 +397,7 @@ void Board_SensorIfInit( InputSensor_t ifID )
         Chip_PININT_SetPinModeEdge(LPC_PININT, GYRO_PINT_CH); /* edge sensitive */
         Chip_PININT_EnableIntHigh(LPC_PININT, GYRO_PINT_CH);  /* Rising edge interrupt */
 
-        //Chip_SYSCON_EnableWakeup(GYRO_WAKE); 
+        //Chip_SYSCON_EnableWakeup(GYRO_WAKE);
         break;
 
     case PRESSURE_INPUT_SENSOR:

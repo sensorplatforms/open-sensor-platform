@@ -28,7 +28,7 @@
 void RxBytesToBuff( PortInfo *pPort, uint8_t byte );
 void I2C_IRQHandler(LPC_I2C_T *pI2C);
 void SPISlaveIRQHandler(void);
-
+void MX_I2C0_IRQHandler( void );
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E   C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
@@ -164,7 +164,7 @@ void DMA_IRQHandler( void )
         Chip_DMA_EnableChannel(LPC_DMA, gDbgUartPort.DMAChannel);
 #endif
     }
-    
+
     /* Check for active interrupt & clear DMA interrupt for the channel */
     if ((Chip_DMA_GetIntStatus(LPC_DMA) & DMA_INTSTAT_ACTIVEINT) != 0)
     {
@@ -285,6 +285,16 @@ void GYRO_IRQHandler(void)
     SendDataReadyIndication(GYRO_INPUT_SENSOR, currTime);
 }
 
+
+/****************************************************************************************************
+ * @fn      I2C0_IRQHandler
+ *          ISR Handler for I2C0 interface
+ *
+ ***************************************************************************************************/
+void I2C0_IRQHandler(void)
+{
+    MX_I2C0_IRQHandler();
+}
 
 /****************************************************************************************************
  * @fn      SPI1_IRQHandler

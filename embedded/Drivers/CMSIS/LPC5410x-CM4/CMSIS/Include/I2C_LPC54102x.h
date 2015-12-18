@@ -15,65 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#if !defined (I2C_LPC54102X_H)
+#define   I2C_LPC54102X_H
+
 /*-------------------------------------------------------------------------------------------------*\
  |    I N C L U D E   F I L E S
 \*-------------------------------------------------------------------------------------------------*/
 
-#define ARM_I2C_DRV_VERSION    ARM_DRIVER_VERSION_MAJOR_MINOR( 2, 0 ) /* driver version */
-#define RX_LENGTH       (16)
+/*-------------------------------------------------------------------------------------------------*\
+ |    C O N S T A N T S   &   M A C R O S
+\*-------------------------------------------------------------------------------------------------*/
 
-#define I2C_ERR_OK              (0)
-#define I2C_ERR_BUSY            (1)
-#define I2C_ERR_REQ             (2)
-#define I2C_SLV_ADDR_NUM        (3)
+#define ARM_I2C_DRV_VERSION     ARM_DRIVER_VERSION_MAJOR_MINOR( 2, 0 ) /* driver version */
+#define RX_LENGTH               (16)
+
 #define I2C_SLV_ADDR_MSK        (0x7F)
 #define I2C_SLV_PCLK_FREQ       (4000000) /* I2C slave peripheral clock set to 4 MHZ */
-
-typedef enum _SendModeTag {
-    I2C_MASTER_WRITE,
-    I2C_MASTER_RESTART,
-    I2C_MASTER_READ,
-    I2C_SLAVE_TX,
-    I2C_SLAVE_RX
-} I2C_SendMode_t;
-
-typedef enum {
-    I2C_LPC_INVALID = -1,
-    I2C_LPC_0       = 0,
-    I2C_LPC_1       = 1,
-    I2C_LPC_2       = 2,
-    I2C_LPC_MAX
-} i2c_num;
-
-typedef struct {
-    const void *txBuff;             /*!< Pointer to array of bytes to be transmitted */
-    void *rxBuff;                   /*!< Pointer memory where bytes received from I2C be stored */
-    volatile ErrorCode_t status;    /*!< status of the current I2C transfer (ErrorCode_t), must be 32-bits */
-    uint32_t flags;                 /*!< Reserved, set to 0 */
-    uint16_t txSz;                  /*!< Number of bytes in transmit array, if 0 only receive transfer will be performed */
-    uint16_t rxSz;                  /*!< Number of bytes to receive, if 0 only transmission will be performed */
-    uint16_t bytesSent;             /*!< Number of bytes sent */
-    uint16_t bytesRecv;             /*!< Number of bytes recevied */
-} i2cs_xfer_stat_t;
-
-
-typedef struct
-{
-    uint32_t ui_slave_address;
-    void *tx_buff;
-    uint8_t rxBuff[RX_LENGTH];
-    uint8_t rxCount;        /* Bytes so far received  */
-    uint8_t rxLength;       /* Expected Rx buffer length */
-
-    /*
-    * i2c_operation indicates the I2C action to be performed as requested by host
-    * 0x1 --> receive data
-    * 0x2 --> tramsit data
-    */
-    uint8_t i2c_operation;
-    /* I2C transfer structure */
-    i2cs_xfer_stat_t pXfer;
-} i2c_t;
 
 #define OSP_BUILD_DRIVER_SENSOR( pre1, pre2, priv ) \
     static ARM_DRIVER_VERSION pre1##_GetVersion( void ) { \
@@ -126,3 +84,53 @@ typedef struct
         pre1##_Control,         \
         pre1##_GetStatus        \
     };
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    T Y P E   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/* I2C Control Information */
+typedef struct
+{
+    ARM_I2C_SignalEvent_t cb_event;           // Event callback
+    ARM_I2C_STATUS        status;             // Status flags
+    bool                  pending;            // Transfer pending (no STOP)
+    int32_t               cnt;                // Master transfer count
+    uint8_t              *data;               // Master data to transfer
+    uint32_t              num;                // Number of bytes to transfer
+    uint32_t              s_buf_size;         // Slave receive buffer size
+    uint8_t              *sdata;              // Slave data to transfer
+    uint32_t              snum;               // Number of bytes to transfer
+    uint8_t              *srdata;             // Slave data to transfer
+    uint32_t              srnum;              // Number of bytes received
+    uint32_t              event;
+} I2C_CTRL;
+
+/* I2C Resource Configuration */
+typedef struct
+{
+    LPC_I2C_T             *reg;                // I2C register interface
+    IRQn_Type             i2c_ev_irq;         // I2C Event IRQ Number
+    I2C_CTRL             *ctrl;               // Run-Time control information
+} const I2C_RESOURCES;
+
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+/*-------------------------------------------------------------------------------------------------*\
+ |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
+\*-------------------------------------------------------------------------------------------------*/
+
+
+#endif /* I2C_LPC54102X_H */
+/*-------------------------------------------------------------------------------------------------*\
+ |    E N D   O F   F I L E
+\*-------------------------------------------------------------------------------------------------*/
+
+

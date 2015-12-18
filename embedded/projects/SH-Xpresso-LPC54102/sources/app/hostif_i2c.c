@@ -1,33 +1,21 @@
-/*
- * @brief Implements I2C slave driver for host interface module
+/* Open Sensor Platform Project
+ * https://github.com/sensorplatforms/open-sensor-platform
  *
- * @note
- * Copyright(C) NXP Semiconductors, 2014
- * All rights reserved.
+ * Copyright (C) 2015 Audience Inc.
  *
- * @par
- * Software that is described herein is for illustrative purposes only
- * which provides customers with programming information regarding the
- * LPC products.  This software is supplied "AS IS" without any warranties of
- * any kind, and NXP Semiconductors and its licensor disclaim any and
- * all warranties, express or implied, including all implied warranties of
- * merchantability, fitness for a particular purpose and non-infringement of
- * intellectual property rights.  NXP Semiconductors assumes no responsibility
- * or liability for the use of the software, conveys no license or rights under any
- * patent, copyright, mask work right, or any other intellectual property rights in
- * or to any products. NXP Semiconductors reserves the right to make changes
- * in the software without notification. NXP Semiconductors also makes no
- * representation or warranty that such application will be suitable for the
- * specified use without further testing or modification.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * @par
- * Permission to use, copy, modify, and distribute this software and its
- * documentation is hereby granted, under NXP Semiconductors' and its
- * licensor's relevant copyrights in the software, without fee, provided that it
- * is used in conjunction with NXP Semiconductors microcontrollers.  This
- * copyright, permission, and disclaimer notice must appear in all copies of
- * this code.
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 #include <string.h>
 #include <stdint.h>
 #include "common.h"
@@ -62,7 +50,8 @@ typedef struct __HOSTIF_Ctrl_t {
 } Hostif_Ctrl_t;
 
 static Hostif_Ctrl_t g_hostif;
-static uint32_t      i2c_event = ARM_I2C_EVENT_GENERAL_CALL;
+uint32_t      i2c_event = ARM_I2C_EVENT_GENERAL_CALL;
+static uint8_t rxBuff[RX_LENGTH] = { 0xff };
 
 #define I2C_MEM_SZ    64 /* Size of memory for I2C Slave ROM driver */
 
@@ -123,11 +112,10 @@ void i2c2_callback( uint32_t event )
 
 void I2C_HOSTIF_IRQHandler(void)
 {
-    uint8_t rxBuff[RX_LENGTH];
-
     /* This transfer handler will call one of the registered callback
        to service the I2C event. */
     i2c_event = ARM_I2C_EVENT_GENERAL_CALL;
+    Driver_I2C2.SlaveReceive( rxBuff, RX_LENGTH );
     MX_I2C2_IRQHandler();
 
     if ( i2c_event == ARM_I2C_EVENT_SLAVE_RECEIVE )
@@ -136,7 +124,6 @@ void I2C_HOSTIF_IRQHandler(void)
         uint8_t read_bytes = 0;
         read_bytes = Driver_I2C2.GetDataCount();
         ASF_assert( RX_LENGTH > read_bytes );
-        ASF_assert( ARM_DRIVER_OK == Driver_I2C2.SlaveReceive( rxBuff, read_bytes ));
         ret = process_command( rxBuff,
                                read_bytes );
         ASF_assert( ret == 0 );
@@ -243,9 +230,25 @@ void Hostif_Init(void)
     Driver_I2C2.Initialize( i2c2_callback );
 
     /* Setup slave address to respond to */
-    Driver_I2C2.PowerControl( ARM_POWER_FULL );
-    /* init host interrupt pin */
+    Driver_I2C2.Control( ARM_I2C_OWN_ADDRESS, I2C_HOSTIF_ADDR );
 
+    /* Setup slave interrupt  */
+    Driver_I2C2.PowerControl( ARM_POWER_FULL );
+    /* init host interrupt pin priority*/
+    NVIC_SetPriority( I2C_HOSTIF_IRQn, HOSTIF_IRQ_PRIORITY );
+
+    Chip_GPIO_SetPinDIROutput( LPC_GPIO_PORT,
+                               HOSTIF_IRQ_PORT,
+                               HOSTIF_IRQ_PIN );
+    /* de-assert interrupt line to high to indicate Host/AP that
+                  * there is no data to receive */
+    Chip_GPIO_SetPinState( LPC_GPIO_PORT,
+                           HOSTIF_IRQ_PORT,
+                           HOSTIF_IRQ_PIN,
+                           0 );
+
+    /* enable I2C hostif to wake-up the sensor hub */
+    Chip_SYSCON_EnableWakeup( I2C_HOSTIF_WAKE );
 
     D0_printf("%s initialization done\r\n", __FUNCTION__);
 }
