@@ -53,12 +53,7 @@
 
 #ifndef __DRIVER_I2C_H
 #define __DRIVER_I2C_H
-#include "chip.h"
-#include "uart_5410x.h"
-#include "clock_5410x.h"
-#include "dma_5410x.h"
 
-#include "iocon_5410x.h"
 #include "Driver_Common.h"
 
 #define ARM_I2C_API_VERSION ARM_DRIVER_VERSION_MAJOR_MINOR(2,02)  /* API version */
@@ -189,34 +184,6 @@ typedef void (*ARM_I2C_SignalEvent_t) (uint32_t event);  ///< Pointer to \ref AR
 typedef struct _ARM_I2C_CAPABILITIES {
   uint32_t address_10_bit : 1;          ///< supports 10-bit addressing
 } ARM_I2C_CAPABILITIES;
-
-
-/* I2C Control Information */
-typedef struct {
-  ARM_I2C_SignalEvent_t cb_event;           // Event callback
-  ARM_I2C_STATUS        status;             // Status flags
-  uint8_t               flags;              // Control and state flags
-  uint8_t               sla_rw;             // Slave address and RW bit
-  bool                  pending;            // Transfer pending (no STOP)
-  uint8_t               stalled;            // Stall mode status flags
-  uint8_t               con_aa;             // I2C slave CON flag
-  int32_t               cnt;                // Master transfer count
-  uint8_t              *data;               // Master data to transfer
-  uint32_t              num;                // Number of bytes to transfer
-  uint8_t              *sdata;              // Slave data to transfer
-  uint32_t              snum;               // Number of bytes to transfer
-} I2C_CTRL;
-
-/* I2C Resource Configuration */
-typedef struct {
-  LPC_I2C_T             *reg;                // I2C register interface
-  IRQn_Type             i2c_ev_irq;         // I2C Event IRQ Number
-  volatile uint32_t    *base_clk_reg;       // Base clock register
-  volatile uint32_t    *pclk_cfg_reg;       // Peripheral clock config register
-  const volatile uint32_t *pclk_stat_reg;   // Peripheral clock status register
-  uint32_t              rgu_val;            // Peripheral reset value
-  I2C_CTRL             *ctrl;               // Run-Time control information
-} const I2C_RESOURCES;
 
 
 /**
