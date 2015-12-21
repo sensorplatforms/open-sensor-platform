@@ -34,6 +34,15 @@ extern ARM_DRIVER_GPIO Driver_GPIO;
 const uint32_t ExtClockIn = 0;
 const GpioInfo_t DiagLEDs[NUM_LEDS] = {PINS_LEDS};
 
+/* Mapping of Port and Pin to Pin Interrupt Channel */
+const GPIO_PinMap_t GPIO_PinMap[MAX_PIN_INTERRUPT_CHANNEL] =
+{
+   { ENCODE_PORT_PIN( ACCEL_INT_PORT, ACCEL_INT_PIN ), ACCEL_PINT_CH },    /* Channel 0 */
+   { ENCODE_PORT_PIN( GYRO_INT_PORT,  GYRO_INT_PIN  ), GYRO_PINT_CH  },    /* Channel 1 */
+   { ENCODE_PORT_PIN( MAG_INT_PORT,   MAG_INT_PIN   ), MAG_PINT_CH   },    /* Channel 2 */
+   { ENCODE_PORT_PIN( PROXI_INT_PORT, PROXI_INT_PIN ), PROXI_PINT_CH }     /* Channel 3 */
+};
+
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E   C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
@@ -315,15 +324,10 @@ void Board_SensorIfInit( InputSensor_t ifID )
         Chip_GPIO_SetPinDIR(LPC_GPIO_PORT, ACCEL_INT_PORT, ACCEL_INT_PIN, false);
 
         Chip_INMUX_PinIntSel(ACCEL_PINT_SEL, ACCEL_INT_PORT, ACCEL_INT_PIN);
-        Chip_PININT_SetPinModeEdge(LPC_PININT, ACCEL_PINT_CH); /* edge sensitive */
-        Chip_PININT_EnableIntHigh(LPC_PININT, ACCEL_PINT_CH);  /* Rising edge interrupt */
+        /* High Edge Trigger */
+        Driver_GPIO.SetTrigger( ENCODE_PORT_PIN( ACCEL_INT_PORT, ACCEL_INT_PIN ),
+                                ( ( 1 << ARM_GPIO_TRIGGER_EDGE ) | ( 1 << ARM_GPIO_TRIGGER_HIGH ) ) );
 
-        //pinDef.pin = ENCODE_PORT_PIN(ACCEL_INT2_PORT, ACCEL_INT2_PIN);
-        //gpio_dir(&pinDef, PIN_INPUT);
-
-        //Chip_SYSCON_EnableWakeup(ACCEL_WAKE); /* enable to wake from sleep */
-
-        //gpio_irq_disable(&gpioIrq);
         break;
 
     case MAG_INPUT_SENSOR:
@@ -336,14 +340,10 @@ void Board_SensorIfInit( InputSensor_t ifID )
         Chip_GPIO_SetPinDIR(LPC_GPIO_PORT, MAG_INT_PORT, MAG_INT_PIN, false);
 
         Chip_INMUX_PinIntSel(MAG_PINT_SEL, MAG_INT_PORT, MAG_INT_PIN);
-        Chip_PININT_SetPinModeEdge(LPC_PININT, MAG_PINT_CH); /* edge sensitive */
-        Chip_PININT_EnableIntHigh(LPC_PININT, MAG_PINT_CH);  /* Rising edge interrupt */
+        /* High Edge Trigger */
+        Driver_GPIO.SetTrigger( ENCODE_PORT_PIN( MAG_INT_PORT, MAG_INT_PIN ),
+                                ( ( 1 << ARM_GPIO_TRIGGER_EDGE ) | ( 1 << ARM_GPIO_TRIGGER_HIGH ) ) );
 
-        //Chip_SYSCON_EnableWakeup(MAG_WAKE); /* enable to wake from sleep */
-        //Chip_SYSCON_EnableWakeup(SYSCON_STARTER_WWDT);  /* enable to wake from sleep */
-
-        //pinDef.pin = ENCODE_PORT_PIN(MAG_INT3_PORT, MAG_INT3_PIN);
-        //gpio_dir(&pinDef,PIN_INPUT);
         break;
 
     case GYRO_INPUT_SENSOR:
@@ -356,10 +356,10 @@ void Board_SensorIfInit( InputSensor_t ifID )
         Chip_GPIO_SetPinDIR(LPC_GPIO_PORT, GYRO_INT_PORT, GYRO_INT_PIN, false);
 
         Chip_INMUX_PinIntSel(GYRO_PINT_SEL, GYRO_INT_PORT, GYRO_INT_PIN);
-        Chip_PININT_SetPinModeEdge(LPC_PININT, GYRO_PINT_CH); /* edge sensitive */
-        Chip_PININT_EnableIntHigh(LPC_PININT, GYRO_PINT_CH);  /* Rising edge interrupt */
+        /* High Edge Trigger */
+        Driver_GPIO.SetTrigger( ENCODE_PORT_PIN( GYRO_INT_PORT, GYRO_INT_PIN ),
+                                ( ( 1 << ARM_GPIO_TRIGGER_EDGE ) | ( 1 << ARM_GPIO_TRIGGER_HIGH ) ) );
 
-        //Chip_SYSCON_EnableWakeup(GYRO_WAKE); 
         break;
 
     case PRESSURE_INPUT_SENSOR:

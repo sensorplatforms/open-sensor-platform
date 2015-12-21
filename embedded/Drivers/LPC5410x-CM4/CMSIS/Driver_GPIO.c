@@ -35,7 +35,8 @@
  |    S T A T I C   V A R I A B L E S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 /* Driver Version */
-static const ARM_DRIVER_VERSION DriverVersion = {
+static const ARM_DRIVER_VERSION DriverVersion =
+{
     OSP_GPIO_API_VERSION,
     OSP_GPIO_DRV_VERSION
 };
@@ -72,8 +73,7 @@ static int32_t OSP_GPIO_Initialize( void *gpio_priv )
     Chip_GPIO_Init( LPC_GPIO );
 
     /* Enable Pin interrupt sources */
-    Chip_PININT_Init( NULL ); /* Note: input arg is ignored! */
-
+    Chip_PININT_Init( NULL );
     return ARM_DRIVER_OK;
 }
 
@@ -91,7 +91,7 @@ static int32_t OSP_GPIO_Uninitialize( void *gpio_priv )
     /* Uninitialize GPIO */
     Chip_GPIO_DeInit( LPC_GPIO );
 
-    Chip_PININT_DeInit( NULL ); /* Note: input arg is ignored! */
+    Chip_PININT_DeInit( NULL );
     return ARM_DRIVER_OK;
 }
 
@@ -109,16 +109,16 @@ static int32_t OSP_GPIO_PowerControl( ARM_POWER_STATE state, void *gpio_priv )
 {
     switch ( state )
     {
-        case ARM_POWER_OFF:
-            Chip_GPIO_DeInit( LPC_GPIO );
-            break;
+    case ARM_POWER_OFF:
+        Chip_GPIO_DeInit( LPC_GPIO );
+        break;
 
-        case ARM_POWER_FULL:
-            Chip_GPIO_Init( LPC_GPIO );
-            break;
+    case ARM_POWER_FULL:
+        Chip_GPIO_Init( LPC_GPIO );
+        break;
 
-        default:
-            return ARM_DRIVER_ERROR_UNSUPPORTED;
+    default:
+        return ARM_DRIVER_ERROR_UNSUPPORTED;
     }
     return ARM_DRIVER_OK;
 }
@@ -127,7 +127,7 @@ static int32_t OSP_GPIO_PowerControl( ARM_POWER_STATE state, void *gpio_priv )
  * @fn      OSP_GPIO_SetDirection
  *          Set the direction of GPIO pin
  *
- * @param   pin         Port pin number (Port and pin numbers encoded using ENCODE_PORT_PIN)
+ * @param   pin         Port pin number (Upper 16-bit is port number and lower 16-bit is pin number)
  * @param   dir         Direction (GPIO_DIR_INPUT or GPIO_DIR_OUTPUT)
  * @param   gpio_priv   Private argument (Unused)
  *
@@ -145,7 +145,6 @@ static int32_t OSP_GPIO_SetDirection( uint32_t pin, uint32_t dir, void *gpio_pri
 
     ( dir == ARM_GPIO_DIR_OUTPUT ) ? Chip_GPIO_SetPinDIROutput( LPC_GPIO, port_num, pin_num ) : \
                                      Chip_GPIO_SetPinDIRInput( LPC_GPIO, port_num, pin_num );
-
     return ARM_DRIVER_OK;
 }
 
@@ -153,7 +152,7 @@ static int32_t OSP_GPIO_SetDirection( uint32_t pin, uint32_t dir, void *gpio_pri
  * @fn      OSP_GPIO_SetTrigger
  *          Set the trigger mode for GPIO
  *
- * @param   pin         Port pin number (Port and pin numbers encoded using ENCODE_PORT_PIN)
+ * @param   pin         Port pin number (Upper 16-bit is port number and lower 16-bit is pin number)
  * @param   trigger     Trigger mode
  * @param   gpio_priv   Private argument (Unused)
  *
@@ -162,22 +161,21 @@ static int32_t OSP_GPIO_SetDirection( uint32_t pin, uint32_t dir, void *gpio_pri
  ***************************************************************************************************/
 static int32_t OSP_GPIO_SetTrigger( uint32_t pin, uint32_t trigger, void *gpio_priv )
 {
-    uint32_t pinInterruptChannel = 0;
+    uint8_t index = 0;
+    uint8_t pinInterruptChannel = 0;
 
-    switch (DECODE_PIN(pin))
+    ASF_assert( pin != (PinName)NC );
+
+    for ( ; index < MAX_PIN_INTERRUPT_CHANNEL; index++ )
     {
-        case ACCEL_INT_PIN:
-            pinInterruptChannel = ACCEL_PINT_CH;
+        if ( GPIO_PinMap[index].pin == pin )
+        {
+            pinInterruptChannel = GPIO_PinMap[index].pinInterruptChannel;
             break;
-        case MAG_INT_PIN:
-            pinInterruptChannel = MAG_PINT_CH;
-            break;
-        case GYRO_INT_PIN:
-            pinInterruptChannel = GYRO_PINT_CH;
-            break;
-        default:
-            return ARM_DRIVER_ERROR_UNSUPPORTED;
+        }
     }
+
+    ASF_assert( index < MAX_PIN_INTERRUPT_CHANNEL );
 
     if ( trigger & (1 << ARM_GPIO_TRIGGER_EDGE) )
     {
@@ -203,7 +201,7 @@ static int32_t OSP_GPIO_SetTrigger( uint32_t pin, uint32_t trigger, void *gpio_p
  * @fn      OSP_GPIO_WritePin
  *          Set the GPIO Pin state
  *
- * @param   pin         Port pin number (Port and pin numbers encoded using ENCODE_PORT_PIN)
+ * @param   pin         Port pin number (Upper 16-bit is port number and lower 16-bit is pin number)
  * @param   val         Value to be written  (0 or 1)
  * @param   gpio_priv   Private argument (Unused)
  *
@@ -227,7 +225,7 @@ static int32_t OSP_GPIO_WritePin( uint32_t pin, uint32_t val, void *gpio_priv )
  * @fn      OSP_GPIO_ReadPin
  *          Get the GPIO Pin value
  *
- * @param   pin         Port pin number (Port and pin numbers encoded using ENCODE_PORT_PIN)
+ * @param   pin         Port pin number (Upper 16-bit is port number and lower 16-bit is pin number)
  * @param   gpio_priv   Private argument (Unused)
  *
  * @return  pin value
@@ -240,7 +238,7 @@ static int32_t OSP_GPIO_ReadPin( uint32_t pin, void *gpio_priv )
     ASF_assert( pin != (PinName)NC );
     port_num = DECODE_PORT( pin );
     pin_num  = DECODE_PIN( pin );
-    
+
     return ( Chip_GPIO_ReadPortBit( LPC_GPIO, port_num, pin_num ) );
 }
 
@@ -248,7 +246,7 @@ static int32_t OSP_GPIO_ReadPin( uint32_t pin, void *gpio_priv )
  * @fn      OSP_GPIO_SetHandler
  *          Handler function
  *
- * @param   pin         Port pin number (Port and pin numbers encoded using ENCODE_PORT_PIN)
+ * @param   pin         Port pin number (Upper 16-bit is port number and lower 16-bit is pin number)
  * @param   handler     Pointer to handler function
  * @param   data        Data to pass to the handler
  * @param   gpio_priv   Private argument (Unused)

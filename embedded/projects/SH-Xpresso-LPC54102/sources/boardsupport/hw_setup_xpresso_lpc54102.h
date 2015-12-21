@@ -36,7 +36,7 @@
 
 /* Pin handling macros for GPIO */
 #define NC (uint32_t)0xFFFFFFFF     //Indicates pin is not assigned
-/* Port and pin number are encoded into a 32-bit word with port number as upper nibble and pin number as lower nibble */
+/* Port and pin number are encoded into a 32-bit word with port number as upper 16 bits and pin number as lower 16 bits */
 #define ENCODE_PORT_PIN(port,pin) (PinName)(((uint32_t)port << 16) + (uint16_t)pin)
 #define DECODE_PORT(X) (((uint32_t)(X) >> 16) & 0xF)
 #define DECODE_PIN(X)  ((uint32_t)(X) & 0xFFFF)
@@ -44,8 +44,24 @@
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+
+/* ########################################################################## */
+/* #    G P I O                                                             # */
+/* ########################################################################## */
+/* Number of pin interrupt channels */
+#define MAX_PIN_INTERRUPT_CHANNEL 8
+
 /* Type to address GPIO pins */
 typedef uint32_t PinName;
+
+/* Structure to hold pin/port to interrupt channel mapping */
+typedef struct _GPIO_PinMap
+{
+    uint32_t pin;
+    uint8_t pinInterruptChannel;
+} GPIO_PinMap_t;
+
+extern const GPIO_PinMap_t GPIO_PinMap[MAX_PIN_INTERRUPT_CHANNEL];
 
 /* ########################################################################## */
 /* #    T I M I N G S                                                       # */
@@ -234,7 +250,7 @@ extern const GpioInfo_t DiagLEDs[NUM_LEDS];
 #define PROXI_INT_PORT                          0X0
 #define PROXI_INT_PIN                           9
 #define PROXI_PINT_SEL                          PININTSELECT3
-#define PROXI_PINT_CH                           PINTINTCH3
+#define PROXI_PINT_CH                           PININTCH3
 #define PROXI_PINT_IRQn                         PIN_INT3_IRQn
 #define PROXI_WAKE                              SYSCON_STARTER_PINT3
 #define PROXI_IRQHandler                        PIN_INT3_IRQHandler
