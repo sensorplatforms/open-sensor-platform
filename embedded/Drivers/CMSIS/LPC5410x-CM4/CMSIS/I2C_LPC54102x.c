@@ -48,6 +48,7 @@ static I2C_RESOURCES I2C0_Resources =
 {
     LPC_I2C0,
     I2C0_IRQn,
+    SYSCON_CLOCK_I2C0,
     &i2c0_ctrl
 };
 
@@ -58,6 +59,7 @@ static I2C_RESOURCES I2C2_Resources =
 {
     LPC_I2C2,
     I2C2_IRQn,
+    SYSCON_CLOCK_I2C2,
     &i2c2_ctrl
 };
 
@@ -107,6 +109,7 @@ static const I2CS_XFER_T i2cs_HostIfCallBacks =
 /****************************************************************************************************
  * @fn      i2c_slave_start
  *          This function is start I2C handler, reset the transferred/received byte count
+ *          and update the status flags
  *
  * @param   addr - I2C Slave address
  *
@@ -116,13 +119,16 @@ static const I2CS_XFER_T i2cs_HostIfCallBacks =
 static void i2c_slave_start( uint8_t addr )
 {
     i2c_slave->ctrl->cnt = 0;
+    /* Slave transfer started update busy flag and mode. */
+    i2c_slave->ctrl->status.busy = 1;
+    i2c_slave->ctrl->status.mode = 0;
     return;
 }
 
 
 /****************************************************************************************************
  * @fn      i2c_slave_tx
- *          This function is I2C  tx handler
+ *          This function is I2C slave tx handler
  *
  * @param   data - Pointer to byte to be transmitted
  *
@@ -149,13 +155,16 @@ static uint8_t i2c_slave_tx( uint8_t *data )
         i2c_slave->ctrl->cnt        = 0;
     }
 
+    /* Update the status flag to indicate byte transfer in progress */
+    i2c_slave->ctrl->status.direction = 0;
+
     return I2C_SLVCTL_SLVCONTINUE;
 }
 
 
 /****************************************************************************************************
  * @fn      i2c_slave_rx
- *          This function is I2C  rx handler
+ *          This function is I2C slave rx handler
  *
  * @param   data - data received from the master, copy to the buffer
  *
@@ -171,7 +180,10 @@ static uint8_t i2c_slave_rx( uint8_t data )
     p8                          = i2c_slave->ctrl->srdata;
     p8[i2c_slave->ctrl->cnt++]  = (uint8_t)data;
 
-    ASF_assert( i2c_slave->ctrl->s_buf_size > i2c_slave->ctrl->cnt )
+    /* Update the status flag to indicate byte receive in progress */
+    i2c_slave->ctrl->status.direction = 1;
+
+    ASF_assert( i2c_slave->ctrl->s_buf_size > i2c_slave->ctrl->cnt );
 
     return I2C_SLVCTL_SLVCONTINUE;
 }
@@ -190,6 +202,8 @@ static void i2c_slave_done( void )
 {
     i2c_slave->ctrl->cnt    = 0;
     i2c_slave->ctrl->event  = ARM_I2C_EVENT_TRANSFER_DONE;
+    /* Done with slave transmit, reset the busy flag */
+    i2c_slave->ctrl->status.busy      = 0;
 }
 
 
@@ -207,7 +221,7 @@ static void i2c_slave_setup_slave( I2C_RESOURCES *i2c )
     uint32_t optimalDev;
 
     /* Clear interrupt status */
-    Chip_I2CS_ClearStatus( i2c->reg, I2C_STAT_SLVDESEL );
+    Chip_I2CS_ClearStatus( i2c->reg, I2C_INTENSET_SLVDESEL );
     Chip_I2C_EnableInt( i2c->reg, I2C_INTENSET_SLVPENDING | I2C_INTENSET_SLVDESEL );
 
     optimalDev = Chip_Clock_GetAsyncSyscon_ClockRate() / I2C_SLV_PCLK_FREQ;
@@ -231,29 +245,11 @@ static uint8_t I2C_Master_HardwareSetup( I2C_RESOURCES *i2c )
     /* Reset master state machine */
     Chip_I2CM_Disable( i2c->reg );
     Chip_I2CM_Enable( i2c->reg );
-    Chip_I2CM_ClearStatus( i2c->reg, I2C_STAT_MSTPENDING | I2C_STAT_MSTRARBLOSS | I2C_STAT_MSTSTSTPERR );
+    Chip_I2CM_ClearStatus( i2c->reg, I2C_INTENSET_MSTPENDING | I2C_INTENSET_MSTRARBLOSS | I2C_INTENSET_MSTSTSTPERR );
 
     return 0;
 }
 
-/****************************************************************************************************
- * @fn      I2C_Master_Wait_Transfer
- *            Function to wait for I2CM transfer completion
- *
- * @param   xferRecPtr - I2C Transfer struct pointer ( to check the I2C status )
- *
- * @return  None
- *
- ****************************************************************************************************/
-static void I2C_Master_Wait_Transfer( I2CM_XFER_T *xferRecPtr )
-{
-    /* Test for still transferring data */
-    while ( xferRecPtr->status == I2CM_STATUS_BUSY )
-    {
-        /* Sleep until next interrupt */
-        __WFI();
-    }
-}
 
 /****************************************************************************************************
  * @fn      OSP_I2C_GetVersion
@@ -299,7 +295,7 @@ static int32_t OSP_I2C_Initialize( ARM_I2C_SignalEvent_t cb_event, I2C_RESOURCES
 {
     if ( LPC_I2C0 == i2c->reg )
     {
-        /* Configure the I2C interface in Master mode with the given speed */
+        /* Setup I2C pin mux for I2C0 */
         Chip_IOCON_PinMuxSet( LPC_IOCON, 0, 23, (IOCON_FUNC1 | IOCON_MODE_INACT | IOCON_DIGITAL_EN | IOCON_STDI2C_EN) );
         Chip_IOCON_PinMuxSet( LPC_IOCON, 0, 24, (IOCON_FUNC1 | IOCON_MODE_INACT | IOCON_DIGITAL_EN | IOCON_STDI2C_EN) );
 
@@ -308,7 +304,7 @@ static int32_t OSP_I2C_Initialize( ARM_I2C_SignalEvent_t cb_event, I2C_RESOURCES
     }
     else if ( LPC_I2C2 == i2c->reg )
     {
-        /* Setup I2C pin mux */
+        /* Setup I2C pin mux for I2C2 */
         Chip_IOCON_PinMuxSet( LPC_IOCON, 0, 28, (IOCON_FUNC1 | IOCON_DIGITAL_EN) );
         Chip_IOCON_PinMuxSet( LPC_IOCON, 0, 27, (IOCON_FUNC1 | IOCON_DIGITAL_EN) );
 
@@ -320,6 +316,8 @@ static int32_t OSP_I2C_Initialize( ARM_I2C_SignalEvent_t cb_event, I2C_RESOURCES
         return ARM_DRIVER_ERROR_PARAMETER;
     }
     i2c->ctrl->cb_event = cb_event;
+    /* Enable the interrupt for the I2C */
+    NVIC_EnableIRQ( i2c->i2c_ev_irq );
 
     return ARM_DRIVER_OK;
 }
@@ -336,7 +334,12 @@ static int32_t OSP_I2C_Initialize( ARM_I2C_SignalEvent_t cb_event, I2C_RESOURCES
  ****************************************************************************************************/
 static int32_t OSP_I2C_Uninitialize( I2C_RESOURCES *i2c )
 {
-    return ARM_DRIVER_ERROR_UNSUPPORTED;
+    /* Disable the interrupt for the I2C */
+    NVIC_DisableIRQ( i2c->i2c_ev_irq );
+
+    i2c->ctrl->cb_event = NULL;
+
+    return ARM_DRIVER_OK;
 }
 
 
@@ -355,28 +358,33 @@ static int32_t OSP_I2C_PowerControl( ARM_POWER_STATE state, I2C_RESOURCES *i2c )
     switch ( state )
     {
     case ARM_POWER_OFF:
-        break;
-
-    case ARM_POWER_LOW:
-        break;
+        Chip_I2CM_Disable( i2c->reg );
+        Chip_I2CS_Disable( i2c->reg );
+        /* disable I2C clock and reset I2C peripheral */
+        Chip_Clock_DisablePeriphClock( i2c->clk );
+        return ARM_DRIVER_OK;
 
     case ARM_POWER_FULL:
         {
+            /* Enable I2C clock and reset I2C peripheral */
+            Chip_Clock_EnablePeriphClock( i2c->clk );
             ASF_assert( I2C_Master_HardwareSetup( i2c ) == 0);
             /* Setup slave address to respond to */
             if ( 0 != Chip_I2CS_GetSlaveAddr( i2c->reg, 0 ) )
             {
                 i2c_slave_setup_slave( i2c );
             }
-
-            /* Enable the interrupt for the I2C */
-            NVIC_EnableIRQ( i2c->i2c_ev_irq );
-
+            i2c->ctrl->status.busy             = 0;
+            i2c->ctrl->status.mode             = 0;
+            i2c->ctrl->status.direction        = 0;
+            i2c->ctrl->status.general_call     = 0;
+            i2c->ctrl->status.arbitration_lost = 0;
+            i2c->ctrl->status.bus_error        = 0;
         }
         return ARM_DRIVER_OK;
 
     default:
-        return ARM_DRIVER_ERROR_UNSUPPORTED;
+        break;
     } /* switch */
 
     return ARM_DRIVER_ERROR_UNSUPPORTED;
@@ -396,11 +404,11 @@ static int32_t OSP_I2C_PowerControl( ARM_POWER_STATE state, I2C_RESOURCES *i2c )
  * @return  Error status code (ARM_DRIVER_OK on success, ARM_DRIVER_ERROR on driver error )
  *
  ****************************************************************************************************/
-static int32_t OSP_I2C_MasterTransmit( uint32_t        addr,
-                                const uint8_t   *data,
-                                uint32_t        num,
-                                bool            xfer_pending,
-                                I2C_RESOURCES   *i2c )
+static int32_t OSP_I2C_MasterTransmit(  uint32_t        addr,
+                                        const uint8_t   *data,
+                                        uint32_t        num,
+                                        bool            xfer_pending,
+                                        I2C_RESOURCES   *i2c )
 {
     i2c_master_xfer.slaveAddr   = addr;
     i2c_master_xfer.txBuff      = data;
@@ -410,18 +418,17 @@ static int32_t OSP_I2C_MasterTransmit( uint32_t        addr,
     /* Start the I2C data transmit */
     Chip_I2CM_Xfer( i2c->reg, &i2c_master_xfer );
     /* Enable Master Interrupts */
-    Chip_I2C_EnableInt( i2c->reg, I2C_STAT_MSTPENDING | I2C_STAT_MSTRARBLOSS | I2C_STAT_MSTSTSTPERR );
+    Chip_I2C_EnableInt( i2c->reg, I2C_INTENSET_MSTPENDING | I2C_INTENSET_MSTRARBLOSS | I2C_INTENSET_MSTSTSTPERR );
 
-    I2C_Master_Wait_Transfer( &i2c_master_xfer );
+    /* Update driver status */
+    i2c->ctrl->status.busy             = 1;
+    i2c->ctrl->status.mode             = 1;
+    i2c->ctrl->status.direction        = 0;
+    i2c->ctrl->status.arbitration_lost = 0;
+    i2c->ctrl->status.bus_error        = 0;
 
-    if( i2c_master_xfer.status == I2CM_STATUS_OK )
-    {
-        return ARM_DRIVER_OK;
-    }
-    else
-    {
-        return ARM_DRIVER_ERROR;
-    }
+    return ARM_DRIVER_OK;
+
 }
 
 
@@ -439,31 +446,31 @@ static int32_t OSP_I2C_MasterTransmit( uint32_t        addr,
  *
  ****************************************************************************************************/
 static int32_t OSP_I2C_MasterReceive( uint32_t       addr,
-                               uint8_t        *data,
-                               uint32_t       num,
-                               bool           xfer_pending,
-                               I2C_RESOURCES  *i2c )
+                                      uint8_t        *data,
+                                      uint32_t       num,
+                                      bool           xfer_pending,
+                                      I2C_RESOURCES  *i2c )
 {
     i2c_master_xfer.slaveAddr   = addr;
     i2c_master_xfer.rxBuff      = data;
     i2c_master_xfer.rxSz        = num;
     i2c_master_xfer.status      = 0;
 
+    /* Update driver status */
+    i2c->ctrl->status.busy             = 1;
+    i2c->ctrl->status.mode             = 1;
+    i2c->ctrl->status.arbitration_lost = 0;
+    i2c->ctrl->status.bus_error        = 0;
+    i2c->ctrl->status.direction        = 1;
+
     /* Start the I2C data receive */
     Chip_I2CM_Xfer( i2c->reg, &i2c_master_xfer );
     /* Enable Master Interrupts */
-    Chip_I2C_EnableInt( i2c->reg, I2C_STAT_MSTPENDING | I2C_STAT_MSTRARBLOSS | I2C_STAT_MSTSTSTPERR );
+    Chip_I2C_EnableInt( i2c->reg, I2C_INTENSET_MSTPENDING | I2C_INTENSET_MSTRARBLOSS | I2C_INTENSET_MSTSTSTPERR );
 
-    I2C_Master_Wait_Transfer( &i2c_master_xfer );
+    i2c->ctrl->status.direction        = 1;
+    return ARM_DRIVER_OK;
 
-    if( i2c_master_xfer.status == I2CM_STATUS_OK )
-    {
-        return ARM_DRIVER_OK;
-    }
-    else
-    {
-        return ARM_DRIVER_ERROR;
-    }
 }
 
 
@@ -478,14 +485,18 @@ static int32_t OSP_I2C_MasterReceive( uint32_t       addr,
  * @return  Error status code (ARM_DRIVER_OK on success)
  *
  ****************************************************************************************************/
-static int32_t OSP_I2C_SlaveTransmit( const uint8_t *data,
-                               uint32_t      num,
-                               I2C_RESOURCES *i2c )
+static int32_t OSP_I2C_SlaveTransmit( const uint8_t     *data,
+                                      uint32_t          num,
+                                      I2C_RESOURCES     *i2c )
 {
     i2c->ctrl->sdata = (void *)data;
     i2c->ctrl->snum  = num;
 
     i2c_slave = i2c;
+
+    /* Update driver status */
+    i2c->ctrl->status.general_call = 0;
+    i2c->ctrl->status.bus_error    = 0;
 
     /* Return success now, bytes will be written when master is requesting for data */
     return ARM_DRIVER_OK;
@@ -504,12 +515,16 @@ static int32_t OSP_I2C_SlaveTransmit( const uint8_t *data,
  *
  ****************************************************************************************************/
 static int32_t OSP_I2C_SlaveReceive( uint8_t         *data,
-                              uint32_t        num,
-                              I2C_RESOURCES   *i2c )
+                                     uint32_t        num,
+                                     I2C_RESOURCES   *i2c )
 {
     i2c->ctrl->srdata = data;
     i2c->ctrl->s_buf_size = num;
     i2c_slave = i2c;
+
+    /* Update driver status */
+    i2c->ctrl->status.general_call = 0;
+    i2c->ctrl->status.bus_error    = 0;
 
     /* Return success now, bytes will be written when received when sends the data */
     return ARM_DRIVER_OK;
@@ -544,6 +559,7 @@ static int32_t OSP_I2C_GetDataCount( I2C_RESOURCES *i2c )
  ****************************************************************************************************/
 static int32_t OSP_I2C_Control( uint32_t control, uint32_t arg, I2C_RESOURCES *i2c )
 {
+    int32_t     i_ret_val = ARM_DRIVER_ERROR_UNSUPPORTED;
     switch ( control )
     {
     case ARM_I2C_OWN_ADDRESS:
@@ -551,6 +567,7 @@ static int32_t OSP_I2C_Control( uint32_t control, uint32_t arg, I2C_RESOURCES *i
         Chip_I2CS_SetSlaveAddr( i2c->reg,
                                 0,
                                 (arg & I2C_SLV_ADDR_MSK) );
+        i_ret_val = ARM_DRIVER_OK;
         break;
 
     case ARM_I2C_BUS_SPEED:
@@ -563,13 +580,14 @@ static int32_t OSP_I2C_Control( uint32_t control, uint32_t arg, I2C_RESOURCES *i
             /* setup speed and config. as Master */
             Chip_I2C_SetClockDiv( i2c->reg, I2C_MASTER_CLOCK_DIV );
             Chip_I2CM_SetBusSpeed( i2c->reg, I2C_MCLOCK_SPEED );
+            i_ret_val = ARM_DRIVER_OK;
             break;
 
         case ARM_I2C_BUS_SPEED_FAST_PLUS:
             break;
 
         default:
-            return ARM_DRIVER_ERROR_UNSUPPORTED;
+            break;
         }
 
         break;
@@ -581,16 +599,16 @@ static int32_t OSP_I2C_Control( uint32_t control, uint32_t arg, I2C_RESOURCES *i
         break;
 
     default:
-        return ARM_DRIVER_ERROR_UNSUPPORTED;
+        break;
     } /* switch */
 
-    return ARM_DRIVER_OK;
+    return i_ret_val;
 }
 
 
 /****************************************************************************************************
  * @fn      OSP_I2C_GetStatus
- *          Get I2C status. (unsupported)
+ *          Get I2C transaction status.
  *
  * @param   i2c - Private struct for I2C resources
  *
@@ -614,33 +632,44 @@ static ARM_I2C_STATUS OSP_I2C_GetStatus( I2C_RESOURCES *i2c )
  ****************************************************************************************************/
 static void MX_I2C_Master_IRQHandler( I2C_RESOURCES *i2c )
 {
-    uint32_t state = Chip_I2CM_GetStatus(LPC_I2C0);
-    i2c->ctrl->event = ARM_I2C_EVENT_GENERAL_CALL;
+    uint32_t state = Chip_I2CM_GetStatus( i2c->reg );
+    i2c->ctrl->event = 0;
 
-    if (state & ( I2C_STAT_MSTRARBLOSS | I2C_STAT_MSTSTSTPERR ))
+    if (state & I2C_INTENSET_MSTSTSTPERR )
     {
-        Chip_I2CM_ClearStatus( i2c->reg, I2C_STAT_MSTRARBLOSS | I2C_STAT_MSTSTSTPERR );
+        Chip_I2CM_ClearStatus( i2c->reg, I2C_INTENSET_MSTSTSTPERR );
+        i2c->ctrl->event = ARM_I2C_EVENT_BUS_ERROR;
+        i2c->ctrl->status.bus_error = 1;
+        i2c->ctrl->status.busy      = 0;
+        i2c->ctrl->status.mode      = 0;
+    }
+    if (state & I2C_INTENSET_MSTRARBLOSS )
+    {
+        Chip_I2CM_ClearStatus( i2c->reg, I2C_INTENSET_MSTRARBLOSS );
+        i2c->ctrl->event = ARM_I2C_EVENT_ARBITRATION_LOST;
+        /* Arbitration lost */
+        i2c->ctrl->status.arbitration_lost = 1;
+        i2c->ctrl->status.busy             = 0;
+        i2c->ctrl->status.mode             = 0;
     }
 
-    /* Call I2CM ISR function with the I2C device and transfer rec */
-    if (( state & I2C_STAT_MSTPENDING ))
+    /* Call I2CM transfer handler with the I2C reg base and transfer rec */
+    if (( state & I2C_INTENSET_MSTPENDING ))
     {
         Chip_I2CM_XferHandler( i2c->reg, &i2c_master_xfer );
         if ( i2c_master_xfer.status == I2CM_STATUS_OK )
         {
-            Chip_I2C_DisableInt( i2c->reg, I2C_STAT_MSTPENDING );
+            i2c->ctrl->event = ARM_I2C_EVENT_TRANSFER_DONE;
+            i2c->ctrl->status.busy = 0;
+            Chip_I2C_DisableInt( i2c->reg, I2C_INTENSET_MSTPENDING );
+        }
+        else
+        {
+            i2c->ctrl->event = ARM_I2C_EVENT_TRANSFER_INCOMPLETE;
         }
     }
-    Chip_I2CM_ClearStatus( i2c->reg, I2C_STAT_MSTPENDING );
+    Chip_I2CM_ClearStatus( i2c->reg, I2C_INTENSET_MSTPENDING );
 
-    /* I2C slave related interrupt */
-    while (state & ( I2C_INTENSET_SLVPENDING | I2C_INTENSET_SLVDESEL ))
-    {
-        Chip_I2CS_XferHandler( i2c->reg, &i2cs_HostIfCallBacks );
-
-        /* Update state */
-        state = Chip_I2C_GetPendingInt( i2c->reg );
-    }
     if ( NULL != i2c->ctrl->cb_event )
     {
         i2c->ctrl->cb_event( i2c->ctrl->event );
@@ -661,7 +690,7 @@ static void MX_I2C_Master_IRQHandler( I2C_RESOURCES *i2c )
  ****************************************************************************************************/
 static void MX_I2C_Slave_IRQHandler ( I2C_RESOURCES *i2c )
 {
-    i2c->ctrl->event = ARM_I2C_EVENT_GENERAL_CALL; /* reset current i2c operation status */
+    i2c->ctrl->event = 0; /* reset current i2c operation status */
     Chip_I2CS_XferHandler( i2c->reg, &i2cs_HostIfCallBacks );
 
     if ( NULL != i2c->ctrl->cb_event )
@@ -669,6 +698,28 @@ static void MX_I2C_Slave_IRQHandler ( I2C_RESOURCES *i2c )
         i2c->ctrl->cb_event( i2c->ctrl->event );
     }
 }
+/****************************************************************************************************
+ * @fn      MX_I2C_IRQHandler
+ *          ISR Handler for I2C0 bus
+ *
+ * @param   None
+ *
+ * @return  None
+ *
+ ****************************************************************************************************/
+static void MX_I2C_IRQHandler( I2C_RESOURCES *i2c )
+{
+    uint32_t state = Chip_I2C_GetPendingInt( i2c->reg );
+    if( state & (I2C_INTENSET_SLVPENDING | I2C_INTENSET_SLVDESEL))
+    {
+        MX_I2C_Slave_IRQHandler( i2c );
+    }
+    else if( state & (I2C_INTENSET_MSTPENDING | I2C_INTENSET_MSTRARBLOSS | I2C_INTENSET_MSTSTSTPERR))
+    {
+        MX_I2C_Master_IRQHandler( i2c );
+    }
+}
+
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S
@@ -686,7 +737,7 @@ static void MX_I2C_Slave_IRQHandler ( I2C_RESOURCES *i2c )
  ****************************************************************************************************/
 void MX_I2C0_IRQHandler( void )
 {
-    MX_I2C_Master_IRQHandler( &I2C0_Resources );
+    MX_I2C_IRQHandler( &I2C0_Resources );
 }
 
 /****************************************************************************************************
@@ -700,7 +751,7 @@ void MX_I2C0_IRQHandler( void )
  ****************************************************************************************************/
 void MX_I2C2_IRQHandler( void )
 {
-    MX_I2C_Slave_IRQHandler( &I2C2_Resources );
+    MX_I2C_IRQHandler( &I2C2_Resources );
 }
 
 OSP_BUILD_DRIVER_SENSOR( I2C2, OSP_I2C, &I2C2_Resources );

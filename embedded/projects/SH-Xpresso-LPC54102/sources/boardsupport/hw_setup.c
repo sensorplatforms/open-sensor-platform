@@ -26,6 +26,7 @@
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
 extern ARM_DRIVER_I2C Driver_I2C0;
+extern void dev_i2c_callback( uint32_t event );
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
@@ -339,7 +340,7 @@ void Board_SensorIfInit( InputSensor_t ifID )
     if ( i2c_init_done == 0 )
     {
         /* Initialize the I2C Driver interface */
-        ASF_assert( ARM_DRIVER_OK == Driver_I2C0.Initialize( NULL ));
+        ASF_assert( ARM_DRIVER_OK == Driver_I2C0.Initialize( dev_i2c_callback ));
         ASF_assert( ARM_DRIVER_OK == Driver_I2C0.PowerControl( ARM_POWER_FULL ));
         ASF_assert( ARM_DRIVER_OK == Driver_I2C0.Control( ARM_I2C_BUS_SPEED, ARM_I2C_BUS_SPEED_FAST ));
         NVIC_SetPriority( I2C2_IRQn, I2C_SENSOR_BUS_INT_PRIORITY );
