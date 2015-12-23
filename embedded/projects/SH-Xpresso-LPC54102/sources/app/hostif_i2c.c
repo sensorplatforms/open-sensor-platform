@@ -50,7 +50,7 @@ typedef struct __HOSTIF_Ctrl_t {
 } Hostif_Ctrl_t;
 
 static Hostif_Ctrl_t g_hostif;
-uint32_t      i2c_event = ARM_I2C_EVENT_GENERAL_CALL;
+uint32_t      i2c_event = 0;
 static uint8_t rxBuff[RX_LENGTH] = { 0xff };
 
 #define I2C_MEM_SZ    64 /* Size of memory for I2C Slave ROM driver */
@@ -86,7 +86,7 @@ static void Hostif_TxNext(int magic);
  * Public functions
  ****************************************************************************/
 /******************************************************************************
- * @fn      i2c2_callback
+ * @fn      hostif_i2c_callback
  *            This function is the registered callback to get the event notifications
  *
  * @param   event - I2C event (Transfer or receive)
@@ -94,7 +94,7 @@ static void Hostif_TxNext(int magic);
  * @return   None
  *
  ******************************************************************************/
-void i2c2_callback( uint32_t event )
+void hostif_i2c_callback( uint32_t event )
 {
     i2c_event = event;
 }
@@ -114,7 +114,7 @@ void I2C_HOSTIF_IRQHandler(void)
 {
     /* This transfer handler will call one of the registered callback
        to service the I2C event. */
-    i2c_event = ARM_I2C_EVENT_GENERAL_CALL;
+    i2c_event = 0;
     Driver_I2C2.SlaveReceive( rxBuff, RX_LENGTH );
     MX_I2C2_IRQHandler();
 
@@ -128,8 +128,7 @@ void I2C_HOSTIF_IRQHandler(void)
                                read_bytes );
         ASF_assert( ret == 0 );
     }
-
-    if ( i2c_event == ARM_I2C_EVENT_SLAVE_TRANSMIT )
+    else if ( i2c_event == ARM_I2C_EVENT_SLAVE_TRANSMIT )
     {
         /* Assume each transmission will transmit all the requested data
          * so no need to keep track how many been transmitted.
@@ -227,7 +226,7 @@ void Hostif_Init(void)
     memset(&g_hostif, 0, sizeof(Hostif_Ctrl_t));
 
     /* I2C slave initialisation */
-    Driver_I2C2.Initialize( i2c2_callback );
+    Driver_I2C2.Initialize( hostif_i2c_callback );
 
     /* Setup slave address to respond to */
     Driver_I2C2.Control( ARM_I2C_OWN_ADDRESS, I2C_HOSTIF_ADDR );

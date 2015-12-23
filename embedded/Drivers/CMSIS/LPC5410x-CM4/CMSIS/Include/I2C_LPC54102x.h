@@ -109,9 +109,10 @@ typedef struct
 /* I2C Resource Configuration */
 typedef struct
 {
-    LPC_I2C_T             *reg;                // I2C register interface
-    IRQn_Type             i2c_ev_irq;         // I2C Event IRQ Number
-    I2C_CTRL             *ctrl;               // Run-Time control information
+    LPC_I2C_T            *reg;                 // I2C register interface
+    IRQn_Type             i2c_ev_irq;          // I2C Event IRQ Number
+    CHIP_SYSCON_CLOCK_T   clk;                 // Peripheral clock for power control
+    I2C_CTRL             *ctrl;                // Run-Time control information
 } const I2C_RESOURCES;
 
 
