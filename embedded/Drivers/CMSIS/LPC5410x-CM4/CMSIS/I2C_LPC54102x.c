@@ -200,7 +200,6 @@ static uint8_t i2c_slave_rx( uint8_t data )
  ****************************************************************************************************/
 static void i2c_slave_done( void )
 {
-    i2c_slave->ctrl->cnt    = 0;
     i2c_slave->ctrl->event  = ARM_I2C_EVENT_TRANSFER_DONE;
     /* Done with slave transmit, reset the busy flag */
     i2c_slave->ctrl->status.busy      = 0;

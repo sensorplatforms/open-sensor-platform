@@ -21,18 +21,20 @@
 #include "Common.h"
 #include "BatchManager.h"
 #include "BatchState.h"
-#include "i2cs_driver.h"
 #include "hostif_i2c.h"
 #include <string.h>
+#include "Driver_I2C.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+void    MX_I2C2_IRQHandler ( void );
+extern  ARM_DRIVER_I2C Driver_I2C2;
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E   C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
-
+#define RX_LENGTH                    64
 #define I2C_BUF_SZ                   1024
 #define CAUSE_SENSOR_DATA_READY      1  //TBD. Common definition with SPI slave driver
 #define CAUSE_CONFIG_CMD_RESPONSE    6
@@ -85,7 +87,9 @@ static HostGCResponse_t _GCResponse;
 static uint8_t _CtrlReqBuf[MAX_CONFIG_CMD_SZ];
 
 static Hostif_Ctrl_t g_hostif;
-static i2c_t slave_i2c_handle;
+
+uint32_t      i2c_event = 0;
+static uint8_t rxBuff[RX_LENGTH] = { 0xff };
 
 
 /*-------------------------------------------------------------------------------------------------*\
@@ -95,6 +99,19 @@ static i2c_t slave_i2c_handle;
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+/******************************************************************************
+ * @fn      hostif_i2c_callback
+ *          This function is the registered callback to get the event notifications
+ *
+ * @param   event - I2C event (Transfer or receive)
+ *
+ * @return  None
+ *
+ ******************************************************************************/
+void hostif_i2c_callback( uint32_t event )
+{
+    i2c_event = event;
+}
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E     F U N C T I O N S
@@ -132,7 +149,7 @@ static void Hostif_TxNext(void)
      * when the master is actually ready to receive.
      */
    //D0_printf("2. Startx write = %x,new data = %x\r\n",slave_i2c_handle.pXfer.txBuff,i2cXfer.txBuff);
-    i2c_slave_write(&slave_i2c_handle, g_hostif.txBuff, i_tx_size);
+    Driver_I2C2.SlaveTransmit( (const uint8_t *)g_hostif.txBuff, i_tx_size );
 }
 
 
@@ -149,11 +166,13 @@ static int32_t processHostCommand(uint8_t *rx_buf, uint16_t length, uint8_t i2c_
     int16_t  status;
     BatchStateType_t BatchState;
 
+    if (length < 1) return 0;
+
     switch ( rx_buf[0] )
     {
 
     case HOST_GET_CAUSE:
-        if(i2c_operation == I2C_READ_IN_PROGRESS)
+        if(i2c_operation == ARM_I2C_EVENT_SLAVE_RECEIVE)
         {
             _GCBufferSz = sizeof(_GCBuffer);
             /* Dequeue Get Cause response packet into local buffer */
@@ -176,7 +195,7 @@ static int32_t processHostCommand(uint8_t *rx_buf, uint16_t length, uint8_t i2c_
         break;
 
     case HOST_CONTROL_RW:
-        if(i2c_operation == I2C_READ_COMPLETE)
+        if(i2c_operation == ARM_I2C_EVENT_TRANSFER_DONE)
         {
             ASF_assert( ASFCreateMessage(MSG_PROCESS_CTRL_REQ,
                                 sizeof(MsgCtrlReq), &pData) == ASF_OK );
@@ -194,7 +213,7 @@ static int32_t processHostCommand(uint8_t *rx_buf, uint16_t length, uint8_t i2c_
         break;
 
     case HOST_GC_GET_DATA:
-        if(i2c_operation == I2C_READ_IN_PROGRESS)
+        if(i2c_operation == ARM_I2C_EVENT_SLAVE_RECEIVE)
         {
             /* Dequeue Get Cause data packet into local buffer */
             Hostif_QueueTx( ( uint8_t *) &(_GCBuffer), (uint16_t)(_GCBufferSz) );
@@ -202,14 +221,14 @@ static int32_t processHostCommand(uint8_t *rx_buf, uint16_t length, uint8_t i2c_
         break;
 
     case HOST_SYS_RESET:
-        if(i2c_operation == I2C_READ_COMPLETE)
+        if(i2c_operation == ARM_I2C_EVENT_TRANSFER_DONE)
         {
             NVIC_SystemReset();
         }
         break;
 
     case HOST_TOGGLE_SUSPEND:
-        if(i2c_operation == I2C_READ_COMPLETE)
+        if(i2c_operation == ARM_I2C_EVENT_TRANSFER_DONE)
         {
             /* Get current state of Batch state machine */
             status = BatchStateGet( &BatchState );
@@ -254,15 +273,17 @@ void I2C_HOSTIF_IRQHandler(void)
 {
 
     // This transfer handler will call one of the registered callback to to service the I2C event.
-    i2c_slave_receive(&slave_i2c_handle);
-
-    if ( ( slave_i2c_handle.i2c_operation == I2C_READ_IN_PROGRESS) || (slave_i2c_handle.i2c_operation == I2C_READ_COMPLETE))
+    i2c_event = 0;
+    Driver_I2C2.SlaveReceive( rxBuff, 64 );
+    MX_I2C2_IRQHandler();
+    if ( ( i2c_event == ARM_I2C_EVENT_SLAVE_RECEIVE ) /* || ( i2c_event == ARM_I2C_EVENT_TRANSFER_DONE ) */)
     {
-        processHostCommand( slave_i2c_handle.pXfer.rxBuff, slave_i2c_handle.pXfer.bytesRecv, slave_i2c_handle.i2c_operation );
+        processHostCommand( rxBuff, Driver_I2C2.GetDataCount(), i2c_event );
     }
 
-    if ( slave_i2c_handle.i2c_operation == I2C_WRITE_COMPLETE )
+    if ( i2c_event == ARM_I2C_EVENT_TRANSFER_DONE )
     {
+        processHostCommand( rxBuff, Driver_I2C2.GetDataCount(), i2c_event );
         /* Assume each transmission will transmit all the requested data
         * so no need to keep track how many been transmitted.
         * check if there is any additional data to send */
@@ -297,7 +318,7 @@ void Hostif_QueueTx(uint8_t *pBuf, uint16_t size)
      * No actual transmission happens here, but the I2c HAL keeps the buffer for transmission
      * when the master is actually ready to receive.
      */
-    i2c_slave_write(&slave_i2c_handle, pBuf, size);
+    Driver_I2C2.SlaveTransmit( (const uint8_t *)pBuf, (size) );
     g_hostif.txLength_next = 0;
     g_hostif.txBuff_next = NULL;
 }
@@ -333,7 +354,7 @@ void Hostif_StartTxChained(uint8_t *pBuf, uint16_t size, uint8_t *pBuf_next, uin
      * No actual transmission happens here, but the I2c HAL keeps the buffer for transmission
      * when the master is actually ready to receive.
      */
-    i2c_slave_write(&slave_i2c_handle, pBuf, size-1);
+    Driver_I2C2.SlaveTransmit( (const uint8_t *)pBuf, (size-1) );
 }
 
 
@@ -351,15 +372,16 @@ void Hostif_I2C_Init(void)
     /* reset host IF control data structure */
     memset(&g_hostif, 0, sizeof(Hostif_Ctrl_t));
 
-    slave_i2c_handle.pXfer.rxSz = RX_LENGTH;
-    slave_i2c_handle.ui_slave_address = I2C_HOSTIF_ADDR;
-    slave_i2c_handle.uc_slave_index = 0;
-    slave_i2c_handle.i2c = I2C_LPC_2;
-    /* I2C slave initialization */
-    i2c_init(&slave_i2c_handle);
+    /* I2C slave initialisation */
+    Driver_I2C2.Initialize( hostif_i2c_callback );
 
     /* Setup slave address to respond to */
-    i2c_slave_mode(&slave_i2c_handle,1);
+    Driver_I2C2.Control( ARM_I2C_OWN_ADDRESS, I2C_HOSTIF_ADDR );
+
+    /* Setup slave interrupt  */
+    Driver_I2C2.PowerControl( ARM_POWER_FULL );
+    /* init host interrupt pin priority*/
+    NVIC_SetPriority( I2C_HOSTIF_IRQn, HOSTIF_IRQ_PRIORITY );
 
     /* init host interrupt pin */
     Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, HOSTIF_IRQ_PORT, HOSTIF_IRQ_PIN);
