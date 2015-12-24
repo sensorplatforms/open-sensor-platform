@@ -468,7 +468,6 @@ static int32_t OSP_I2C_MasterReceive( uint32_t       addr,
     /* Enable Master Interrupts */
     Chip_I2C_EnableInt( i2c->reg, I2C_INTENSET_MSTPENDING | I2C_INTENSET_MSTRARBLOSS | I2C_INTENSET_MSTSTSTPERR );
 
-    i2c->ctrl->status.direction        = 1;
     return ARM_DRIVER_OK;
 
 }
@@ -638,7 +637,7 @@ static void MX_I2C_Master_IRQHandler( I2C_RESOURCES *i2c )
     if (state & I2C_INTENSET_MSTSTSTPERR )
     {
         Chip_I2CM_ClearStatus( i2c->reg, I2C_INTENSET_MSTSTSTPERR );
-        i2c->ctrl->event = ARM_I2C_EVENT_BUS_ERROR;
+        i2c->ctrl->event            = ARM_I2C_EVENT_BUS_ERROR;
         i2c->ctrl->status.bus_error = 1;
         i2c->ctrl->status.busy      = 0;
         i2c->ctrl->status.mode      = 0;
@@ -646,11 +645,11 @@ static void MX_I2C_Master_IRQHandler( I2C_RESOURCES *i2c )
     if (state & I2C_INTENSET_MSTRARBLOSS )
     {
         Chip_I2CM_ClearStatus( i2c->reg, I2C_INTENSET_MSTRARBLOSS );
-        i2c->ctrl->event = ARM_I2C_EVENT_ARBITRATION_LOST;
         /* Arbitration lost */
-        i2c->ctrl->status.arbitration_lost = 1;
-        i2c->ctrl->status.busy             = 0;
-        i2c->ctrl->status.mode             = 0;
+        i2c->ctrl->status.arbitration_lost  = 1;
+        i2c->ctrl->event                    = ARM_I2C_EVENT_ARBITRATION_LOST;
+        i2c->ctrl->status.busy              = 0;
+        i2c->ctrl->status.mode              = 0;
     }
 
     /* Call I2CM transfer handler with the I2C reg base and transfer rec */
@@ -659,8 +658,8 @@ static void MX_I2C_Master_IRQHandler( I2C_RESOURCES *i2c )
         Chip_I2CM_XferHandler( i2c->reg, &i2c_master_xfer );
         if ( i2c_master_xfer.status == I2CM_STATUS_OK )
         {
-            i2c->ctrl->event = ARM_I2C_EVENT_TRANSFER_DONE;
-            i2c->ctrl->status.busy = 0;
+            i2c->ctrl->event        = ARM_I2C_EVENT_TRANSFER_DONE;
+            i2c->ctrl->status.busy  = 0;
             Chip_I2C_DisableInt( i2c->reg, I2C_INTENSET_MSTPENDING );
         }
         else
@@ -678,8 +677,8 @@ static void MX_I2C_Master_IRQHandler( I2C_RESOURCES *i2c )
 
 
 /****************************************************************************************************
- * @fn      MX_I2C2_IRQHandler
- *          IRQ handler for I2C2 (sends start,stop sequence, sends byte buffer for tx/Received
+ * @fn      MX_I2C_Slave_IRQHandler
+ *          IRQ handler for slave (sends start,stop sequence, sends byte buffer for tx/Received
  *          bytes from slave to a buffer. Based on event set in the callback process the received
  *          byte of set the next buffer from host ctrl
  *
@@ -700,9 +699,9 @@ static void MX_I2C_Slave_IRQHandler ( I2C_RESOURCES *i2c )
 }
 /****************************************************************************************************
  * @fn      MX_I2C_IRQHandler
- *          ISR Handler for I2C0 bus
+ *          ISR Handler for I2C bus
  *
- * @param   None
+ * @param   i2c -  Private struct for I2C resources
  *
  * @return  None
  *
