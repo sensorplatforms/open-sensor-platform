@@ -373,7 +373,7 @@
               <MiscControls></MiscControls>
               <Define>SYSTEM_CLOCK_FREQ=96000000, __FPU_PRESENT=1, CHIP_LPC5410X, CORE_M4, DEBUG_BUILD, XPRESSO_LPC54102_BOARD, UART_DMA_ENABLE, ANDROID_DEMO</Define>
               <Undefine></Undefine>
-              <IncludePath>..\sources\app;..\sources\config;..\sources\boardsupport;..\..\..\..\include;..\..\..\common\app;..\..\..\common\asf;..\..\..\common\alg;..\..\..\..\external\rtos\rtx\inc;..\..\..\..\external\rtos\rtx\cm;..\..\..\..\external\MCU\NXP-5410x\CSLib\inc;..\..\..\common\modules\sensor-drivers;..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec;..\..\..\common\hostinterface;..\..\..\..\external\CMSIS\Driver\Include;..\..\..\..\embedded\Drivers\CMSIS\Device\NXP\LPC5410x\Include</IncludePath>
+              <IncludePath>..\sources\app;..\sources\config;..\sources\boardsupport;..\..\..\..\include;..\..\..\common\app;..\..\..\common\asf;..\..\..\common\alg;..\..\..\..\external\rtos\rtx\inc;..\..\..\..\external\rtos\rtx\cm;..\..\..\..\external\MCU\NXP-5410x\CSLib\inc;..\..\..\common\modules\sensor-drivers;..\..\..\..\external\Drivers\Sensor\Bosch-Sensortec;..\..\..\common\hostinterface;..\..\..\..\external\CMSIS\Driver\Include;..\..\..\Drivers\CMSIS\LPC5410x-CM4\CMSIS\Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
