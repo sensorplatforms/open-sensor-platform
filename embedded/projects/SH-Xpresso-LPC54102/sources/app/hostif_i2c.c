@@ -276,14 +276,13 @@ void I2C_HOSTIF_IRQHandler(void)
     i2c_event = 0;
     Driver_I2C2.SlaveReceive( rxBuff, 64 );
     MX_I2C2_IRQHandler();
-    if ( ( i2c_event == ARM_I2C_EVENT_SLAVE_RECEIVE ) /* || ( i2c_event == ARM_I2C_EVENT_TRANSFER_DONE ) */)
+    if ( ( i2c_event == ARM_I2C_EVENT_SLAVE_RECEIVE ) || ( i2c_event == ARM_I2C_EVENT_TRANSFER_DONE ) )
     {
         processHostCommand( rxBuff, Driver_I2C2.GetDataCount(), i2c_event );
     }
 
     if ( i2c_event == ARM_I2C_EVENT_TRANSFER_DONE )
     {
-        processHostCommand( rxBuff, Driver_I2C2.GetDataCount(), i2c_event );
         /* Assume each transmission will transmit all the requested data
         * so no need to keep track how many been transmitted.
         * check if there is any additional data to send */
