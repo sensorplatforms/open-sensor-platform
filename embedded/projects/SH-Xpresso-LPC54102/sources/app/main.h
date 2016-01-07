@@ -117,19 +117,25 @@
 #define ACC_SAMPLE_RATE                    63   // 62.5HZ
 #define GYRO_SAMPLE_RATE                   100
 #define PRESSURE_SAMPLE_RATE               25
+#define GEOMAG_SAMPLE_RATE                 50
+#define GAME_ROTATION_SAMPLE_RATE          50
 #define ON_CHANGE_SAMPLE_RATE              0
 
-#define MAG_SAMPLE_PERIOD                  (1000000000UL / MAG_SAMPLE_RATE)    // in ns
-#define ACC_SAMPLE_PERIOD                  (1000000000UL / ACC_SAMPLE_RATE)
-#define GYRO_SAMPLE_PERIOD                 (1000000000UL / GYRO_SAMPLE_RATE)
-#define PRES_SAMPLE_PERIOD                 (1000000000UL / PRESSURE_SAMPLE_RATE)
+
+#define MAG_SAMPLE_PERIOD                  ( 1000000000UL / MAG_SAMPLE_RATE           )    // in ns
+#define ACC_SAMPLE_PERIOD                  ( 1000000000UL / ACC_SAMPLE_RATE           )
+#define GYRO_SAMPLE_PERIOD                 ( 1000000000UL / GYRO_SAMPLE_RATE          )
+#define PRES_SAMPLE_PERIOD                 ( 1000000000UL / PRESSURE_SAMPLE_RATE      )
+#define GEOMAG_SAMPLE_PERIOD               ( 1000000000UL / GEOMAG_SAMPLE_RATE        )
+#define GAME_ROTATION_SAMPLE_PERIOD        ( 1000000000UL / GAME_ROTATION_SAMPLE_RATE )
 #define ON_CHANGE_SAMPLE_PERIOD            (0)
 
 #define MAG_ACTUAL_SAMPLE_PERIOD           ( MAG_SAMPLE_PERIOD   *  MAG_DECIMATE_FACTOR       )
 #define ACC_ACTUAL_SAMPLE_PERIOD           ( ACC_SAMPLE_PERIOD   *  ACCEL_SAMPLE_DECIMATE     )
 #define GYRO_ACTUAL_SAMPLE_PERIOD          ( GYRO_SAMPLE_PERIOD  *  GYRO_SAMPLE_DECIMATE      )
 #define PRES_ACTUAL_SAMPLE_PERIOD          ( PRES_SAMPLE_PERIOD  *  PRESSURE_SAMPLE_DECIMATE  )
-
+#define GEOMAG_ACTUAL_SAMPLE_PERIOD        ( GEOMAG_SAMPLE_PERIOD                             )
+#define GAME_ROTN_ACTUAL_SAMPLE_PERIOD     ( GAME_ROTATION_SAMPLE_PERIOD                      )
 
 
 /*-------------------------------------------------------------------------------------------------*\
@@ -156,6 +162,15 @@ typedef struct RtcClockTag
 } RtcClock_t;
 
 typedef MsgAccelData AccelData_t;
+
+/* Queues (FIFOs) used in the Sensor Hub */
+typedef enum
+{
+    QUEUE_WAKEUP_TYPE,              //Queue for wakeup sensor packets
+    QUEUE_NONWAKEUP_TYPE,           //Queue for non-wakeup sensor packets
+    QUEUE_CONTROL_RESPONSE_TYPE,    //Queue for Control Response packets
+    NUM_QUEUE_TYPE
+} FifoQ_Type_t;
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
