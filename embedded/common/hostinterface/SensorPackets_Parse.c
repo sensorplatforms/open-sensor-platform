@@ -50,7 +50,7 @@ extern uint32_t g_logging;
 static int32_t CheckPacketSanity( const uint8_t *pPacket );
 static void ParsePacketHeader( LocalPacketTypes_t *pOut, const uint8_t *pPacket, uint8_t isSensorDataPacket );
 static int32_t ParseSensorDataPacket( LocalPacketTypes_t *pOut,  const uint8_t *pSrc, uint16_t *pPktSizeByType, uint16_t pktBufferSize );
-static int32_t ParseControlPacket(    LocalPacketTypes_t *pDest, const uint8_t *pSrc, uint16_t *pPktSizeByType, uint16_t pktBufferSize );
+static int32_t ParseControlPacket( uint8_t pktID, LocalPacketTypes_t *pDest, const uint8_t *pSrc, uint16_t *pPktSizeByType, uint16_t pktBufferSize );
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
@@ -454,6 +454,7 @@ static int32_t ParseSensorDataPacket( LocalPacketTypes_t *pOut, const uint8_t *p
  * @fn      ParseControlPacket
  *          Top level parser for Control Request Packets.
  *
+ * @param   [IN]pktID - Packet type identifier (Sensor Data/ Control Req, etc.)
  * @param   [OUT]pDest - Structure that will return the parsed values
  * @param   [IN]pSrc - Packet buffer containing the packet to parse
  * @param   [OUT]pPktSizeByType - Size of the packet as determined by its type and other parameters
@@ -463,7 +464,7 @@ static int32_t ParseSensorDataPacket( LocalPacketTypes_t *pOut, const uint8_t *p
  * @return  OSP_STATUS_OK, or negative Error code enum corresponding to the error encountered
  *
  ***************************************************************************************************/
-static int32_t ParseControlPacket( LocalPacketTypes_t *pDest, const uint8_t *pSrc, uint16_t *pPktSizeByType, uint16_t pktBufferSize )
+static int32_t ParseControlPacket( uint8_t pktID, LocalPacketTypes_t *pDest, const uint8_t *pSrc, uint16_t *pPktSizeByType, uint16_t pktBufferSize )
 {
     uint8_t *pDestPayload;
     int32_t errCode = SET_ERROR( OSP_STATUS_OK );
@@ -482,12 +483,15 @@ static int32_t ParseControlPacket( LocalPacketTypes_t *pDest, const uint8_t *pSr
 
     *pPktSizeByType = CTRL_PKT_HEADER_SIZE;
 
-    /* Copy payload */
-    pDestPayload = GetControlPayloadAddress( pDest, parameterID );
-    /* Note: pDestPayLoad == NULL means that no data copy is required */
-    if (pDestPayload != NULL)
+    /* Copy payload in case of Write Requests or Response for R/W request */
+    if ((pktID == PKID_CONTROL_REQ_WR) || (pktID == PKID_CONTROL_RESP))
     {
-        *pPktSizeByType += CopyControlPacketPayload( pDestPayload, pSrc + CTRL_PKT_PAYLOAD_OFFSET, parameterID );
+        pDestPayload = GetControlPayloadAddress( pDest, parameterID );
+        /* Note: pDestPayLoad == NULL means that no data copy is required */
+        if (pDestPayload != NULL)
+        {
+            *pPktSizeByType += CopyControlPacketPayload( pDestPayload, pSrc + CTRL_PKT_PAYLOAD_OFFSET, parameterID );
+        }
     }
 
     /* Check for CRC option and do CRC check now that we know the packet size */
@@ -570,6 +574,7 @@ int32_t ParseHostInterfacePkt( LocalPacketTypes_t *pOut, const uint8_t *pPacket,
         /* Incoming buffer size check */
         if (pktBufferSize < MIN_HIF_SENSOR_DATA_PKT_SZ)
         {
+            *pPktSizeByType = pktBufferSize; //This is useful for caller who maybe in a while loop
             return SET_ERROR( OSP_STATUS_BUFFER_TOO_SMALL );
         }
 
@@ -582,10 +587,11 @@ int32_t ParseHostInterfacePkt( LocalPacketTypes_t *pOut, const uint8_t *pPacket,
         /* Incoming buffer size check */
         if (pktBufferSize < MIN_HIF_CONTROL_PKT_SZ)
         {
+            *pPktSizeByType = pktBufferSize; //This is useful for caller who maybe in a while loop
             return SET_ERROR( OSP_STATUS_BUFFER_TOO_SMALL );
         }
 
-        errCode = ParseControlPacket( pOut, pPacket, pPktSizeByType, pktBufferSize );
+        errCode = ParseControlPacket( pktID, pOut, pPacket, pPktSizeByType, pktBufferSize );
         break;
 
     default:

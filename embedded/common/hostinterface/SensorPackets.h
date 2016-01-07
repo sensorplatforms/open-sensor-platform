@@ -464,7 +464,7 @@ typedef struct _LocalControlPktInt32x3x3_s {
 
 typedef struct _LocalControlPktUint8_s {
     uint8_t DataU8;
-} LocalControlPktUint8;
+} LocalControlPktUint8_t;
 
 typedef struct _LocalControlPktUint8x32_s {
     uint8_t DataU8x32[32];
@@ -483,43 +483,44 @@ typedef struct _LocalControlPktUint64x2_s {
 } LocalControlPktUint64x2_t;
 
 
-typedef struct _LocalControlPktInt32_s       LocalControlPktErrorCode_t;            // 0x00  PARAM_ID_ERROR_CODE_IN_DATA
-typedef struct _LocalControlPktUint8_s       LocalControlPktEnable_t;               // 0x01  PARAM_ID_ENABLE
-typedef struct _LocalControlPktUint64x2_s    LocalControlPktBatch_t;                // 0x02  PARAM_ID_BATCH
-typedef struct _LocalControlPktNoData_s      LocalControlPktFlush_t;                // 0x03  PARAM_ID_FLUSH
-typedef struct _LocalControlPktInt32x2_s     LocalControlPktRangeAndResolution_t;   // 0x04  PARAM_ID_RANGE_RESOLUTION
-typedef struct _LocalControlPktInt32_s       LocalControlPktPower_t;                // 0x05  PARAM_ID_POWER
-typedef struct _LocalControlPktInt32x2_s     LocalControlPktMinMaxDelay_t;          // 0x06  PARAM_ID_MINMAX_DELAY
-typedef struct _LocalControlPktUint32x2_s    LocalControlPktFifoEventCount_t;       // 0x07  PARAM_ID_FIFO_EVT_CNT
 
-typedef struct _LocalControlPktInt8x3_s      LocalControlPktAxisMapping_t;          // 0x08  PARAM_ID_AXIS_MAPPING
-typedef struct _LocalControlPktInt32x3_s     LocalControlPktConversionOffset_t;     // 0x09  PARAM_ID_CONVERSION_OFFSET
-typedef struct _LocalControlPktInt32x3_s     LocalControlPktConversionScale_t;      // 0x0A  PARAM_ID_CONVERSION_SCALE
-typedef struct _LocalControlPktInt32x3_s     LocalControlPktSensorNoise_t;          // 0x0B  PARAM_ID_SENSOR_NOISE
-typedef struct _LocalControlPktInt32_s       LocalControlPktTimeStampOffset_t;      // 0x0C  PARAM_ID_TIMESTAMP_OFFSET
-typedef struct _LocalControlPktUint32x2_s    LocalControlPktOnTimeWakeTime_t;       // 0x0D  PARAM_ID_ONTIME_WAKETIME
-typedef struct _LocalControlPktUint16x2_s    LocalControlPktHpfLpfCutoff_t;         // 0x0E  PARAM_ID_HPF_LPF_CUTOFF
-typedef struct _LocalControlPktUint8x32_s    LocalControlPktSensorName_t;           // 0x0F  PARAM_ID_SENSOR_NAME
+typedef LocalControlPktInt32_t      LocalControlPktErrorCode_t;            // 0x00  PARAM_ID_ERROR_CODE_IN_DATA
+typedef LocalControlPktUint8_t      LocalControlPktEnable_t;               // 0x01  PARAM_ID_ENABLE
+typedef LocalControlPktUint64x2_t   LocalControlPktBatch_t;                // 0x02  PARAM_ID_BATCH
+typedef LocalControlPktNoData_t     LocalControlPktFlush_t;                // 0x03  PARAM_ID_FLUSH
+typedef LocalControlPktInt32x2_t    LocalControlPktRangeAndResolution_t;   // 0x04  PARAM_ID_RANGE_RESOLUTION
+typedef LocalControlPktInt32_t      LocalControlPktPower_t;                // 0x05  PARAM_ID_POWER
+typedef LocalControlPktInt32x2_t    LocalControlPktMinMaxDelay_t;          // 0x06  PARAM_ID_MINMAX_DELAY
+typedef LocalControlPktUint32x2_t   LocalControlPktFifoEventCount_t;       // 0x07  PARAM_ID_FIFO_EVT_CNT
 
-typedef struct _LocalControlPktInt32x3_s     LocalControlPktXyzOffset_t;            // 0x10  PARAM_ID_XYZ_OFFSET
-typedef struct _LocalControlPktInt32x3x3_s   LocalControlPktSkorMatrix_t;           // 0x11  PARAM_ID_F_SKOR_MATRIX
-typedef struct _LocalControlPktInt32x3_s     LocalControlPktFCalOffset_t;           // 0x12  PARAM_ID_F_CAL_OFFSET
-typedef struct _LocalControlPktInt16x4x3_s   LocalControlPktFNonlinearEffects_t;    // 0x13  PARAM_ID_F_NONLINEAR_EFFECTS
-typedef struct _LocalControlPktInt32x3_s     LocalControlPktBiasStability_t;        // 0x14  PARAM_ID_BIAS_STABILITY
-typedef struct _LocalControlPktInt32x3_s     LocalControlPktRepeatability_t;        // 0x15  PARAM_ID_REPEATABILITY
-typedef struct _LocalControlPktInt16x3x2_s   LocalControlPktTempCoeff_t;            // 0x16  PARAM_ID_TEMP_COEFF
-typedef struct _LocalControlPktInt16x3_s     LocalControlPktShakeSusceptibility_t;  // 0x17  PARAM_ID_SHAKE_SUSCEPTIBILITY
+typedef LocalControlPktInt8x3_t     LocalControlPktAxisMapping_t;          // 0x08  PARAM_ID_AXIS_MAPPING
+typedef LocalControlPktInt32x3_t    LocalControlPktConversionOffset_t;     // 0x09  PARAM_ID_CONVERSION_OFFSET
+typedef LocalControlPktInt32x3_t    LocalControlPktConversionScale_t;      // 0x0A  PARAM_ID_CONVERSION_SCALE
+typedef LocalControlPktInt32x3_t    LocalControlPktSensorNoise_t;          // 0x0B  PARAM_ID_SENSOR_NOISE
+typedef LocalControlPktInt32_t      LocalControlPktTimeStampOffset_t;      // 0x0C  PARAM_ID_TIMESTAMP_OFFSET
+typedef LocalControlPktUint32x2_t   LocalControlPktOnTimeWakeTime_t;       // 0x0D  PARAM_ID_ONTIME_WAKETIME
+typedef LocalControlPktUint16x2_t   LocalControlPktHpfLpfCutoff_t;         // 0x0E  PARAM_ID_HPF_LPF_CUTOFF
+typedef LocalControlPktUint8x32_t   LocalControlPktSensorName_t;           // 0x0F  PARAM_ID_SENSOR_NAME
 
-typedef struct _LocalControlPktInt32_s       LocalControlPktExpectedNorm_t;         // 0x18  PARAM_ID_EXPECTED_NORM
-typedef struct _LocalControlPktUint8x32_s    LocalControlPktVersion_t;              // 0x19  PARAM_ID_VERSION
-typedef struct _LocalControlPktInt32x3_s     LocalControlPktDynamicCalScale_t;      // 0x1A  PARAM_ID_DYNAMIC_CAL_SCALE
-typedef struct _LocalControlPktInt32x3_s     LocalControlPktDynamicCalSkew_t;       // 0x1B  PARAM_ID_DYNAMIC_CAL_SKEW
-typedef struct _LocalControlPktInt32x3_s     LocalControlPktDynamicCalOffset_t;     // 0x1C  PARAM_ID_DYNAMIC_CAL_OFFSET
-typedef struct _LocalControlPktInt32x3_s     LocalControlPktDynamicCalRotation_t;   // 0x1D  PARAM_ID_DYNAMIC_CAL_ROTATION
-typedef struct _LocalControlPktInt32x3_s     LocalControlPktDynamicCalQuality_t;    // 0x1E  PARAM_ID_DYNAMIC_CAL_QUALITY
-typedef struct _LocalControlPktInt8_s        LocalControlPktDynamicCalSource_t;     // 0x1F  PARAM_ID_DYNAMIC_CAL_SOURCE
+typedef LocalControlPktInt32x3_t    LocalControlPktXyzOffset_t;            // 0x10  PARAM_ID_XYZ_OFFSET
+typedef LocalControlPktInt32x3x3_t  LocalControlPktSkorMatrix_t;           // 0x11  PARAM_ID_F_SKOR_MATRIX
+typedef LocalControlPktInt32x3_t    LocalControlPktFCalOffset_t;           // 0x12  PARAM_ID_F_CAL_OFFSET
+typedef LocalControlPktInt16x4x3_t  LocalControlPktFNonlinearEffects_t;    // 0x13  PARAM_ID_F_NONLINEAR_EFFECTS
+typedef LocalControlPktInt32x3_t    LocalControlPktBiasStability_t;        // 0x14  PARAM_ID_BIAS_STABILITY
+typedef LocalControlPktInt32x3_t    LocalControlPktRepeatability_t;        // 0x15  PARAM_ID_REPEATABILITY
+typedef LocalControlPktInt16x3x2_t  LocalControlPktTempCoeff_t;            // 0x16  PARAM_ID_TEMP_COEFF
+typedef LocalControlPktInt16x3_t    LocalControlPktShakeSusceptibility_t;  // 0x17  PARAM_ID_SHAKE_SUSCEPTIBILITY
 
-typedef struct _LocalControlPktInt8_s        LocalControlPktConfigDone_t;           // 0x20  PARAM_ID_CONFIG_DONE
+typedef LocalControlPktInt32_t      LocalControlPktExpectedNorm_t;         // 0x18  PARAM_ID_EXPECTED_NORM
+typedef LocalControlPktUint8x32_t   LocalControlPktVersion_t;              // 0x19  PARAM_ID_VERSION
+typedef LocalControlPktInt32x3_t    LocalControlPktDynamicCalScale_t;      // 0x1A  PARAM_ID_DYNAMIC_CAL_SCALE
+typedef LocalControlPktInt32x3_t    LocalControlPktDynamicCalSkew_t;       // 0x1B  PARAM_ID_DYNAMIC_CAL_SKEW
+typedef LocalControlPktInt32x3_t    LocalControlPktDynamicCalOffset_t;     // 0x1C  PARAM_ID_DYNAMIC_CAL_OFFSET
+typedef LocalControlPktInt32x3_t    LocalControlPktDynamicCalRotation_t;   // 0x1D  PARAM_ID_DYNAMIC_CAL_ROTATION
+typedef LocalControlPktInt32x3_t    LocalControlPktDynamicCalQuality_t;    // 0x1E  PARAM_ID_DYNAMIC_CAL_QUALITY
+typedef LocalControlPktInt8_t       LocalControlPktDynamicCalSource_t;     // 0x1F  PARAM_ID_DYNAMIC_CAL_SOURCE
+
+typedef LocalControlPktInt8_t       LocalControlPktConfigDone_t;           // 0x20  PARAM_ID_CONFIG_DONE
 
 typedef union _LocalControlPktPayloadTypes_s {
 
@@ -587,7 +588,6 @@ typedef struct _LocalPacketTypes_s {
     uint8_t         Metadata;
     ASensorType_t   SType;      // if Private sensor, this has Private bit set at 0x10000
     uint8_t         SubType;
-    int16_t         PayloadOffset;
     int16_t         PayloadSize;
 
 } LocalPacketTypes_t;
@@ -823,48 +823,48 @@ typedef struct _HifControlPktUint32x2_s {
 typedef struct _HifControlPktUint64x2_s {
     HifSnsrPktQualifier_t Q;
     uint8_t AttrByte2;
-    int8_t  DataU64x2[8];         // uint64_t DataU64[2];
+    int8_t  DataU64x2[16];         // uint64_t DataU64[2];
     uint8_t CRCField[CRC_SIZE];
 } HifControlPktUint64x2_t;
 
 
-typedef struct _HifControlPktInt32_s       HifControlPktErrorCode_t;            // 0x00  PARAM_ID_ERROR_CODE_IN_DATA
-typedef struct _HifControlPktUint8_s       HifControlPktEnable_t;               // 0x01  PARAM_ID_ENABLE
-typedef struct _HifControlPktUint64x2_s    HifControlPktBatch_t;                // 0x02  PARAM_ID_BATCH
-typedef struct _HifControlPktNoData_s      HifControlPktFlush_t;                // 0x03  PARAM_ID_FLUSH
-typedef struct _HifControlPktInt32x2_s     HifControlPktRangeAndResolution_t;   // 0x04  PARAM_ID_RANGE_RESOLUTION
-typedef struct _HifControlPktInt32_s       HifControlPktPower_t;                // 0x05  PARAM_ID_POWER
-typedef struct _HifControlPktInt32x2_s     HifControlPktMinMaxDelay_t;          // 0x06  PARAM_ID_MINMAX_DELAY
-typedef struct _HifControlPktUint32x2_s    HifControlPktFifoEventCount_t;       // 0x07  PARAM_ID_FIFO_EVT_CNT
+typedef HifControlPktInt32_t       HifControlPktErrorCode_t;            // 0x00  PARAM_ID_ERROR_CODE_IN_DATA
+typedef HifControlPktUint8_t       HifControlPktEnable_t;               // 0x01  PARAM_ID_ENABLE
+typedef HifControlPktUint64x2_t    HifControlPktBatch_t;                // 0x02  PARAM_ID_BATCH
+typedef HifControlPktNoData_t      HifControlPktFlush_t;                // 0x03  PARAM_ID_FLUSH
+typedef HifControlPktInt32x2_t     HifControlPktRangeAndResolution_t;   // 0x04  PARAM_ID_RANGE_RESOLUTION
+typedef HifControlPktInt32_t       HifControlPktPower_t;                // 0x05  PARAM_ID_POWER
+typedef HifControlPktInt32x2_t     HifControlPktMinMaxDelay_t;          // 0x06  PARAM_ID_MINMAX_DELAY
+typedef HifControlPktUint32x2_t    HifControlPktFifoEventCount_t;       // 0x07  PARAM_ID_FIFO_EVT_CNT
 
-typedef struct _HifControlPktInt8x3_s      HifControlPktAxisMapping_t;          // 0x08  PARAM_ID_AXIS_MAPPING
-typedef struct _HifControlPktInt32x3_s     HifControlPktConversionOffset_t;     // 0x09  PARAM_ID_CONVERSION_OFFSET
-typedef struct _HifControlPktInt32x3_s     HifControlPktConversionScale_t;      // 0x0A  PARAM_ID_CONVERSION_SCALE
-typedef struct _HifControlPktInt32x3_s     HifControlPktSensorNoise_t;          // 0x0B  PARAM_ID_SENSOR_NOISE
-typedef struct _HifControlPktInt32_s       HifControlPktTimeStampOffset_t;      // 0x0C  PARAM_ID_TIMESTAMP_OFFSET
-typedef struct _HifControlPktUint32x2_s    HifControlPktOnTimeWakeTime_t;       // 0x0D  PARAM_ID_ONTIME_WAKETIME
-typedef struct _HifControlPktUint16x2_s    HifControlPktHpfLpfCutoff_t;         // 0x0E  PARAM_ID_HPF_LPF_CUTOFF
-typedef struct _HifControlPktUint8x32_s    HifControlPktSensorName_t;           // 0x0F  PARAM_ID_SENSOR_NAME
+typedef HifControlPktInt8x3_t      HifControlPktAxisMapping_t;          // 0x08  PARAM_ID_AXIS_MAPPING
+typedef HifControlPktInt32x3_t     HifControlPktConversionOffset_t;     // 0x09  PARAM_ID_CONVERSION_OFFSET
+typedef HifControlPktInt32x3_t     HifControlPktConversionScale_t;      // 0x0A  PARAM_ID_CONVERSION_SCALE
+typedef HifControlPktInt32x3_t     HifControlPktSensorNoise_t;          // 0x0B  PARAM_ID_SENSOR_NOISE
+typedef HifControlPktInt32_t       HifControlPktTimeStampOffset_t;      // 0x0C  PARAM_ID_TIMESTAMP_OFFSET
+typedef HifControlPktUint32x2_t    HifControlPktOnTimeWakeTime_t;       // 0x0D  PARAM_ID_ONTIME_WAKETIME
+typedef HifControlPktUint16x2_t    HifControlPktHpfLpfCutoff_t;         // 0x0E  PARAM_ID_HPF_LPF_CUTOFF
+typedef HifControlPktUint8x32_t    HifControlPktSensorName_t;           // 0x0F  PARAM_ID_SENSOR_NAME
 
-typedef struct _HifControlPktInt32x3_s     HifControlPktXyzOffset_t;            // 0x10  PARAM_ID_XYZ_OFFSET
-typedef struct _HifControlPktInt32x3x3_s   HifControlPktSkorMatrix_t;           // 0x11  PARAM_ID_F_SKOR_MATRIX
-typedef struct _HifControlPktInt32x3_s     HifControlPktFCalOffset_t;           // 0x12  PARAM_ID_F_CAL_OFFSET
-typedef struct _HifControlPktInt16x4x3_s   HifControlPktFNonlinearEffects_t;    // 0x13  PARAM_ID_F_NONLINEAR_EFFECTS
-typedef struct _HifControlPktInt32x3_s     HifControlPktBiasStability_t;        // 0x14  PARAM_ID_BIAS_STABILITY
-typedef struct _HifControlPktInt32x3_s     HifControlPktRepeatability_t;        // 0x15  PARAM_ID_REPEATABILITY
-typedef struct _HifControlPktInt16x3x2_s   HifControlPktTempCoeff_t;            // 0x16  PARAM_ID_TEMP_COEFF
-typedef struct _HifControlPktInt16x3_s     HifControlPktShakeSusceptibility_t;  // 0x17  PARAM_ID_SHAKE_SUSCEPTIBILITY
+typedef HifControlPktInt32x3_t     HifControlPktXyzOffset_t;            // 0x10  PARAM_ID_XYZ_OFFSET
+typedef HifControlPktInt32x3x3_t   HifControlPktSkorMatrix_t;           // 0x11  PARAM_ID_F_SKOR_MATRIX
+typedef HifControlPktInt32x3_t     HifControlPktFCalOffset_t;           // 0x12  PARAM_ID_F_CAL_OFFSET
+typedef HifControlPktInt16x4x3_t   HifControlPktFNonlinearEffects_t;    // 0x13  PARAM_ID_F_NONLINEAR_EFFECTS
+typedef HifControlPktInt32x3_t     HifControlPktBiasStability_t;        // 0x14  PARAM_ID_BIAS_STABILITY
+typedef HifControlPktInt32x3_t     HifControlPktRepeatability_t;        // 0x15  PARAM_ID_REPEATABILITY
+typedef HifControlPktInt16x3x2_t   HifControlPktTempCoeff_t;            // 0x16  PARAM_ID_TEMP_COEFF
+typedef HifControlPktInt16x3_t     HifControlPktShakeSusceptibility_t;  // 0x17  PARAM_ID_SHAKE_SUSCEPTIBILITY
 
-typedef struct _HifControlPktInt32_s       HifControlPktExpectedNorm_t;         // 0x18  PARAM_ID_EXPECTED_NORM
-typedef struct _HifControlPktUint8x32_s    HifControlPktVersion_t;              // 0x19  PARAM_ID_VERSION
-typedef struct _HifControlPktInt32x3_s     HifControlPktDynamicCalScale_t;      // 0x1A  PARAM_ID_DYNAMIC_CAL_SCALE
-typedef struct _HifControlPktInt32x3_s     HifControlPktDynamicCalSkew_t;       // 0x1B  PARAM_ID_DYNAMIC_CAL_SKEW
-typedef struct _HifControlPktInt32x3_s     HifControlPktDynamicCalOffset_t;     // 0x1C  PARAM_ID_DYNAMIC_CAL_OFFSET
-typedef struct _HifControlPktInt32x3_s     HifControlPktDynamicCalRotation_t;   // 0x1D  PARAM_ID_DYNAMIC_CAL_ROTATION
-typedef struct _HifControlPktInt32x3_s     HifControlPktDynamicCalQuality_t;    // 0x1E  PARAM_ID_DYNAMIC_CAL_QUALITY
-typedef struct _HifControlPktInt8_s        HifControlPktDynamicCalSource_t;     // 0x1F  PARAM_ID_DYNAMIC_CAL_SOURCE
+typedef HifControlPktInt32_t       HifControlPktExpectedNorm_t;         // 0x18  PARAM_ID_EXPECTED_NORM
+typedef HifControlPktUint8x32_t    HifControlPktVersion_t;              // 0x19  PARAM_ID_VERSION
+typedef HifControlPktInt32x3_t     HifControlPktDynamicCalScale_t;      // 0x1A  PARAM_ID_DYNAMIC_CAL_SCALE
+typedef HifControlPktInt32x3_t     HifControlPktDynamicCalSkew_t;       // 0x1B  PARAM_ID_DYNAMIC_CAL_SKEW
+typedef HifControlPktInt32x3_t     HifControlPktDynamicCalOffset_t;     // 0x1C  PARAM_ID_DYNAMIC_CAL_OFFSET
+typedef HifControlPktInt32x3_t     HifControlPktDynamicCalRotation_t;   // 0x1D  PARAM_ID_DYNAMIC_CAL_ROTATION
+typedef HifControlPktInt32x3_t     HifControlPktDynamicCalQuality_t;    // 0x1E  PARAM_ID_DYNAMIC_CAL_QUALITY
+typedef HifControlPktInt8_t        HifControlPktDynamicCalSource_t;     // 0x1F  PARAM_ID_DYNAMIC_CAL_SOURCE
 
-typedef struct _HifControlPktNoData_s      HifControlPktConfigDone_t;           // 0x20  PARAM_ID_CONFIG_DONE
+typedef HifControlPktNoData_t      HifControlPktConfigDone_t;           // 0x20  PARAM_ID_CONFIG_DONE
 
 
 /* Define union for all the host interface packet types */
@@ -944,26 +944,16 @@ void SetResponsePacketToErrorPacket( LocalPacketTypes_t *pLocalPacket, int32_t e
 // returns CRC16-CCITT of the given buffer
 uint16_t Crc16_CCITT(const unsigned char *buf, uint16_t len);
 
-// returns 0 if CRC flag not set or if CRC check passes, otherwise returns a negative error code.
-//int32_t CheckPacketCRC(const uint8_t *pPacket, uint16_t pktSize);
-
 //  set CRC flag in packet, calculate CRC16-CCITT of resulting packet, and append CRC to packet.
 void FormatPacketCRC( HostIFPackets_t *pDest, uint16_t packetSizeIncludingCRC );
 
 
-/*  Packet characterization routines  */
-
-// various packet sizes in bytes.  on error, each routine returns a negative error code.
-//void GetPacketSize( const uint8_t *pPacket, uint16_t *pPacketSize, int32_t *pErrorCode );
-
+/* Packet characterization routines
+ * Various packet sizes in bytes.  on error, each routine returns a negative error code.
+ */
 int32_t GetSensorPacketPayloadSize(  uint8_t sensorPacketType, uint8_t metadata );
 int32_t GetControlPacketPayloadSize( uint8_t packetID, uint8_t paramID          );
 int32_t GetPacketPayloadSize(        const uint8_t *pPacket                     );
-
-static INLINE uint8_t *GetControlPacketPayloadAddress( HostIFPackets_t *pPacket )
-{
-    return (uint8_t *) &( pPacket->GenericControlPkt.CRCField[0] );  // zero payload so use CRC here
-};
 
 //  returns negative error code if sensor type out of range.
 //  Otherwise returns 0 for Nonwakeup, 1 for Wakeup sensor types.
@@ -1046,6 +1036,8 @@ int32_t FormatOrientationFixP(
     HostIFPackets_t *pDest, const OrientationFixP_t *pOrientationData,
     ASensorType_t sType );
 
+int32_t FormatFlushCompletePacket( HostIFPackets_t *pDestPacket, ASensorType_t sensorType );
+
 
 /*  Control Request/Response packet formatting routines, ordered by Parameter ID */
 
@@ -1055,11 +1047,6 @@ int32_t FormatControlPacket(
 
 //   PARAM_ID_ERROR_CODE_IN_DATA     0x00    R_: Int32
 //
-int32_t FormatControlReqRead_ErrorCodeInData(
-    HostIFPackets_t *pDest,
-    ASensorType_t sType, uint8_t subType,
-    uint8_t seqNum, uint8_t crcFlag );
-
 int32_t FormatControlResp_ErrorCodeInData(
     HostIFPackets_t *pDest, int32_t errorCodeInData,
     ASensorType_t sType, uint8_t subType,
@@ -1072,11 +1059,6 @@ int32_t FormatControlReqWrite_Enable(
     ASensorType_t sType, uint8_t subType,
     uint8_t seqNum, uint8_t crcFlag );
 
-int32_t FormatControlResp_Enable(
-    HostIFPackets_t *pDest,
-    ASensorType_t sType, uint8_t subType,
-    uint8_t seqNum, uint8_t crcFlag );
-
 //   PARAM_ID_BATCH                  0x02    _W: Uint64 x 2
 //
 int32_t FormatControlReqWrite_Batch(
@@ -1084,19 +1066,9 @@ int32_t FormatControlReqWrite_Batch(
     ASensorType_t sType, uint8_t subType,
     uint8_t seqNum, uint8_t crcFlag );
 
-int32_t FormatControlResp_Batch(
-    HostIFPackets_t *pDest,
-    ASensorType_t sType, uint8_t subType,
-    uint8_t seqNum, uint8_t crcFlag );
-
 //   PARAM_ID_FLUSH                  0x03    _W: no payload
 //
 int32_t FormatControlReqWrite_Flush(
-    HostIFPackets_t *pDest,
-    ASensorType_t sType, uint8_t subType,
-    uint8_t seqNum, uint8_t crcFlag );
-
-int32_t FormatControlResp_Flush(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
     uint8_t seqNum, uint8_t crcFlag );
@@ -1554,10 +1526,6 @@ int32_t FormatControlReqWrite_ConfigDone(
     ASensorType_t sType, uint8_t subType,
     uint8_t seqNum, uint8_t crcFlag );
 
-int32_t FormatControlResp_ConfigDone(
-    HostIFPackets_t *pDest,
-    ASensorType_t sType, uint8_t subType,
-    uint8_t seqNum, uint8_t crcFlag );
 
 
 
