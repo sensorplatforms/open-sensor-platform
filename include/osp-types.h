@@ -42,9 +42,9 @@
 # define FALSE (!TRUE)
 #endif
 
-typedef signed char OSP_STATUS_t;
+typedef signed char OSP_STATUS_t;   //Used in embedded Sensor Hub FW
 
-/* Error codes (corresponding to osp_status_t) */
+/* Error codes (corresponding to OSP_STATUS_t) */
 
 #define OSP_STATUS_IDLE                           ((OSP_STATUS_t)  1)
 #define OSP_STATUS_OK                             ((OSP_STATUS_t)  0)
@@ -63,7 +63,7 @@ typedef signed char OSP_STATUS_t;
 #define OSP_STATUS_SENSOR_NOT_REGISTERED          ((OSP_STATUS_t) -13)
 #define OSP_STATUS_SENSOR_INVALID_DESCRIPTOR      ((OSP_STATUS_t) -14)
 #define OSP_STATUS_SENSOR_INVALID_TYPE            ((OSP_STATUS_t) -15)
-#define OSP_STATUS_SENSOR_UNSUPPORTED_SAMPLE_RATE ((OSP_STATUS_t)-16)
+#define OSP_STATUS_SENSOR_UNSUPPORTED_SAMPLE_RATE ((OSP_STATUS_t) -16)
 #define OSP_STATUS_RESULT_IN_USE                  ((OSP_STATUS_t) -17)
 #define OSP_STATUS_RESULT_INVALID_DESCRIPTOR      ((OSP_STATUS_t) -18)
 #define OSP_STATUS_NO_MORE_HANDLES                ((OSP_STATUS_t) -19)
@@ -79,9 +79,8 @@ typedef signed char OSP_STATUS_t;
 #define OSP_STATUS_QUEUE_EMPTY                    ((OSP_STATUS_t) -29)
 #define OSP_STATUS_UNINITIALIZED                  ((OSP_STATUS_t) -30)
 #define OSP_STATUS_INVALID_CRC                    ((OSP_STATUS_t) -31)
-#define OSP_STATUS_FLUSH_CTRL_RSP_Q_ERR           ((OSP_STATUS_t) -32)
-#define OSP_STATUS_FLUSH_WAKEUP_Q_ERR             ((OSP_STATUS_t) -33)
-#define OSP_STATUS_FLUSH_NONWAKEUP_Q_ERR          ((OSP_STATUS_t) -34)
+#define OSP_STATUS_FLUSH_ERR                      ((OSP_STATUS_t) -32)
+#define OSP_STATUS_MALLOC_FAILED                  ((OSP_STATUS_t) -33)
 
 /*-------------------------------------------------------------------------------------------------*\
  |    T Y P E   D E F I N I T I O N S
@@ -101,7 +100,7 @@ typedef float           osp_float_t;
 #endif
 
 typedef unsigned short osp_size_t;
-typedef int osp_status_t;
+typedef int osp_status_t;   //Used with OSP APIs
 
 #endif /* OSP_TYPES_H */
 /*-------------------------------------------------------------------------------------------------*\
