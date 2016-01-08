@@ -107,7 +107,7 @@ int32_t FormatControlPacketFromFields( HostIFPackets_t *pDest, const uint8_t *pS
         }
         else
         {
-            uint8_t *pDestPayload = GetControlPacketPayloadAddress( pDest );
+            uint8_t *pDestPayload = &pDest->Enable.DataU8;  //For all packets data address starts here
 
             CopyControlPacketPayload( pDestPayload, pSrcPayloadData, parameterID );
         }
@@ -470,6 +470,61 @@ int32_t FormatCalibratedPktFixP( HostIFPackets_t *pDest, const CalibratedFixP_t 
 }
 
 
+/****************************************************************************************************
+ * @fn      FormatFlushCompletePacket
+ *          This function creates a Sensor Data Flush Complete Packet for
+ *          sending to Host in the buffer provided.
+ *
+ * @param   [OUT]pDestPacket - Destination buffer supplied by the caller. This buffer size must be at least
+ *                  sizeof(HifSnsrPktQualifier_t) in length
+ * @param   [IN]sType - Sensor Type for the sensor data presented
+ *
+ * @return  Size of the formatted packet or -Error code enum corresponding to the error encountered
+ *
+ ***************************************************************************************************/
+int32_t FormatFlushCompletePacket( HostIFPackets_t *pDestPacket, ASensorType_t sensorType )
+{
+    uint8_t *pDest = (uint8_t *) pDestPacket;
+    int32_t packet_size = PKT_BASE_HEADER_SIZE;
+    int32_t sensorPacketType;
+    SensorPktDesc_t *pSPD;
+
+    /* Sanity checks... */
+    if ( pDest == NULL )
+    {
+        return SET_ERROR( OSP_STATUS_NULL_POINTER );
+    }
+    /* clear header before setting bits in it */
+    pDestPacket->GenericControlPkt.Q.ControlByte    = 0;
+    pDestPacket->GenericControlPkt.Q.SensorIdByte   = 0;
+    pDestPacket->GenericControlPkt.Q.AttributeByte  = 0;
+
+    /* Set Sensor enumeration type Android or User defined */
+    if ( IsPrivateNotAndroid( sensorType ) )
+    {
+        SetPrivateField( &(pDestPacket->GenericControlPkt.Q.ControlByte) );
+    }
+
+    sensorPacketType = GetSensorPacketType( sensorType );
+    pSPD = (SensorPktDesc_t *) &( sensorPacketDescriptions[sensorPacketType] );
+
+    /* Setup Control Byte */
+    SetPacketID( pDest, PKID_SENSOR_DATA );
+    SetDataFormatSensor( pDest, pSPD->DataFormat );
+    SetTimeFormatSensor( pDest, pSPD->TimeFormat );
+
+    /* Setup Sensor ID Byte */
+    SetSensorTypeField( pDest, sensorType );
+
+    /* Setup Attribute Byte */
+    SetSensorDataFlushStatus(pDest, 1);
+    SetSensorDataDataSize( pDest, pSPD->DataSz );
+    SetSensorDataTimeStampSize( pDest, pSPD->TStampSz );
+
+    return packet_size;
+}
+
+
 /*=================================================================================================*\
  |    Control Request/Response packet formatting routines
 \*=================================================================================================*/
@@ -501,7 +556,7 @@ int32_t FormatControlPacket( HostIFPackets_t *pDest, const LocalPacketTypes_t *p
     else
     {
         retVal  = FormatControlPacketFromFields( pDest,
-            pLocalPacket->PayloadOffset + (uint8_t *) pLocalPacket,
+            LOCAL_PKT_PAYLOAD_OFFSET + (uint8_t *) pLocalPacket,
             pLocalPacket->PacketID, pLocalPacket->SCP.CRP.ParameterID,
             pLocalPacket->SType, pLocalPacket->SubType,
             pLocalPacket->SCP.CRP.SequenceNumber,
@@ -526,7 +581,7 @@ int32_t FormatControlPacket( HostIFPackets_t *pDest, const LocalPacketTypes_t *p
 
 #define _FCP(PSRC, PKTID, PARAMID) \
     FormatControlPacketFromFields( \
-        pDest, (const uint8_t *) (PSRC), (PKTID), (PARAMID), \
+        pDest, (const uint8_t *)(PSRC), (PKTID), (PARAMID), \
         sType, subType, seqNum, crcFlag )
 
 //   PARAM_ID_ERROR_CODE_IN_DATA     0x00    R_: Int32
@@ -800,7 +855,6 @@ int32_t FormatControlResp_OnTimeWakeTime(
 
 //   PARAM_ID_HPF_LPF_CUTOFF         0x0E    RW: Uint16 x 2
 //
-
 int32_t FormatControlReqRead_HpfLpfCutoff(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
@@ -827,7 +881,6 @@ int32_t FormatControlResp_HpfLpfCutoff(
 
 //   PARAM_ID_SENSOR_NAME            0x0F    R_: Char x 32
 //
-
 int32_t FormatControlReqRead_SensorName(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
@@ -846,7 +899,6 @@ int32_t FormatControlResp_SensorName(
 
 //   PARAM_ID_XYZ_OFFSET             0x10    RW: FixP32 x 3
 //
-
 int32_t FormatControlReqRead_XyzOffset(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
@@ -873,7 +925,6 @@ int32_t FormatControlResp_XyzOffset(
 
 //   PARAM_ID_F_SKOR_MATRIX          0x11    RW: FixP32 x 3 x 3
 //
-
 int32_t FormatControlReqRead_SkorMatrix(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
@@ -900,7 +951,6 @@ int32_t FormatControlResp_SkorMatrix(
 
 //   PARAM_ID_F_CAL_OFFSET           0x12    RW: FixP32 x 3
 //
-
 int32_t FormatControlReqRead_FCalOffset(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
@@ -927,7 +977,6 @@ int32_t FormatControlResp_FCalOffset(
 
 //   PARAM_ID_F_NONLINEAR_EFFECTS    0x13    RW: FixP16 x 4 x 3
 //
-
 int32_t FormatControlReqRead_FNonlinearEffects(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
@@ -954,7 +1003,6 @@ int32_t FormatControlResp_FNonlinearEffects(
 
 //   PARAM_ID_BIAS_STABILITY         0x14    RW: FixP32 x 3
 //
-
 int32_t FormatControlReqRead_BiasStability(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
@@ -981,7 +1029,6 @@ int32_t FormatControlResp_BiasStability(
 
 //   PARAM_ID_REPEATABILITY          0x15    RW: FixP32 x 3
 //
-
 int32_t FormatControlReqRead_Repeatability(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
@@ -1008,7 +1055,6 @@ int32_t FormatControlResp_Repeatability(
 
 //   PARAM_ID_TEMP_COEFF             0x16    RW: FixP16 x 3 x 2
 //
-
 int32_t FormatControlReqRead_TempCoeff(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
@@ -1035,7 +1081,6 @@ int32_t FormatControlResp_TempCoeff(
 
 //   PARAM_ID_SHAKE_SUSCEPTIBILITY   0x17    RW: FixP16 x 3
 //
-
 int32_t FormatControlReqRead_ShakeSusceptibility(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
@@ -1062,7 +1107,6 @@ int32_t FormatControlResp_ShakeSusceptibility(
 
 //   PARAM_ID_EXPECTED_NORM          0x18    RW: FixP32
 //
-
 int32_t FormatControlReqRead_ExpectedNorm(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
@@ -1089,7 +1133,6 @@ int32_t FormatControlResp_ExpectedNorm(
 
 //   PARAM_ID_VERSION                0x19    R_: Char x 32
 //
-
 int32_t FormatControlReqRead_Version(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
@@ -1108,7 +1151,6 @@ int32_t FormatControlResp_Version(
 
 //   PARAM_ID_DYNAMIC_CAL_SCALE      0x1A    RW: FixP32 x 3
 //
-
 int32_t FormatControlReqRead_DynamicCalScale(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
@@ -1135,7 +1177,6 @@ int32_t FormatControlResp_DynamicCalScale(
 
 //   PARAM_ID_DYNAMIC_CAL_SKEW       0x1B    RW: FixP32 x 3
 //
-
 int32_t FormatControlReqRead_DynamicCalSkew(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
@@ -1162,7 +1203,6 @@ int32_t FormatControlResp_DynamicCalSkew(
 
 //   PARAM_ID_DYNAMIC_CAL_OFFSET     0x1C    RW: FixP32 x 3
 //
-
 int32_t FormatControlReqRead_DynamicCalOffset(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
@@ -1189,7 +1229,6 @@ int32_t FormatControlResp_DynamicCalOffset(
 
 //   PARAM_ID_DYNAMIC_CAL_ROTATION   0x1D    RW: FixP32 x 3
 //
-
 int32_t FormatControlReqRead_DynamicCalRotation(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
@@ -1216,7 +1255,6 @@ int32_t FormatControlResp_DynamicCalRotation(
 
 //   PARAM_ID_DYNAMIC_CAL_QUALITY    0x1E    RW: FixP32 x 3
 //
-
 int32_t FormatControlReqRead_DynamicCalQuality(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
@@ -1243,7 +1281,6 @@ int32_t FormatControlResp_DynamicCalQuality(
 
 //   PARAM_ID_DYNAMIC_CAL_SOURCE     0x1F    RW: Int8
 //
-
 int32_t FormatControlReqRead_DynamicCalSource(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,
@@ -1270,7 +1307,6 @@ int32_t FormatControlResp_DynamicCalSource(
 
 //   PARAM_ID_CONFIG_DONE            0x20    _W: no payload
 //
-
 int32_t FormatControlReqWrite_ConfigDone(
     HostIFPackets_t *pDest,
     ASensorType_t sType, uint8_t subType,

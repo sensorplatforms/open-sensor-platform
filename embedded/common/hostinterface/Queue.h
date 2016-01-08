@@ -46,13 +46,6 @@ typedef enum {
     NUM_CB_IDS
 } Q_CBId_t;
 
-typedef enum {
-    QUEUE_WAKEUP_TYPE = 0,              //Queue empty callback id
-    QUEUE_NONWAKEUP_TYPE,           //Callback id for low threshold
-    QUEUE_CONTROL_RESPONSE_TYPE,    //Callback id for high threshold
-    NUM_QUEUE_TYPE
-} Q_Type_t;
-
 /* Buffer structure for use in the queue for forming linked list */
 typedef struct _BufferHeader {
     uint8_t  *pNext;     //Pointer to next buffer
@@ -66,8 +59,8 @@ typedef struct _Buffer {
 
 /* General purpose queue structure. Holds any buffer or packet defined as Buffer_t */
 typedef struct _Queue {
-    Buffer_t    *pHead; //Head
-    Buffer_t    *pTail; //Tail
+    Buffer_t    *pHead;     //Head
+    Buffer_t    *pTail;     //Tail
     uint32_t    Capacity;   //Max capacity of the queue (application defined)
     uint32_t    LowThres;   //Used to trigger event/callback when this number is hit while dequeue
     uint32_t    HighThres;  //Used to trigger event/callback when this number is hit while enqueue

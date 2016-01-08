@@ -66,11 +66,11 @@ static void QueueSensorBoolData(ASensorType_t sensorType, MsgSensorBoolData *pMs
 {
     HostIFPackets_t HiFPacket;
     int16_t packetLength;
-    int32_t sensor_state;
+    osp_bool_t isEnabled;
 
-    BatchManagerGetSensorState(sensorType, &sensor_state);
+    BatchManagerIsSensorEnabled(sensorType, &isEnabled);
 
-    if(sensor_state == DISABLE) {
+    if(isEnabled == FALSE) {
         return;
     }
 
@@ -124,11 +124,11 @@ static void QueueSensorData(ASensorType_t sensorType, MsgSensorData *pMsg)
 {
     HostIFPackets_t HiFPacket;
     int16_t packetLength;
-    int32_t sensor_state;
+    osp_bool_t isEnabled;
 
-    BatchManagerGetSensorState(sensorType, &sensor_state);
+    BatchManagerIsSensorEnabled(sensorType, &isEnabled);
 
-    if(sensor_state == DISABLE) {
+    if(isEnabled == FALSE) {
         return;
     }
 

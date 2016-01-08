@@ -258,7 +258,10 @@ void I2C_HOSTIF_IRQHandler(void)
 
     if ( ( slave_i2c_handle.i2c_operation == I2C_READ_IN_PROGRESS) || (slave_i2c_handle.i2c_operation == I2C_READ_COMPLETE))
     {
-        processHostCommand( slave_i2c_handle.pXfer.rxBuff, slave_i2c_handle.pXfer.bytesRecv, slave_i2c_handle.i2c_operation );
+        if ( slave_i2c_handle.pXfer.bytesRecv > 0 )
+        {
+            processHostCommand( slave_i2c_handle.pXfer.rxBuff, slave_i2c_handle.pXfer.bytesRecv, slave_i2c_handle.i2c_operation );
+        }
     }
 
     if ( slave_i2c_handle.i2c_operation == I2C_WRITE_COMPLETE )
