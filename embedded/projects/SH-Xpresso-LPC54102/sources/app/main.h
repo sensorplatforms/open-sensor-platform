@@ -117,7 +117,7 @@
 #define ACC_SAMPLE_RATE                    63   // 62.5HZ
 #define GYRO_SAMPLE_RATE                   100
 #define PRESSURE_SAMPLE_RATE               25
-#define GEOMAG_SAMPLE_RATE                 50
+#define GEOMAG_SAMPLE_RATE                 25
 #define GAME_ROTATION_SAMPLE_RATE          50
 #define ON_CHANGE_SAMPLE_RATE              0
 
