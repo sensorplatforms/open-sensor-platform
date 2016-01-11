@@ -377,6 +377,7 @@ static void GenericDataResultCallback(ResultHandle_t resultHandle,
         case SENSOR_GEOMAGNETIC_ROTATION_VECTOR:
             msg_type = MSG_GEO_QUATERNION_DATA;
             lipsCode = "GC";
+            break;
 
         case SENSOR_GAME_ROTATION_VECTOR:
             msg_type = MSG_GAME_QUATERNION_DATA;
