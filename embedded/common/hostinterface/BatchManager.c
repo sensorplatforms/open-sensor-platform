@@ -43,9 +43,9 @@
 
 #define DEFAULT_REPORT_LATENCY                      (-1)
 #define MAX_SAMPLING_FREQ_HZ                        (1100)      /* 110 % of 1KHZ */
-#define MIN_SAMPLING_FREQ_HZ                        (1)         /* 1HZ */
 #define TIME_1SEC_NS_UNIT                           (1000000000)
-#define MIN_SAMPLING_PERIOD                         ( TIME_1SEC_NS_UNIT / MAX_SAMPLING_FREQ_HZ )         /* ns */
+#define MIN_SAMPLING_PERIOD                         ( TIME_1SEC_NS_UNIT / MAX_SAMPLING_FREQ_HZ )    /* ns */
+#define MAX_SAMPLING_PERIOD                         ( TIME_1SEC_NS_UNIT )
 
 #define DEFAULT_HIGH_THRESHOLD                      (1)
 
@@ -746,9 +746,8 @@ int16_t BatchManagerSensorRegister( ASensorType_t SensorType, uint64_t SamplingP
 {
     BatchSensorParam_t BatchParam;
     FifoQ_Type_t       QType;
-    uint32_t           reqFreq;
+    uint64_t           SensorSamplingPeriod;
     uint32_t           sType;
-    uint32_t           SensorFreqMax = 1;       // init to 1HZ
 
     /* Change sensor base */
     sType = M_ToBaseSensorEnum (SensorType);
@@ -762,35 +761,30 @@ int16_t BatchManagerSensorRegister( ASensorType_t SensorType, uint64_t SamplingP
     /* get queue type */
     QType = BatchDesc.SensorList[sType].QType;
 
-    BatchParam.RequestedSamplingPeriod = ( SamplingPeriod < MIN_SAMPLING_PERIOD ) ? ( MIN_SAMPLING_PERIOD ) : (SamplingPeriod);
+    SensorSamplingPeriod = BatchDesc.SensorList[sType].ActualSamplingPeriod;
+
+    /* check for range */
+    if ( SamplingPeriod < SensorSamplingPeriod )
+    {
+        SamplingPeriod = SensorSamplingPeriod;
+    }
+    else if ( SamplingPeriod > MAX_SAMPLING_PERIOD )
+    {
+        SamplingPeriod = MAX_SAMPLING_PERIOD;
+    }
+
+    BatchParam.RequestedSamplingPeriod = SamplingPeriod;
     BatchParam.ReportLatency = ReportLatency;
 
-    /* Convert given sampling period to sampling frequency */
-    reqFreq = ( TIME_1SEC_NS_UNIT / BatchParam.RequestedSamplingPeriod );
-
-    if ( BatchDesc.SensorList[sType].ActualSamplingPeriod > 0 )
-    {
-        SensorFreqMax = ( TIME_1SEC_NS_UNIT / BatchDesc.SensorList[sType].ActualSamplingPeriod );
-    }
-
-    if ( reqFreq < MIN_SAMPLING_FREQ_HZ )
-    {
-        reqFreq = MIN_SAMPLING_FREQ_HZ;
-    }
-    else if ( reqFreq > SensorFreqMax )
-    {
-        reqFreq = SensorFreqMax;
-    }
-
-    /* calculate decimation factor rounding off to nearest whole number */
-    BatchDesc.SensorList[sType].DecimationCnt = ( ( SensorFreqMax + ( reqFreq / 2 ) ) / reqFreq );
+    /* calculate decimation factor */
+    BatchDesc.SensorList[sType].DecimationCnt = ( SamplingPeriod / SensorSamplingPeriod );
 
     if ( BatchDesc.SensorList[sType].DecimationCnt == 0 )
     {
         BatchDesc.SensorList[sType].DecimationCnt = 1;
     }
 
-    DPRINTF(" \r\nSens Freq:%dHz Req Freq:%dHz Dec. Fctr:%d\r\n", SensorFreqMax, reqFreq, BatchDesc.SensorList[sType].DecimationCnt );
+    DPRINTF(" \r\nSens Dec.Fctr:%d\r\n", BatchDesc.SensorList[sType].DecimationCnt );
 
     /* Checks sensor is already registered or not */
     if ( !BatchDesc.SensorList[sType].isValidEntry )
