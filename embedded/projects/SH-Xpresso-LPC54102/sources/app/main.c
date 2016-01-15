@@ -38,7 +38,7 @@ void SPISlaveSetup( void );
 #ifdef DEBUG_BUILD
   char _errBuff[ERR_LOG_MSG_SZ];
 #endif
-uint32_t g_logging = 0x40;
+uint32_t g_logging = 0;
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E   C O N S T A N T S   &   M A C R O S
