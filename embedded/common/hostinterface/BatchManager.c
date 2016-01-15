@@ -972,7 +972,7 @@ int16_t BatchManagerSensorDisable( ASensorType_t sensorType )
     while ( size > 0 )
     {
         stat = DeQueue( BatchDesc.BatchQ[QType].pQ , &pTempHifPacket );
-        ASF_assert( pTempHifPacket->Header.Length > SENSOR_DATA_PKT_HEADER_SIZE );    /*  check packet validity */
+        ASF_assert( pTempHifPacket->Header.Length >= SENSOR_DATA_PKT_HEADER_SIZE );    /*  check packet validity */
 
         /* check the packet header for sensor type */
         if ( ( *( &(pTempHifPacket->DataStart ) + PKT_SENSOR_ID_BYTE_OFFSET ) & SENSOR_TYPE_MASK ) == sType )
