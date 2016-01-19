@@ -1120,7 +1120,7 @@ int16_t BatchManagerSensorDataEnQueue( HostIFPackets_t *pHiFDataPacket, uint16_t
             }
         }
         /* If non wakeup on change sensor then save packet in locally */
-        if ( FIFOType == NONWAKEUP_ONCHANGE_FIFO )
+        if ( ( FIFOType == NONWAKEUP_ONCHANGE_FIFO ) && ( isFlushCompletePacket == 0 ) )
         {
             status = EnqueueOnChangeSensorQ( pHiFDataPacket, packetSize, sensorType );
         }
