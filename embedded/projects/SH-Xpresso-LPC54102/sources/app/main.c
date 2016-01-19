@@ -115,7 +115,7 @@ int main( void )
     DebugPortInit();
 
     /* Print version number */
-    printf("\r\n### OSP 1.1.9 for LPC54102Xpresso board: Date: %s - %s ###\r\n",
+    printf("\r\n### OSP 1.1.17 for LPC54102Xpresso board: Date: %s - %s ###\r\n",
         __DATE__, __TIME__);
 
     /* Display System clock information */
