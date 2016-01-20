@@ -819,7 +819,7 @@ int32_t SHConfigManager_ProcessControlRequest( const uint8_t *pRequestPacket, ui
                 hostPacketLength = hostPktSz;
             }
 
-            if ( (errorCode == OSP_STATUS_OK) && (hostPacketLength > 0) )
+            if ( hostPacketLength > 0 )
             {
                 errorCode = (int32_t)BatchManagerControlResponseEnQueue( &hostResponsePacket, hostPacketLength );
 
