@@ -57,7 +57,7 @@
 
 /* Sensor Data Queue Size Definition */
 /* HIF Queue size indicate number of packet a single queue can hold */
-#define HIF_NWKUP_SENSOR_DATA_QUEUE_SIZE            (220)    /* 200 + 10% buffer */
+#define HIF_NWKUP_SENSOR_DATA_QUEUE_SIZE            (275)    /* 250 + 10% buffer */
 #define HIF_WKUP_SENSOR_DATA_QUEUE_SIZE             (220)
 
 /* Combined HIF Sensor Data Packet pool size (Wakeup + Non Wakeup) */
