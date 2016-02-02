@@ -308,6 +308,21 @@ void SPI1_IRQHandler(void)
 }
 
 
+/****************************************************************************************************
+ * @fn      RTC_COUNTER_IRQHandler
+ *          ISR Handler for RTC Counter timer
+ *
+ ***************************************************************************************************/
+void RTC_COUNTER_IRQHandler(void)
+{
+    if (Chip_TIMER_MatchPending( RTC_COUNTER, RTC_COUNTER_MATCH_IDX ))
+    {
+        Chip_TIMER_ClearMatch( RTC_COUNTER, RTC_COUNTER_MATCH_IDX );
+        RTCTimeExtend++; //Increment extension counter
+    }
+}
+
+
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/

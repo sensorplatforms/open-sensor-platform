@@ -32,6 +32,9 @@
 const uint32_t ExtClockIn = 0;
 const GpioInfo_t DiagLEDs[NUM_LEDS] = {PINS_LEDS};
 
+/* Timestamp extension (upper 32bit of 64bit value) for RTC Counter */
+uint32_t RTCTimeExtend = 0;
+
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E   C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
@@ -168,11 +171,6 @@ void SystemGPIOConfig( void )
     /* Enable the peripheral clock in the PMC */
     Chip_GPIO_Init(LPC_GPIO_PORT);
 
-    /* Setup the Sensor Hub interrupt pin as output */
-    //Chip_IOCON_Config(LPC_IOCON, SH_INT_PIN);
-    //Chip_GPIO_SetPinDIROutput(LPC_GPIO_PORT, SH_INT_GPIO_GRP, SH_INT_GPIO_PIN);
-    //SensorHubIntLow(); //Deassert on startup
-
     /* TODO: Catch ALL for uninitialized pins... should be moved to respective modules */
     Chip_IOCON_SetPinMuxing(LPC_IOCON, pinmuxing, sizeof(pinmuxing) / sizeof(PINMUX_GRP_T));
 
@@ -200,7 +198,10 @@ void SystemInterruptConfig( void )
 
 /****************************************************************************************************
  * @fn      RTC_Configuration
- *          Configures the RTC.
+ *          Configures the RTC to use a capture input as its clock source. This allows getting more
+ *          accurate 32KHz clock as RTC reference instead of internal RC oscillator. NOTE that you
+ *          need to connect Pin 11 & 17 of J2 on the NXP board/Sensor board to route the 32KHz output
+ *          (CLOCKOUT) to RTC timer input (CAP1)
  *
  * @param   none
  *
@@ -209,19 +210,40 @@ void SystemInterruptConfig( void )
  ***************************************************************************************************/
 void RTC_Configuration( void )
 {
-    uint32_t preScale;
-/* Note: Be careful with prescalar setup here if RTC counter is changed. T2,T3 & T4 use Sync APB clock
-   (System Clock) while T0 & T1 use Async APB clock */
-
     Chip_TIMER_Init(RTC_COUNTER);
-    /* Calculated prescalar based on PCLK rate (System Clock) for the selected timer (2,3 or 4) */
-    preScale = ((Chip_Clock_GetSystemClockRate()/1000000) * US_PER_RTC_TICK) - 1;
-    Chip_TIMER_PrescaleSet(RTC_COUNTER, preScale);
+
+    /* Turn on the RTC 32K Oscillator */
+    Chip_SYSCON_PowerUp(SYSCON_PDRUNCFG_PD_32K_OSC);
+    Chip_Clock_EnableRTCOsc();
+
+    //Enable 32KHz RTC clock output on CLKOUT pin
+    Chip_IOCON_PinMuxSet( LPC_IOCON, CLOCK_OUT_PIN );
+    Chip_Clock_SetCLKOUTSource( SYSCON_CLKOUTSRC_RTC, CLOCK_OUT_DIVIDER );
+
+    /* Setup timer to use CAP1 input as clock source. This input is connected to CLKOUT which outputs 32KHz RTC clock */
+    Chip_IOCON_PinMuxSet( LPC_IOCON, RTC_COUNTER_INPUT_CLK_PIN ); //Pin configured to be Capture input for RTC timer
+    Chip_TIMER_PrescaleSet( RTC_COUNTER, 0 ); //Native 32KHz rate without dividing
+    Chip_TIMER_TIMER_SetCountClockSrc( RTC_COUNTER, TIMER_CAPSRC_RISING_CAPN, RTC_COUNTER_CAPTURE_NUM );
+
     /* Reset Timer */
     Chip_TIMER_Reset(RTC_COUNTER);
+    RTC_COUNTER->TC = 1; //Start at 1 since we are setting overflow match to 0
+
+    /* Set match register to match on 0 for overflow detection */
+    Chip_TIMER_SetMatch( RTC_COUNTER, RTC_COUNTER_MATCH_IDX, 0UL );
+    /* Enable match interrupt */
+    Chip_TIMER_MatchEnableInt( RTC_COUNTER, RTC_COUNTER_MATCH_IDX );
+
+    /* Setup preemption and sub-priority for the timer-counter */
+    NVIC_SetPriority(RTC_COUNTER_IRQCh, RTC_COUNTER_INT_PRIORITY);
+
+    /* Enable the interrupt channel */
+    NVIC_EnableIRQ( RTC_COUNTER_IRQCh );
+
     /* Start timer */
     Chip_TIMER_Enable(RTC_COUNTER);
 }
+
 
 /****************************************************************************************************
  * @fn      RTC_GetCounter
@@ -235,6 +257,56 @@ void RTC_Configuration( void )
 uint32_t RTC_GetCounter( void )
 {
     return RTC_COUNTER->TC;
+}
+
+
+/****************************************************************************************************
+ * @fn      RTC_GetCounter64
+ *          Returns the 64-bit extended counter value of the timer register
+ *
+ * @param   none
+ *
+ * @return  64-bit counter value
+ *
+ ***************************************************************************************************/
+uint64_t RTC_GetCounter64( void )
+{
+    uint64_t counter;
+
+    NVIC_DisableIRQ( RTC_COUNTER_IRQCh );
+    counter = ((uint64_t)RTCTimeExtend << 32) | RTC_COUNTER->TC;
+    NVIC_EnableIRQ( RTC_COUNTER_IRQCh );
+
+    return counter;
+}
+
+
+/****************************************************************************************************
+ * @fn      RTC_SetTimeNs64
+ *          Set the RTC counter as per the given time in ns
+ *
+ * @param   nsTime - Time in nano seconds
+ *
+ * @return  none
+ *
+ ***************************************************************************************************/
+void RTC_SetTimeNs64( uint64_t nsTime )
+{
+    uint64_t counter;
+
+    /* Calculate count value corresponding to given ns time */
+    NVIC_DisableIRQ( RTC_COUNTER_IRQCh );
+    counter = (nsTime + (RTC_TICK_NS_INT/2)) / (RTC_TICK_NS_INT); //Round up
+
+    Chip_TIMER_Disable( RTC_COUNTER ); //Stop the timer
+
+    RTC_COUNTER->TC = (uint32_t)(counter & 0xFFFFFFFF);
+    RTCTimeExtend = (uint32_t)(counter >> 32);
+    Chip_TIMER_ClearMatch( RTC_COUNTER, RTC_COUNTER_MATCH_IDX ); //In case the counter value caused a match
+
+    Chip_TIMER_Enable( RTC_COUNTER ); //Start timer at the new count
+
+    NVIC_EnableIRQ( RTC_COUNTER_IRQCh );
 }
 
 

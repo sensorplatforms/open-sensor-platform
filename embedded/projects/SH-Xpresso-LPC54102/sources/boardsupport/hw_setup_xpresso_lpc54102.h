@@ -47,7 +47,17 @@
 
 /* A timer is used as RTC counter coz internal RTC does not provide low enough resolution */
 #define RTC_COUNTER                             LPC_TIMER2
-#define US_PER_RTC_TICK                         25
+#define RTC_COUNTER_IRQHandler                  CT32B2_IRQHandler
+#define RTC_COUNTER_MATCH_IDX                   0   //Index for match register (out of 4 possible)
+#define RTC_COUNTER_IRQCh                       CT32B2_IRQn
+#define RTC_TICK_US_FLT                         30.517578125f //from 32.768KHz input clock to RTC Counter
+#define RTC_TICK_NS_INT                         30518
+#define RTC_COUNTER_INPUT_CLK_PIN               0, 2, (IOCON_FUNC3 | IOCON_MODE_INACT | IOCON_DIGITAL_EN) //P0_2
+#define RTC_COUNTER_CAPTURE_NUM                 1   //CAP1 input
+
+/* Clock out signal */
+#define CLOCK_OUT_PIN                           0, 21, (IOCON_FUNC1 | IOCON_MODE_INACT | IOCON_DIGITAL_EN) //P0_21
+#define CLOCK_OUT_DIVIDER                       1
 
 /* Tick conversion macros */
 #define TICS_TO_SEC(T)                          ((uint32_t)(((T) + (TICS_PER_SEC/2))/TICS_PER_SEC))
@@ -330,6 +340,9 @@ extern const GpioInfo_t DiagLEDs[NUM_LEDS];
 #define I2C_SENSOR_BUS_INT_PRIORITY             3   ///<  I2C0 IRQ
 #define I2C_SLAVE_BUS_INT_PRIORITY              4   ///<  I2C2 IRQ
 
+/* Priorities for RTC Timer */
+#define RTC_COUNTER_INT_PRIORITY                1
+
 /* DMA Controller interface */
 #define DMA_INT_PREEMPT_PRIO                    6
 
@@ -374,6 +387,7 @@ typedef LPC_I2C_T I2C_TypeDef;
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   V A R I A B L E S   D E F I N I T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+extern uint32_t RTCTimeExtend;
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C   F U N C T I O N   D E C L A R A T I O N S

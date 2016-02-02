@@ -46,9 +46,9 @@
 //#define RESET_ON_ASSERT
 
 #ifdef RESET_ON_ASSERT
-# define SysRESET()         NVIC_SystemReset()
+# define SysRESET()                             NVIC_SystemReset()
 #else
-# define SysRESET()         while(1)
+# define SysRESET()                             while(1)
 #endif
 
 
@@ -73,7 +73,6 @@
 #  define MAX_DPRINTF_MESSAGES                  30  ///< Max printf messages allowed at a given time
 # else
 #  define TX_BUFFER_SIZE                        512
-#  define MAX_DPRINTF_MESSAGES                  30   ///< Max printf messages allowed at a given time
 # endif
 
 # define RX_BUFFER_SIZE                         32
@@ -91,7 +90,7 @@
 #endif
 
 /* Defines for command handler */
-#define COMMAND_LINE_SIZE           32
+#define COMMAND_LINE_SIZE                       32
 
 /* Sensor acquisition related definitions */
 
@@ -189,6 +188,8 @@ int Print_LIPS( const char *fmt, ... ); //Serial protocol for data results out
 
 /* RTC Counter (using TIM2 instead of RTC) */
 uint32_t RTC_GetCounter( void );
+uint64_t RTC_GetCounter64( void );
+void RTC_SetTimeNs64( uint64_t nsTime );
 
 /* Data ready indications from Sensor drivers to sensor task */
 void SendDataReadyIndication(uint8_t sensorId, uint32_t timeStamp);
