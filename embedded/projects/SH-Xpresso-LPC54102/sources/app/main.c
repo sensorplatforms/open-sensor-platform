@@ -20,6 +20,7 @@
 \*-------------------------------------------------------------------------------------------------*/
 #include "common.h"
 #include "hw_setup.h"
+#include "osp-sh-version.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    E X T E R N A L   V A R I A B L E S   &   F U N C T I O N S
@@ -115,8 +116,8 @@ int main( void )
     DebugPortInit();
 
     /* Print version number */
-    printf("\r\n### OSP 1.1.17 for LPC54102Xpresso board: Date: %s - %s ###\r\n",
-        __DATE__, __TIME__);
+    printf("\r\n### %s Version: %s for LPC54102Xpresso board: Date: %s - %s ###\r\n",
+        SH_MODULE_NAME, SH_VERSION_STRING, __DATE__, __TIME__);
 
     /* Display System clock information */
     printf("System Clocks:\r\n");
@@ -130,6 +131,8 @@ int main( void )
     printf("\tPLL_OUT   - %ld Hz\r\n", Chip_Clock_GetSystemPLLOutClockRate(false));
     D0_printf("\tUartBase  - %ld Hz\r\n", Chip_Clock_GetUARTBaseClockRate());
     //D0_printf("\tSysTick   - %ld Hz\r\n", Chip_Clock_GetSysTickClockRate()); --> Not giving proper value!?
+
+    D1_printf("Current Time (ns): %lld\r\n", (RTC_GetCounter64() * RTC_TICK_NS_INT * 1000));
 
     /* Enable SPI Slave interface */
     SPISlaveSetup();
