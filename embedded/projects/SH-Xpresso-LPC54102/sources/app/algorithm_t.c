@@ -242,7 +242,7 @@ static void ExitCriticalSection(void);
 
 SystemDescriptor_t gSystemDesc =
 {
-    TOFIX_TIMECOEFFICIENT(US_PER_RTC_TICK * 0.000001f),      // timestamp conversion factor
+    TOFIX_TIMECOEFFICIENT(RTC_TICK_US_FLT * 0.000001f),      // timestamp conversion factor
     (OSP_CriticalSectionCallback_t) EnterCriticalSection,
     (OSP_CriticalSectionCallback_t) ExitCriticalSection,
     (OSP_SensorControlCallback_t )  SensorControlActivate    // Sensor ON/OFF control
