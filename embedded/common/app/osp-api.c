@@ -1,7 +1,7 @@
 /* Open Sensor Platform Project
  * https://github.com/sensorplatforms/open-sensor-platform
  *
- * Copyright (C) 2013 Sensor Platforms Inc.
+ * Copyright (C) 2015 Audience Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -475,7 +475,7 @@ static int16_t ValidateResultDescriptor(SensorDescriptor_t *pResultDescriptor)
  *          Invalidates the handles for the sensor data in the queue so that the data is discarded
  *
  ***************************************************************************************************/
-void InvalidateQueuedDataByHandle(InputSensorHandle_t Handle)
+static void InvalidateQueuedDataByHandle(InputSensorHandle_t Handle)
 {
     uint16_t i;
 
@@ -688,7 +688,7 @@ static void UMul32(uint32_t x,uint32_t y, uint32_t * pHigh, uint32_t * pLow)
  *          Helper routine for time conversion
  *
  ***************************************************************************************************/
-osp_bool_t GetTimeFromCounter(
+static osp_bool_t GetTimeFromCounter(
     NTTIME * pTime,
     TIMECOEFFICIENT counterToTimeConversionFactor,
     uint32_t counterHigh,
@@ -880,11 +880,12 @@ static int16_t ConvertSensorData(
     // for sensor time-stamping. Current scheme will cause time jumps if two sensors are timer-captured
     // before & after rollover but the sensor that was captured after rollover is queued before the
     // sensor that was captured before timer rollover
-
+    EnterCritical();
     if( ((int32_t)(*sensorTimeStamp) < 0) && ((int32_t)pRawData->Data.TimeStamp >= 0) ) {
         (*sensorTimeStampExtension)++;
     }
     *sensorTimeStamp = pRawData->Data.TimeStamp;
+    ExitCritical();
 
     GetTimeFromCounter(&pCookedData->TimeStamp, _pPlatformDesc->TstampConversionToSeconds,
         *sensorTimeStampExtension, *sensorTimeStamp);
@@ -1575,6 +1576,30 @@ osp_status_t OSP_GetVersion(const OSP_Library_Version_t **pVersionStruct)
 }
 
 
+/****************************************************************************************************
+ * @fn      OSP_UpdateTime
+ *          Used to update internal RTC extension counters
+ *
+ * @param   rawCounts RTC counter value
+ *
+ * @return  status as specified in OSP_Types.h
+ *
+ ***************************************************************************************************/
+OSP_STATUS_t    OSP_UpdateTime( uint64_t rawCounts )
+{
+    EnterCritical();
+    _sensorLastForegroundTimeStamp = (uint32_t)(rawCounts & 0xFFFFFFFF);
+    _sensorLastForegroundTimeStampExtension = (uint32_t)(rawCounts >> 32);
+
+    _sensorLastBackgroundTimeStamp = (uint32_t)(rawCounts & 0xFFFFFFFF);
+    _sensorLastBackgroundTimeStampExtension = (uint32_t)(rawCounts >> 32);
+    ExitCritical();
+
+    return OSP_STATUS_OK;
+}
+
+
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/
+

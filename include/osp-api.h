@@ -1,7 +1,7 @@
 /* Open Sensor Platform Project
  * https://github.com/sensorplatforms/open-sensor-platform
  *
- * Copyright (C) 2013 Sensor Platforms Inc.
+ * Copyright (C) 2015 Audience Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -552,6 +552,15 @@ OSP_STATUS_t     OSP_SetCalibrationConfig( uint32_t config );
  *  \return status as specified in OSP_Types.h
  */
 OSP_STATUS_t     OSP_GetLibraryVersion(const OSP_Library_Version_t **ppVersionStruct);
+
+//! Updates internal time reference (if it exists) with that provided by platform
+/*!
+ *
+ *  \param rawCounts Raw 64-bit time counts (same as used with sensor data) maintained by platform
+ *
+ *  \return status as specified in OSP_Types.h
+ */
+OSP_STATUS_t    OSP_UpdateTime( uint64_t rawCounts );
 
 
 #ifdef __cplusplus
