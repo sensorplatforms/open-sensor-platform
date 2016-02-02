@@ -1,7 +1,7 @@
 /* Open Sensor Platform Project
  * https://github.com/sensorplatforms/open-sensor-platform
  *
- * Copyright (C) 2013 Sensor Platforms Inc.
+ * Copyright (C) 2015 Audience Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@
 #include "main.h"
 #include "osp-types.h"
 #include "asf_types.h"
-#include "osp-version.h"
 
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
@@ -42,9 +41,6 @@
 #define OS_LEAVE_CRITICAL()                     if (!wasMasked) __enable_irq()
 
 #ifdef DEBUG_BUILD
-/* Note: The USART enable in the asserts is required because in SensorAcq task we disable
-   it during sampling and in some rare cases there can be an assert while the UART was
-   in the disabled state (e.g. ISR doing CreateMessage and asserting) */
 # define ERR_LOG_MSG_SZ                         150
 # define ASF_assert( condition )                                                           \
     if (!(condition))                                                                      \
