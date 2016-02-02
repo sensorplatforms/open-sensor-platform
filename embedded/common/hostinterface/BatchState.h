@@ -41,7 +41,7 @@ typedef enum _BatchStateType
     NUM_BATCH_STATES
 } BatchStateType_t;
 
-/* Enum for list of command supported by Batch */
+/* Enum for list of command handled by the batch state machine */
 typedef enum _BatchCmdList
 {
     CMD_ERROR_DATA              = PARAM_ID_ERROR_CODE_IN_DATA,
@@ -77,6 +77,10 @@ typedef enum _BatchCmdList
     CMD_DYNAMIC_CAL_QUALITY     = PARAM_ID_DYNAMIC_CAL_QUALITY,
     CMD_DYNAMIC_CAL_SOURCE      = PARAM_ID_DYNAMIC_CAL_SOURCE,
     CMD_CONFIG_DONE             = PARAM_ID_CONFIG_DONE,
+    CMD_SH_TIME_SET             = PARAM_ID_SH_TIME_SET,
+    CMD_TIME_SYNC_START         = PARAM_ID_TIME_SYNC_START,
+    CMD_TIME_SYNC_FOLLOW_UP     = PARAM_ID_TIME_SYNC_FOLLOW_UP,
+    CMD_TIME_SYNC_END           = PARAM_ID_TIME_SYNC_END,
     CMD_NUM_MAX                 = N_PARAM_ID,
 } BatchCmdList_t;
 

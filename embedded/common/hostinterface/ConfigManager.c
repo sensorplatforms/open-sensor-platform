@@ -109,6 +109,7 @@ static int32_t ActionEnableDisable( ASensorType_t sType, uint8_t isEnable );
 static int32_t ActionBatch( ASensorType_t sType, uint64_t SamplingPeriod, uint64_t ReportLatency );
 static int32_t ActionFlush( ASensorType_t sensorType );
 static int32_t ActionReadVersion( LocalPacketTypes_t *pLocalPacket );
+static int32_t ActionTimeSync( uint8_t paramId, LocalPacketTypes_t *pLocalPacket );
 static int32_t ActionConfigDone( void );
 
 
@@ -393,6 +394,13 @@ static int32_t TakeWriteAction( LocalPacketTypes_t *pLocalPacket )
         DPRINTF( "Config Done\r\n" );
         break;
 
+    case PARAM_ID_SH_TIME_SET:              //  0x21
+    case PARAM_ID_TIME_SYNC_START:          //  0x22
+    case PARAM_ID_TIME_SYNC_FOLLOW_UP:      //  0x23
+    case PARAM_ID_TIME_SYNC_END:            //  0x24
+        errorCode = ActionTimeSync( pLocalPacket->SCP.CRP.ParameterID, pLocalPacket );
+        break;
+
     default:  // 0x00 or out-of-bounds is an error.
         errorCode = SET_ERROR( OSP_STATUS_INVALID_PARAMETER );
         break;
@@ -642,6 +650,108 @@ static int32_t ActionConfigDone( void )
 }
 
 
+/****************************************************************************************************
+ * @fn      ActionTimeSync
+ *          Handler for Time Sync related parameters
+ *
+ * @return  OSP_STATUS_OK or negative error code.
+ *
+ ***************************************************************************************************/
+static int32_t ActionTimeSync( uint8_t paramId, LocalPacketTypes_t *pLocalPacket )
+{
+#define MIN_I2CPKT_XFER_TIME_NS     15000   //6bytes of PARAM_ID_TIME_SYNC_START pkt @400KHz I2C
+    int32_t errorCode = OSP_STATUS_OK;
+    static uint64_t SyncStartT1_ns    = 0;
+    static uint64_t SyncStartT2_ns    = 0;
+    static uint64_t SyncFollowUpT3_ns = 0;
+    static uint64_t SyncEndT4_ns      = 0;
+    uint64_t offset_ns, fuDelta;
+    uint64_t currRTC_ns;
+
+    switch (paramId)
+    {
+    case PARAM_ID_SH_TIME_SET:
+        D1_printf("SH Time Set: %lld ns\r\n", pLocalPacket->SCP.CRP.PL.HubTimeSet.DataU64);
+        D1_printf("Old RTC: %lld ns\r\n", RTC_GetCounter64() * RTC_TICK_NS_INT);
+        RTC_SetTimeNs64( pLocalPacket->SCP.CRP.PL.HubTimeSet.DataU64 );
+        OSP_UpdateTime( RTC_GetCounter64() );
+        D1_printf("New RTC: %lld ns\r\n", RTC_GetCounter64() * RTC_TICK_NS_INT);
+        break;
+
+    case PARAM_ID_TIME_SYNC_START:
+        SyncStartT2_ns = RTC_GetCounter64() * RTC_TICK_NS_INT;
+        D1_printf("TS-Start T2: %lld\r\n", SyncStartT2_ns);
+        break;
+
+    case PARAM_ID_TIME_SYNC_FOLLOW_UP:
+        SyncStartT1_ns = pLocalPacket->SCP.CRP.PL.HubTimeSet.DataU64;
+        SyncFollowUpT3_ns = RTC_GetCounter64() * RTC_TICK_NS_INT;
+        D1_printf("TS-FUp T1: %lld, T3: %lld\r\n", SyncStartT1_ns, SyncFollowUpT3_ns);
+        break;
+
+    case PARAM_ID_TIME_SYNC_END:
+        SyncEndT4_ns = pLocalPacket->SCP.CRP.PL.HubTimeSet.DataU64;
+        D1_printf("TS-End T4: %lld (T2: %lld)\r\n", SyncEndT4_ns, SyncStartT2_ns);
+
+        /* Here the big question is - how do we figure out if the SH time offset w.r.t. host is positive
+           (SH time ahead of host time) or negative. The confusion arises because while normally we expect
+           T2 to be > T1 due to propagation delay of the Time-Sync-Start command, if the SH offset is only
+           slightly negative and (offset < propagation delay), then T2 will still be > T1. If the threshold
+           in the host that triggers the time sync is set right (|Threshold| > Propagation Delay) then we can
+           guarantee that T2 will be < T1 for negative drift and T2 > T1 for positive drift.
+           For calculations presented here we assume that |Threshold| > Propagation Delay.
+           */
+        /* Make sure the follow up delta calculation is absolute delta */
+        if (SyncEndT4_ns > SyncFollowUpT3_ns)
+        {
+            fuDelta = SyncEndT4_ns - SyncFollowUpT3_ns;
+        }
+        else
+        {
+            fuDelta = SyncFollowUpT3_ns - SyncEndT4_ns;
+        }
+
+        /* Get the absolute T1 & T2 delta */
+        if (SyncStartT2_ns < SyncStartT1_ns)
+        {
+            offset_ns = ((SyncStartT1_ns - SyncStartT2_ns) + fuDelta)/2;
+        }
+        else
+        {
+            offset_ns = ((SyncStartT2_ns - SyncStartT1_ns) + fuDelta)/2;
+        }
+
+        currRTC_ns = RTC_GetCounter64() * RTC_TICK_NS_INT;
+        /* Figure out if offset is positive or negative */
+        if (SyncStartT2_ns < (SyncStartT1_ns + MIN_I2CPKT_XFER_TIME_NS))
+        {
+            /* Negative offset - advance the SH time by the offset amount */
+            RTC_SetTimeNs64( currRTC_ns + offset_ns );
+            OSP_UpdateTime( RTC_GetCounter64() );
+            D1_printf("TS-Offset(-): %lld\r\n", offset_ns);
+        }
+        else
+        {
+            /* Positive offset - retard the SH time */
+            RTC_SetTimeNs64( currRTC_ns - offset_ns );
+            OSP_UpdateTime( RTC_GetCounter64() );
+            D1_printf("TS-Offset(+): %lld\r\n", offset_ns);
+        }
+
+        D1_printf("Old RTC Time (ns): %lld\r\n", currRTC_ns);
+        currRTC_ns = RTC_GetCounter64() * RTC_TICK_NS_INT;
+        D1_printf("Updated RTC Time (ns): %lld\r\n", currRTC_ns);
+        break;
+
+    default:
+        errorCode = OSP_STATUS_INVALID_PARAMETER;
+        break;
+    }
+
+    return SET_ERROR( errorCode );
+}
+
+
 /*-------------------------------------------------------------------------------------------------*\
  |    P U B L I C     F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
@@ -828,6 +938,26 @@ int32_t SHConfigManager_ProcessControlRequest( const uint8_t *pRequestPacket, ui
                     DPRINTF( "ConfigManager response batchQueueErrorCode post-queue: %08X\r\n", errorCode );
                 }
             }
+        }
+
+        /* Special handling for Time Sync command */
+        /* Here we need to assert Host IRQ and ready a Get-Cause command with cause=TS_Delay_Req. It
+         * needs careful consideration since there is no packet associated with it and it also requires
+         * that no other sensor data is pending
+         */
+        if ( isWriteRequest && (parameterID == PARAM_ID_TIME_SYNC_FOLLOW_UP))
+        {
+            HostIFPackets_t respPkt;
+
+            /* Create Dummy pkt. Use Flush structure which is for packet without data */
+            respPkt.Flush.Q.ControlByte   = PKID_CONTROL_RESP << PKID_SHIFT;
+            respPkt.Flush.Q.SensorIdByte  = 0; //Sensor Type = 0
+            respPkt.Flush.Q.AttributeByte = 0;
+            respPkt.Flush.AttrByte2 = parameterID;
+
+            /* For the Time Sync handshake to work properly it is assumed that the Response Queue is
+               empty at the time this packet is enqueued */
+            errorCode = (int32_t)BatchManagerControlResponseEnQueue( &respPkt, CTRL_PKT_HEADER_SIZE );
         }
     }
 

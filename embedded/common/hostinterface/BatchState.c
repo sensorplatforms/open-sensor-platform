@@ -65,6 +65,10 @@ static const osp_bool_t StateCommandTable[NUM_BATCH_STATES] [CMD_NUM_MAX] =
     [BATCH_STANDBY][CMD_DYNAMIC_CAL_QUALITY]   = TRUE,
     [BATCH_STANDBY][CMD_DYNAMIC_CAL_SOURCE]    = TRUE,
     [BATCH_STANDBY][CMD_CONFIG_DONE]           = TRUE,
+    [BATCH_STANDBY][CMD_SH_TIME_SET]           = TRUE,
+    [BATCH_STANDBY][CMD_TIME_SYNC_START]       = TRUE,
+    [BATCH_STANDBY][CMD_TIME_SYNC_FOLLOW_UP]   = TRUE,
+    [BATCH_STANDBY][CMD_TIME_SYNC_END]         = TRUE,
 
     /* Config state */
     [BATCH_CONFIG][CMD_ENABLE]                = FALSE,
@@ -99,6 +103,10 @@ static const osp_bool_t StateCommandTable[NUM_BATCH_STATES] [CMD_NUM_MAX] =
     [BATCH_CONFIG][CMD_DYNAMIC_CAL_QUALITY]   = TRUE,
     [BATCH_CONFIG][CMD_DYNAMIC_CAL_SOURCE]    = TRUE,
     [BATCH_CONFIG][CMD_CONFIG_DONE]           = TRUE,
+    [BATCH_CONFIG][CMD_SH_TIME_SET]           = TRUE,
+    [BATCH_CONFIG][CMD_TIME_SYNC_START]       = TRUE,
+    [BATCH_CONFIG][CMD_TIME_SYNC_FOLLOW_UP]   = TRUE,
+    [BATCH_CONFIG][CMD_TIME_SYNC_END]         = TRUE,
 
     /* Idle state */
     [BATCH_IDLE][CMD_ENABLE]                = TRUE,
@@ -133,6 +141,10 @@ static const osp_bool_t StateCommandTable[NUM_BATCH_STATES] [CMD_NUM_MAX] =
     [BATCH_IDLE][CMD_DYNAMIC_CAL_QUALITY]   = TRUE,
     [BATCH_IDLE][CMD_DYNAMIC_CAL_SOURCE]    = TRUE,
     [BATCH_IDLE][CMD_CONFIG_DONE]           = TRUE,
+    [BATCH_IDLE][CMD_SH_TIME_SET]           = TRUE,
+    [BATCH_IDLE][CMD_TIME_SYNC_START]       = TRUE,
+    [BATCH_IDLE][CMD_TIME_SYNC_FOLLOW_UP]   = TRUE,
+    [BATCH_IDLE][CMD_TIME_SYNC_END]         = TRUE,
 
     /* Active State */
     [BATCH_ACTIVE][CMD_ENABLE]                = TRUE,
@@ -167,6 +179,10 @@ static const osp_bool_t StateCommandTable[NUM_BATCH_STATES] [CMD_NUM_MAX] =
     [BATCH_ACTIVE][CMD_DYNAMIC_CAL_QUALITY]   = TRUE,
     [BATCH_ACTIVE][CMD_DYNAMIC_CAL_SOURCE]    = TRUE,
     [BATCH_ACTIVE][CMD_CONFIG_DONE]           = FALSE,
+    [BATCH_ACTIVE][CMD_SH_TIME_SET]           = TRUE,
+    [BATCH_ACTIVE][CMD_TIME_SYNC_START]       = TRUE,
+    [BATCH_ACTIVE][CMD_TIME_SYNC_FOLLOW_UP]   = TRUE,
+    [BATCH_ACTIVE][CMD_TIME_SYNC_END]         = TRUE,
     
     /* Batch with Host Suspend State */
     [BATCH_ACTIVE_HOST_SUSPEND][CMD_ENABLE]                = FALSE,
@@ -201,6 +217,10 @@ static const osp_bool_t StateCommandTable[NUM_BATCH_STATES] [CMD_NUM_MAX] =
     [BATCH_ACTIVE_HOST_SUSPEND][CMD_DYNAMIC_CAL_QUALITY]   = FALSE,
     [BATCH_ACTIVE_HOST_SUSPEND][CMD_DYNAMIC_CAL_SOURCE]    = FALSE,
     [BATCH_ACTIVE_HOST_SUSPEND][CMD_CONFIG_DONE]           = FALSE,
+    [BATCH_ACTIVE_HOST_SUSPEND][CMD_SH_TIME_SET]           = FALSE,
+    [BATCH_ACTIVE_HOST_SUSPEND][CMD_TIME_SYNC_START]       = FALSE,
+    [BATCH_ACTIVE_HOST_SUSPEND][CMD_TIME_SYNC_FOLLOW_UP]   = FALSE,
+    [BATCH_ACTIVE_HOST_SUSPEND][CMD_TIME_SYNC_END]         = FALSE,
 };
 
 /*-------------------------------------------------------------------------------------------------*\

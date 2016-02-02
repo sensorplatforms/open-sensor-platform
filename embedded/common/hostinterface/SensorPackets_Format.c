@@ -1316,6 +1316,47 @@ int32_t FormatControlReqWrite_ConfigDone(
 }
 
 
+//   PARAM_ID_SH_TIME_SET            0x21        _W
+//
+int32_t FormatControlReqWrite_ShTimeSet(
+    HostIFPackets_t *pDest, uint64_t nsTime,
+    uint8_t seqNum, uint8_t crcFlag )
+{
+    return FormatControlPacketFromFields( pDest, (uint8_t *)&nsTime, PKID_CONTROL_REQ_WR, PARAM_ID_SH_TIME_SET,
+        (ASensorType_t)0, 0, seqNum, crcFlag );
+}
+
+//   PARAM_ID_TIME_SYNC_START        0x22        _W: no payload
+//
+int32_t FormatControlReqWrite_TimeSyncStart(
+    HostIFPackets_t *pDest,
+    uint8_t seqNum, uint8_t crcFlag )
+{
+    return FormatControlPacketFromFields( pDest, NULL, PKID_CONTROL_REQ_WR, PARAM_ID_TIME_SYNC_START,
+        (ASensorType_t)0, 0, seqNum, crcFlag );
+}
+
+//   PARAM_ID_TIME_SYNC_FOLLOW_UP    0x23        _W
+//
+int32_t FormatControlReqWrite_TimeSyncFUp(
+    HostIFPackets_t *pDest, uint64_t nsTime,
+    uint8_t seqNum, uint8_t crcFlag )
+{
+    return FormatControlPacketFromFields( pDest, (uint8_t *)&nsTime, PKID_CONTROL_REQ_WR, PARAM_ID_TIME_SYNC_FOLLOW_UP,
+        (ASensorType_t)0, 0, seqNum, crcFlag );
+}
+
+//   PARAM_ID_TIME_SYNC_END          0x24        _W
+//
+int32_t FormatControlReqWrite_TimeSyncEnd(
+    HostIFPackets_t *pDest, uint64_t nsTime,
+    uint8_t seqNum, uint8_t crcFlag )
+{
+    return FormatControlPacketFromFields( pDest, (uint8_t *)&nsTime, PKID_CONTROL_REQ_WR, PARAM_ID_TIME_SYNC_END,
+        (ASensorType_t)0, 0, seqNum, crcFlag );
+}
+
+
 /*-------------------------------------------------------------------------------------------------*\
  |    E N D   O F   F I L E
 \*-------------------------------------------------------------------------------------------------*/

@@ -36,6 +36,7 @@
 #define I2C_BUF_SZ                   1024
 #define CAUSE_SENSOR_DATA_READY      1  //TBD. Common definition with SPI slave driver
 #define CAUSE_CONFIG_CMD_RESPONSE    6
+#define CAUSE_TIMESTAMP_DELAY_REQ    8
 #define GC_RESPONSE_SIZE             3
 #define MAX_CONFIG_CMD_SZ            64  //TBD. Common definition with SPI slave drive
 
@@ -166,7 +167,17 @@ static int32_t processHostCommand(uint8_t *rx_buf, uint16_t length, uint8_t i2c_
             }
             else
             {
-                _GCResponse.Cause = CAUSE_CONFIG_CMD_RESPONSE;
+                uint8_t paramId = GetControlParameterID( _GCBuffer );
+
+                if (paramId == PARAM_ID_TIME_SYNC_FOLLOW_UP)
+                {
+                    _GCResponse.Cause = CAUSE_TIMESTAMP_DELAY_REQ;
+                    _GCBufferSz = 0; //No packet transfer needed.
+                }
+                else
+                {
+                    _GCResponse.Cause = CAUSE_CONFIG_CMD_RESPONSE;
+                }
             }
 
             _GCResponse.szMSB = ( ( _GCBufferSz & 0xFF00 ) >> 8 );

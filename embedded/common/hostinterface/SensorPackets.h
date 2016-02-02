@@ -293,7 +293,11 @@
 #define PARAM_ID_DYNAMIC_CAL_QUALITY    0x1E
 #define PARAM_ID_DYNAMIC_CAL_SOURCE     0x1F
 #define PARAM_ID_CONFIG_DONE            0x20
-#define N_PARAM_ID                      0x21  // array size
+#define PARAM_ID_SH_TIME_SET            0x21
+#define PARAM_ID_TIME_SYNC_START        0x22
+#define PARAM_ID_TIME_SYNC_FOLLOW_UP    0x23
+#define PARAM_ID_TIME_SYNC_END          0x24
+#define N_PARAM_ID                      0x25  // array size
 
 /** ================== CRC FIELD =================== */
 #define CRC_SIZE                        2     // size in bytes
@@ -482,6 +486,9 @@ typedef struct _LocalControlPktUint64x2_s {
     uint64_t DataU64x2[2];
 } LocalControlPktUint64x2_t;
 
+typedef struct _LocalControlPktUint64_s {
+    uint64_t DataU64;
+} LocalControlPktUint64_t;
 
 
 typedef LocalControlPktInt32_t      LocalControlPktErrorCode_t;            // 0x00  PARAM_ID_ERROR_CODE_IN_DATA
@@ -522,6 +529,11 @@ typedef LocalControlPktInt8_t       LocalControlPktDynamicCalSource_t;     // 0x
 
 typedef LocalControlPktInt8_t       LocalControlPktConfigDone_t;           // 0x20  PARAM_ID_CONFIG_DONE
 
+typedef LocalControlPktUint64_t     LocalControlPktSHTimeSet_t;            // 0x21  PARAM_ID_SH_TIME_SET
+typedef LocalControlPktNoData_t     LocalControlPktTimeSyncStart_t;        // 0x22  PARAM_ID_TIME_SYNC_START
+typedef LocalControlPktUint64_t     LocalControlPktTimeSyncFollowUp_t;     // 0x23  PARAM_ID_TIME_SYNC_FOLLOW_UP
+typedef LocalControlPktUint64_t     LocalControlPktTimeSyncEnd_t;          // 0x24  PARAM_ID_TIME_SYNC_END
+
 typedef union _LocalControlPktPayloadTypes_s {
 
     LocalControlPktErrorCode_t            ErrorCode;
@@ -561,6 +573,11 @@ typedef union _LocalControlPktPayloadTypes_s {
     LocalControlPktDynamicCalSource_t     DynamicCalSource;
 
     LocalControlPktConfigDone_t           ConfigDone;
+
+    LocalControlPktSHTimeSet_t            HubTimeSet;
+    LocalControlPktTimeSyncStart_t        TimeSyncStart;
+    LocalControlPktTimeSyncFollowUp_t     TimeSyncFUp;
+    LocalControlPktTimeSyncEnd_t          TimeSyncEnd;
 
 } LocalControlPktPayloadTypes_t;
 
@@ -827,6 +844,12 @@ typedef struct _HifControlPktUint64x2_s {
     uint8_t CRCField[CRC_SIZE];
 } HifControlPktUint64x2_t;
 
+typedef struct _HifControlPktUint64_s {
+    HifSnsrPktQualifier_t Q;
+    uint8_t AttrByte2;
+    int8_t  DataU64[8];         // uint64_t DataU64;
+    uint8_t CRCField[CRC_SIZE];
+} HifControlPktUint64_t;
 
 typedef HifControlPktInt32_t       HifControlPktErrorCode_t;            // 0x00  PARAM_ID_ERROR_CODE_IN_DATA
 typedef HifControlPktUint8_t       HifControlPktEnable_t;               // 0x01  PARAM_ID_ENABLE
@@ -865,6 +888,12 @@ typedef HifControlPktInt32x3_t     HifControlPktDynamicCalQuality_t;    // 0x1E 
 typedef HifControlPktInt8_t        HifControlPktDynamicCalSource_t;     // 0x1F  PARAM_ID_DYNAMIC_CAL_SOURCE
 
 typedef HifControlPktNoData_t      HifControlPktConfigDone_t;           // 0x20  PARAM_ID_CONFIG_DONE
+
+typedef HifControlPktUint64_t      HifControlPktSHTimeSet_t;            // 0x21  PARAM_ID_SH_TIME_SET
+typedef HifControlPktNoData_t      HifControlPktTimeSyncStart_t;        // 0x22  PARAM_ID_TIME_SYNC_START
+typedef HifControlPktUint64_t      HifControlPktTimeSyncFollowUp_t;     // 0x23  PARAM_ID_TIME_SYNC_FOLLOW_UP
+typedef HifControlPktUint64_t      HifControlPktTimeSyncEnd_t;          // 0x24  PARAM_ID_TIME_SYNC_END
+
 
 
 /* Define union for all the host interface packet types */
@@ -918,6 +947,11 @@ typedef union _HostIFPackets {
     HifControlPktDynamicCalSource_t     DynamicCalSource;
 
     HifControlPktConfigDone_t           ConfigDone;
+
+    HifControlPktSHTimeSet_t            HubTimeSet;
+    HifControlPktTimeSyncStart_t        TimeSyncStart;
+    HifControlPktTimeSyncFollowUp_t     TimeSyncFUp;
+    HifControlPktTimeSyncEnd_t          TimeSyncEnd;
 
     HifControlPktNoData_t               GenericControlPkt;
 
@@ -1526,8 +1560,29 @@ int32_t FormatControlReqWrite_ConfigDone(
     ASensorType_t sType, uint8_t subType,
     uint8_t seqNum, uint8_t crcFlag );
 
+//   PARAM_ID_SH_TIME_SET            0x21        _W
+//
+int32_t FormatControlReqWrite_ShTimeSet(
+    HostIFPackets_t *pDest, uint64_t nsTime,
+    uint8_t seqNum, uint8_t crcFlag );
 
+//   PARAM_ID_TIME_SYNC_START        0x22        _W
+//
+int32_t FormatControlReqWrite_TimeSyncStart(
+    HostIFPackets_t *pDest,
+    uint8_t seqNum, uint8_t crcFlag );
 
+//   PARAM_ID_TIME_SYNC_FOLLOW_UP    0x23        _W
+//
+int32_t FormatControlReqWrite_TimeSyncFUp(
+    HostIFPackets_t *pDest, uint64_t nsTime,
+    uint8_t seqNum, uint8_t crcFlag );
+
+//   PARAM_ID_TIME_SYNC_END          0x24        _W
+//
+int32_t FormatControlReqWrite_TimeSyncEnd(
+    HostIFPackets_t *pDest, uint64_t nsTime,
+    uint8_t seqNum, uint8_t crcFlag );
 
 
 /*******************************************************************************************

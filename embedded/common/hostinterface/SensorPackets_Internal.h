@@ -257,7 +257,11 @@ const CtrlPktDesc_t controlPacketDescriptions[N_PARAM_ID] =
     [PARAM_ID_DYNAMIC_CAL_ROTATION] = { 1,  4,  3,   PA_RW },
     [PARAM_ID_DYNAMIC_CAL_QUALITY]  = { 1,  4,  3,   PA_RW },
     [PARAM_ID_DYNAMIC_CAL_SOURCE]   = { 0,  1,  1,   PA_RW },
-    [PARAM_ID_CONFIG_DONE]          = { 0,  0,  0,   PA_W  }
+    [PARAM_ID_CONFIG_DONE]          = { 0,  0,  0,   PA_W  },
+    [PARAM_ID_SH_TIME_SET]          = { 1,  8,  1,   PA_W  },
+    [PARAM_ID_TIME_SYNC_START]      = { 0,  0,  0,   PA_W  },
+    [PARAM_ID_TIME_SYNC_FOLLOW_UP]  = { 1,  8,  1,   PA_W  },
+    [PARAM_ID_TIME_SYNC_END]        = { 1,  8,  1,   PA_W  },
 };
 
 //  Control Packet Size Kinds
