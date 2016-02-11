@@ -45,7 +45,7 @@ typedef struct MsgSensorDataTag
     int32_t     TiltError;
 } MsgSensorData;
 
-typedef struct MsgSensorBoolTag 
+typedef struct MsgSensorBoolTag
 {
     uint64_t timeStamp;
     uint8_t  active;
@@ -65,7 +65,7 @@ typedef MsgSensorBoolData MsgStepDetData;
 
 typedef struct MsgSensorDataRdyTag
 {
-    uint32_t     timeStamp;
+    uint64_t     timeStamp;
     uint8_t      sensorId;
 } MsgSensorDataRdy;
 

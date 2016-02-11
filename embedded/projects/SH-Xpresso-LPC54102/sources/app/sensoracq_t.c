@@ -54,7 +54,7 @@ void WaitForHostSync( void );
 /*-------------------------------------------------------------------------------------------------*\
  |    F O R W A R D   F U N C T I O N   D E C L A R A T I O N S
 \*-------------------------------------------------------------------------------------------------*/
-static void SensorDataHandler(InputSensor_t sensorId, uint32_t timeStamp);
+static void SensorDataHandler(InputSensor_t sensorId, uint64_t timeStamp);
 
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E     F U N C T I O N S
@@ -108,7 +108,7 @@ static void StoreCalibrationData( CalEvent_t event )
  *          Handle data ready indications from ISR for various sensors
  *
  ***************************************************************************************************/
-static void SensorDataHandler(InputSensor_t sensorId, uint32_t timeStamp)
+static void SensorDataHandler(InputSensor_t sensorId, uint64_t timeStamp)
 {
     MsgAccelData accelData;
     MsgMagData magData;
@@ -305,7 +305,7 @@ void SensorControlCmdHandler(MsgSensorControlData *pData)
  * @return None
  *
  ***************************************************************************************************/
-void SendDataReadyIndication( uint8_t sensorId, uint32_t timeStamp )
+void SendDataReadyIndication( uint8_t sensorId, uint64_t timeStamp )
 {
     MessageBuffer *pSendMsg = NULLP;
 

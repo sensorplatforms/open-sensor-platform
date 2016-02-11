@@ -240,8 +240,7 @@ void UART0_IRQHandler(void)
  ***************************************************************************************************/
 void ACCEL_IRQHandler(void)
 {
-    uint32_t currTime = RTC_GetCounter();
-
+    uint64_t currTime = RTC_GetCounter64();
     Chip_PININT_ClearIntStatus(LPC_PININT, ACCEL_PINT_CH);
 
     SendDataReadyIndication(ACCEL_INPUT_SENSOR, currTime);
@@ -263,7 +262,7 @@ void ACCEL_IRQHandler(void)
  ***************************************************************************************************/
 void MAG_IRQHandler(void)
 {
-    uint32_t currTime = RTC_GetCounter();
+    uint64_t currTime = RTC_GetCounter64();
 
     Chip_PININT_ClearIntStatus(LPC_PININT, MAG_PINT_CH);
 
@@ -278,7 +277,7 @@ void MAG_IRQHandler(void)
  ***************************************************************************************************/
 void GYRO_IRQHandler(void)
 {
-    uint32_t currTime = RTC_GetCounter();
+    uint64_t currTime = RTC_GetCounter64();
 
     Chip_PININT_ClearIntStatus(LPC_PININT, GYRO_PINT_CH);
 

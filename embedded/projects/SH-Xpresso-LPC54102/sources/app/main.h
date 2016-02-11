@@ -192,7 +192,7 @@ uint64_t RTC_GetCounter64( void );
 void RTC_SetTimeNs64( uint64_t nsTime );
 
 /* Data ready indications from Sensor drivers to sensor task */
-void SendDataReadyIndication(uint8_t sensorId, uint32_t timeStamp);
+void SendDataReadyIndication(uint8_t sensorId, uint64_t timeStamp);
 
 #endif /* MAIN_H */
 /*-------------------------------------------------------------------------------------------------*\

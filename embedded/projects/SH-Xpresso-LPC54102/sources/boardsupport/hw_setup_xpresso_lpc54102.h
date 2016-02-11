@@ -50,7 +50,7 @@
 #define RTC_COUNTER_IRQHandler                  CT32B2_IRQHandler
 #define RTC_COUNTER_MATCH_IDX                   0   //Index for match register (out of 4 possible)
 #define RTC_COUNTER_IRQCh                       CT32B2_IRQn
-#define RTC_TICK_US_FLT                         30.517578125f //from 32.768KHz input clock to RTC Counter
+#define RTC_TICK_US_FLT                         30.518f //from 32.768KHz input clock to RTC Counter
 #define RTC_TICK_NS_INT                         30518
 #define RTC_COUNTER_INPUT_CLK_PIN               0, 2, (IOCON_FUNC3 | IOCON_MODE_INACT | IOCON_DIGITAL_EN) //P0_2
 #define RTC_COUNTER_CAPTURE_NUM                 1   //CAP1 input

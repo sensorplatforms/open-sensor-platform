@@ -658,7 +658,7 @@ static void HandleSensorData(MessageBuffer *pRcvMsg)
 
         if (g_logging & 0x8)
         {
-            D1_printf("Acc\t%8lu\t%+5d\t%+5d\t%+5d\r\n", sensorData.rawdata.TimeStamp, sensorData.rawdata.data[0],
+            D1_printf("Acc\t%8llu\t%+5d\t%+5d\t%+5d\r\n", sensorData.rawdata.TimeStamp, sensorData.rawdata.data[0],
                 sensorData.rawdata.data[1], sensorData.rawdata.data[2]);
         }
         break;
@@ -673,7 +673,7 @@ static void HandleSensorData(MessageBuffer *pRcvMsg)
 
         if (g_logging & 0x8)
         {
-            D1_printf("Mag\t%8lu\t%+5d\t%+5d\t%+5d\r\n", sensorData.rawdata.TimeStamp, sensorData.rawdata.data[0],
+            D1_printf("Mag\t%8llu\t%+5d\t%+5d\t%+5d\r\n", sensorData.rawdata.TimeStamp, sensorData.rawdata.data[0],
                 sensorData.rawdata.data[1], sensorData.rawdata.data[2]);
         }
         break;
@@ -688,7 +688,7 @@ static void HandleSensorData(MessageBuffer *pRcvMsg)
 
         if (g_logging & 0x8)
         {
-            D1_printf("Gyr\t%8lu\t%+5d\t%+5d\t%+5d\r\n", sensorData.rawdata.TimeStamp, sensorData.rawdata.data[0],
+            D1_printf("Gyr\t%8llu\t%+5d\t%+5d\t%+5d\r\n", sensorData.rawdata.TimeStamp, sensorData.rawdata.data[0],
                 sensorData.rawdata.data[1], sensorData.rawdata.data[2]);
         }
         break;

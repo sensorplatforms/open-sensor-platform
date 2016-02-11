@@ -147,7 +147,7 @@ typedef struct {
 
 //! Use to represent raw tri-axis and one axis sensor data.
 typedef struct {
-    uint32_t TimeStamp;            //! raw time stamp
+    uint64_t TimeStamp;            //! raw time stamp
     int32_t  data[3];              //! Use first element for one axis sensor
 } Android_TriAxisRawSensorData_t;
 
