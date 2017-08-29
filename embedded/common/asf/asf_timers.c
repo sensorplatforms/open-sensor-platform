@@ -1,7 +1,7 @@
 /* Open Sensor Platform Project
  * https://github.com/sensorplatforms/open-sensor-platform
  *
- * Copyright (C) 2013 Sensor Platforms Inc.
+ * Copyright (C) 2017 Knowles Electronics, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,16 @@ static AsfTimer **_pAsfTimerList = (AsfTimer**)&AsfTimerList[0];
 /*-------------------------------------------------------------------------------------------------*\
  |    P R I V A T E     F U N C T I O N S
 \*-------------------------------------------------------------------------------------------------*/
+
+/****************************************************************************************************
+ * @fn      AddTimerToList
+ *          Called by Timer Start to add timer in active timer list
+ *
+ * @param   pTimer  Pointer to the timer control block
+ *
+ * @return  Internal reference to the timer (index of the timer list)
+ *
+ ***************************************************************************************************/
 static uint16_t AddTimerToList(AsfTimer *pTimer)
 {
     uint16_t i;
@@ -69,6 +79,17 @@ static uint16_t AddTimerToList(AsfTimer *pTimer)
     ASF_assert(FALSE);
 }
 
+
+/****************************************************************************************************
+ * @fn      GetTimerAndRemoveFromList
+ *          Called by Timer Expiry function to remove timer for active timer list and return the 
+ *          pointer to the timer that expired
+ *
+ * @param   info  Internal reference to the timer that expired
+ *
+ * @return  Pointer to the timer control block
+ *
+ ***************************************************************************************************/
 static AsfTimer*  GetTimerAndRemoveFromList( uint16_t info)
 {
     const uint16_t numTimers = os_timernum & 0xFFFF;
@@ -85,6 +106,15 @@ static AsfTimer*  GetTimerAndRemoveFromList( uint16_t info)
 }
 
 
+/****************************************************************************************************
+ * @fn      RemoveTimerFromList
+ *          Called by KillTimer to remove timer for active timer list
+ *
+ * @param   pTimer  Pointer to the timer control block
+ *
+ * @return  none
+ *
+ ***************************************************************************************************/
 static void RemoveTimerFromList(AsfTimer *pTimer)
 {
     uint16_t i;
@@ -95,8 +125,8 @@ static void RemoveTimerFromList(AsfTimer *pTimer)
         if ( _pAsfTimerList[i] == pTimer )
         {
             _pAsfTimerList[i] = NULL;
+            return;
         }
-        return;
     }
 
     /* Timer not found! */
@@ -139,11 +169,14 @@ static void SendTimerExpiry ( AsfTimer *pTimer )
 static void _TimerStart ( AsfTimer *pTimer, char *_file, int _line )
 {
     uint16_t info;
+    OS_SETUP_CRITICAL();
 
     ASF_assert( pTimer != NULLP );
     ASF_assert( pTimer->sysUse != TIMER_SYS_ID ); //In case we are trying to restart a running timer
+    OS_ENTER_CRITICAL();
     pTimer->sysUse = TIMER_SYS_ID;
     info = AddTimerToList(pTimer); // Add timer to list & get index
+    OS_LEAVE_CRITICAL();
     pTimer->timerId = os_tmr_create( pTimer->ticks, info );
     ASF_assert( pTimer->timerId != NULL );
 }
@@ -230,11 +263,15 @@ void _ASFTimerExpiry ( uint16_t info, char *_file, int _line )
 void _ASFKillTimer ( AsfTimer *pTimer, char *_file, int _line )
 {
     TimerId ret;
+    OS_SETUP_CRITICAL();
+
     ASF_assert( pTimer != NULLP );
     ret = os_tmr_kill( pTimer->timerId );
     ASF_assert( ret == NULL );
+    OS_ENTER_CRITICAL();
     pTimer->sysUse = (uint32_t)-1; //Timer no longer in use
     RemoveTimerFromList( pTimer );
+    OS_LEAVE_CRITICAL();
 }
 
 
