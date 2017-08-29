@@ -1,1 +1,0 @@
-For latest drivers refer to: https://github.com/BoschSensortec
