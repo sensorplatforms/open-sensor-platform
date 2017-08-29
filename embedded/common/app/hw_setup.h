@@ -34,6 +34,15 @@
 # include "hw_setup_xpresso_lpc54102.h"
 #endif
 
+#ifdef NUCLEO_F091_BOARD
+# include "hw_setup_nucleo_f091.h"
+#endif
+
+#ifdef PURPLE_HAZE_BOARD
+#include "hw_setup_purplehaze.h"
+#endif
+
+
 /*-------------------------------------------------------------------------------------------------*\
  |    C O N S T A N T S   &   M A C R O S
 \*-------------------------------------------------------------------------------------------------*/
